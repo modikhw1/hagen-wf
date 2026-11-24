@@ -1,0 +1,45 @@
+/* Bryggan. Grönt = håller, orange = håller inte, blått = anpassningen. */
+.br { min-height: 100%; padding-bottom: 40px; }
+.br .dim { color: var(--g3); font-size: 12px; }
+.br .pad { padding: 24px; }
+.br-top { display: flex; align-items: baseline; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--g2); background: var(--paper); flex-wrap: wrap; }
+.br-top > b { font-size: 20px; letter-spacing: -0.02em; }
+.br-top nav { margin-left: auto; font-size: 13px; color: var(--g3); }
+.br-top nav a { color: var(--g3); }
+.br-sektion { padding: 14px 22px; }
+.br-sektion h2 { font-size: 16px; margin: 6px 0 8px; }
+.br-sektion h3 { font-size: 14px; margin: 0 0 6px; font-family: ui-monospace, Consolas, monospace; }
+.br-kortrad { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.br-kort { display: flex; flex-direction: column; gap: 2px; min-width: 150px; padding: 10px 12px; border: 1.5px solid var(--g2); border-radius: 10px; background: var(--paper); }
+.br-kort .titel { font-size: 12px; color: var(--g3); }
+.br-kort b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.br-kort .under { font-size: 11px; color: var(--g3); }
+.br-kort.bra { border-color: var(--ok); }
+.br-kort.bra b { color: var(--ok); }
+.br-kort.svag { border-color: var(--cust); }
+.br-kort.svag b { color: var(--cust); }
+.br-korr { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+.br-tabell { border-collapse: collapse; font-size: 12px; }
+.br-tabell th { text-align: left; color: var(--g3); font-weight: 400; padding: 3px 8px; border-bottom: 1px solid var(--g2); }
+.br-tabell td { padding: 3px 8px; border-bottom: 1px dashed var(--g1); font-variant-numeric: tabular-nums; vertical-align: middle; }
+.br-tabell td.namn { font-family: ui-monospace, Consolas, monospace; }
+.br-tabell tr { cursor: pointer; }
+.br-tabell tr.giltig td.namn { color: var(--ok); font-weight: 700; }
+.br-tabell tr.vald td { background: var(--cm-soft); }
+.br-tabell .ok { color: var(--ok); font-weight: 700; }
+.br-tabell img { width: 40px; height: 71px; object-fit: cover; border-radius: 4px; display: block; }
+.br-tabell td.lika { color: var(--ok); }
+.br-tabell td.olika { color: var(--cust); }
+.br-plotyta { position: sticky; top: 10px; }
+.br-plot { display: block; background: var(--paper); border: 1px solid var(--g2); border-radius: 10px; }
+.br-plot circle { fill: var(--ink); fill-opacity: 0.6; }
+.br-plot line.lika { stroke: var(--g2); stroke-dasharray: 4 4; }
+.br-plot line.anp { stroke: var(--cm); stroke-width: 2; }
+.br-plot text { font-size: 11px; fill: var(--g3); font-family: var(--font); }
+.br-manuslista { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.br-manuslista button { font-size: 13px; border: 1.5px solid var(--g2); border-radius: 999px; padding: 4px 12px; background: var(--paper); }
+.br-manuslista button.on { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.br-manuslista button.on .dim { color: var(--g2); }
+.br-manus { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+.br-manus video { border-radius: 12px; background: #111; }
+.br-manus > .dim { flex-basis: 100%; }

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kontroller K1–K3</title>
+<style>
+  :root { --bg:#f6f5f2; --yta:#fff; --text:#1d1d1b; --svag:#6b6a66; --linje:#dedcd6; --accent:#2f5d8a; --val:#e3edf7; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161615; --yta:#21211f; --text:#ecebe7; --svag:#9c9a94; --linje:#383834; --accent:#7fb0e0; --val:#1f3347; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.45 system-ui, sans-serif; }
+  header { display:flex; gap:8px; align-items:center; padding:10px 16px; border-bottom:1px solid var(--linje); background:var(--yta); position:sticky; top:0; z-index:5; flex-wrap:wrap; }
+  header b { margin-right:12px; }
+  button { font:inherit; padding:7px 14px; border:1px solid var(--linje); background:var(--yta); color:var(--text); border-radius:6px; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button.pa { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button.stor { padding:10px 22px; font-size:17px; }
+  .hoger { margin-left:auto; }
+  main { padding:16px; max-width:1300px; margin:0 auto; }
+  h2 { margin:4px 0 12px; font-size:22px; }
+  .rad { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:12px 0; }
+  .par { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .kol { background:var(--yta); border:1px solid var(--linje); border-radius:8px; padding:10px; text-align:center; }
+  .kol h3 { margin:0 0 8px; font-size:18px; }
+  video { width:100%; max-height:72vh; background:#000; border-radius:4px; }
+  .siffror { margin-top:8px; font-size:15px; text-align:left; display:inline-block; }
+  .siffror .stor { font-size:22px; font-weight:600; }
+  .svag { color:var(--svag); }
+  .ensam { max-width:420px; margin:0 auto; text-align:center; }
+  .remsa { display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; }
+  .remsa .kol video { max-height:46vh; }
+  .betyg button { min-width:44px; }
+  .k3 { display:grid; grid-template-columns: 1fr 380px; gap:16px; }
+  .kort { display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:8px; }
+  .kortet { position:relative; border:2px solid transparent; border-radius:6px; cursor:grab; background:#000; aspect-ratio:9/16; overflow:hidden; }
+  .kortet video { width:100%; height:100%; object-fit:cover; pointer-events:none; max-height:none; border-radius:0; }
+  .kortet span { position:absolute; left:4px; top:4px; background:rgba(0,0,0,.65); color:#fff; padding:0 6px; border-radius:4px; font-size:13px; }
+  .kortet.vald { border-color:var(--accent); }
+  .hog { background:var(--yta); border:1px dashed var(--linje); border-radius:8px; padding:8px; margin-bottom:12px; min-height:90px; }
+  .hog.over { border-color:var(--accent); background:var(--val); }
+  .hog .huvud { display:flex; gap:6px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
+  .hog input[type=text] { flex:1; min-width:120px; font:inherit; padding:5px 8px; border:1px solid var(--linje); border-radius:5px; background:var(--bg); color:var(--text); }
+  .hog .kort { grid-template-columns:repeat(auto-fill, minmax(62px, 1fr)); }
+  .visare { position:sticky; top:64px; align-self:start; }
+  .visare video { max-height:62vh; }
+  label { font-size:13px; color:var(--svag); }
+  @media (max-width: 800px) { .par, .k3 { grid-template-columns:1fr; } .remsa { grid-template-columns:repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+<header>
+  <b>Kontroller</b>
+  <button data-flik="K1">K1 · par</button>
+  <button data-flik="K2">K2 · serie</button>
+  <button data-flik="K3">K3 · högar</button>
+  <span class="hoger svag" id="sparat"></span>
+  <button id="export">Ladda ner svar</button>
+</header>
+<main id="yta"></main>
+<script src="data.js"></script>
+<script>
+const D = window.KONTROLL, KL = id => `../klipp/${id}.mp4`
+const NYCKEL = 'kontroll-svar-v1'
+let S; try { S = JSON.parse(localStorage.getItem(NYCKEL)) } catch {}
+S = S || { flik: 'K1', K1: { i: 0, svar: {} }, K2: { fas: 1, i: 0, ensam: {}, remsa: {} }, K3: { hogar: [{ id: 1, namn: '', kort: [] }], mest: null, aldrig: null, start: null } }
+const spara = () => { try { localStorage.setItem(NYCKEL, JSON.stringify(S)); document.getElementById('sparat').textContent = 'sparat ' + new Date().toLocaleTimeString('sv') } catch {} }
+const nu = () => new Date().toISOString()
+const el = (t, a = {}, ...barn) => { const e = document.createElement(t); for (const [k, v] of Object.entries(a)) k.startsWith('on') ? e.addEventListener(k.slice(2), v) : k === 'class' ? e.className = v : e.setAttribute(k, v); for (const b of barn.flat()) e.append(b?.nodeType ? b : document.createTextNode(b ?? '')); return e }
+const video = (id, extra = {}) => el('video', { src: KL(id) + '#t=0.1', controls: '', preload: 'metadata', playsinline: '', ...extra })
+const tal = x => x == null ? '–' : x.toLocaleString('sv')
+const yta = document.getElementById('yta')
+
+function rita() {
+  document.querySelectorAll('[data-flik]').forEach(b => b.classList.toggle('pa', b.dataset.flik === S.flik))
+  yta.innerHTML = ''
+  ;({ K1: k1, K2: k2, K3: k3 })[S.flik]()
+}
+document.querySelectorAll('[data-flik]').forEach(b => b.onclick = () => { S.flik = b.dataset.flik; spara(); rita() })
+
+// ---------- K1 ----------
+function k1() {
+  const i = S.K1.i, p = D.K1[i]
+  if (!p) { yta.append(el('h2', {}, 'K1 klar. 20 av 20 par.'), el('p', {}, 'Ladda ner svaren uppe till höger.')); return }
+  const s = S.K1.svar[p.nr] || (S.K1.svar[p.nr] = {})
+  const knapp = (txt, f, pa) => el('button', { class: 'stor' + (pa ? ' pa' : ''), onclick: () => { f(); spara(); rita() } }, txt)
+  const kol = (sida, namn) => el('div', { class: 'kol' }, el('h3', {}, namn), video(p[sida === 'v' ? 'vanster' : 'hoger']),
+    s.visat ? (() => { const x = p.siffror[sida]; return el('div', { class: 'siffror' },
+      el('div', { class: 'stor' }, x.mot_kontot == null ? '–' : `×${String(x.mot_kontot).replace('.', ',')}`), el('div', { class: 'svag' }, 'visningar mot kontots vanliga'),
+      el('div', {}, `${tal(x.visningar)} visningar · ${tal(x.gillanden)} gillanden`), el('div', {}, `${tal(x.kommentarer)} kommentarer · ${tal(x.delningar)} delningar`)) })() : '')
+  yta.append(el('h2', {}, `Par ${p.nr} av ${D.K1.length}`),
+    el('div', { class: 'par' }, kol('v', 'Vänster'), kol('h', 'Höger')))
+  const rad = el('div', { class: 'rad' })
+  if (!s.val) {
+    rad.append(el('span', {}, 'Vilket vill du hellre ha i biblioteket?'),
+      ...[['Vänster', 'v'], ['Höger', 'h'], ['Båda', 'bada'], ['Inget', 'inget']].map(([t, v]) => knapp(t, () => { s.val = v; s.tid = nu() })))
+  } else if (!s.visat) {
+    rad.append(el('span', {}, `Valt: ${ {v:'vänster',h:'höger',bada:'båda',inget:'inget'}[s.val] }.`), knapp('Visa siffror', () => { s.visat = nu() }), knapp('Ändra valet', () => { delete s.val }))
+  } else if (!s.efter) {
+    rad.append(el('span', {}, 'Ändrar siffrorna något?'), ...[['Nej, samma', 'samma'], ['Byter till vänster', 'v'], ['Byter till höger', 'h'], ['Osäker nu', 'osaker']].map(([t, v]) => knapp(t, () => { s.efter = v })))
+  } else {
+    rad.append(el('span', { class: 'svag' }, `Valt ${s.val}, efter siffrorna: ${s.efter}.`), knapp('Nästa par →', () => { S.K1.i++ }, true))
+  }
+  if (i > 0) rad.append(el('button', { class: 'hoger', onclick: () => { S.K1.i--; spara(); rita() } }, '← föregående'))
+  yta.append(rad)
+}
+
+// ---------- K2 ----------
+const betyg = (val, f) => el('span', { class: 'betyg rad' }, ...[1, 2, 3, 4, 5].map(n => el('button', { class: 'stor' + (val === n ? ' pa' : ''), onclick: () => { f(n); spara(); rita() } }, String(n))))
+function k2() {
+  const K = S.K2
+  if (K.fas === 1) {
+    const m = D.K2.isolerat[K.i]
+    if (!m) { K.fas = 2; K.i = 0; spara(); return k2() }
+    yta.append(el('h2', {}, `Del 1 · klipp ${m.nr} av ${D.K2.isolerat.length}`), el('p', { class: 'svag' }, 'Klippet ensamt. Hur starkt är det, 1–5?'),
+      el('div', { class: 'ensam' }, video(m.id), betyg(K.ensam[m.nr]?.b, n => { K.ensam[m.nr] = { b: n, tid: nu() } }),
+        K.ensam[m.nr] ? el('button', { class: 'stor pa', onclick: () => { K.i++; spara(); rita() } }, 'Nästa →') : ''),
+      K.i > 0 ? el('button', { onclick: () => { K.i--; spara(); rita() } }, '← föregående') : '')
+    return
+  }
+  const r = D.K2.remsor[K.i]
+  if (!r) { yta.append(el('h2', {}, 'K2 klar.'), el('p', {}, 'Ladda ner svaren uppe till höger.'), el('button', { onclick: () => { K.i = D.K2.remsor.length - 1; spara(); rita() } }, '← tillbaka')); return }
+  const s = K.remsa[r.nr] || (K.remsa[r.nr] = { om: {} })
+  yta.append(el('h2', {}, `Del 2 · konto ${r.nr} av ${D.K2.remsor.length}`), el('p', { class: 'svag' }, 'Sex klipp från samma konto, i ordning. Titta så mycket du behöver.'),
+    el('div', { class: 'remsa' }, r.remsa.map(x => el('div', { class: 'kol' }, el('h3', {}, x.bokstav), video(x.id)))))
+  const val = (txt, nyckel) => el('div', { class: 'rad' }, el('span', {}, txt), ...r.remsa.map(x => el('button', { class: s[nyckel] === x.bokstav ? 'pa' : '', onclick: () => { s[nyckel] = x.bokstav; spara(); rita() } }, x.bokstav)))
+  yta.append(...r.mal.map(b => el('div', { class: 'rad' }, el('span', {}, `Klipp ${b} igen, 1–5:`), betyg(s.om[b], n => { s.om[b] = n; s.tid = nu() }))),
+    val('Vilket bär kontot?', 'bar'), val('Vilket är utfyllnad?', 'fyll'),
+    el('div', { class: 'rad' }, el('button', { class: 'stor pa', onclick: () => { K.i++; spara(); rita() } }, 'Nästa konto →'),
+      el('button', { class: 'hoger', onclick: () => { if (K.i > 0) K.i--; else { K.fas = 1; K.i = D.K2.isolerat.length - 1 } spara(); rita() } }, '← föregående')))
+}
+
+// ---------- K3 ----------
+let valdK3 = null
+function k3() {
+  const K = S.K3; if (!K.start) K.start = nu()
+  const i_hog = new Set(K.hogar.flatMap(h => h.kort))
+  const flytta = (nr, hid) => { K.hogar.forEach(h => h.kort = h.kort.filter(x => x !== nr)); if (hid != null) K.hogar.find(h => h.id === hid).kort.push(nr); spara(); rita() }
+  const kortet = x => el('div', { class: 'kortet' + (valdK3 === x.nr ? ' vald' : ''), draggable: 'true',
+      ondragstart: e => e.dataTransfer.setData('text', x.nr), onclick: () => { valdK3 = x.nr; rita() } },
+    el('video', { src: KL(x.id) + '#t=1.5', preload: 'metadata', muted: '' }), el('span', {}, String(x.nr)))
+  const fall = (e, hid) => { e.preventDefault(); flytta(Number(e.dataTransfer.getData('text')), hid) }
+  const lösa = D.K3.filter(x => !i_hog.has(x.nr))
+  const vänster = el('div', {},
+    el('h2', {}, 'Lägg klippen i högar'), el('p', { class: 'svag' }, 'Dra ett klipp till en hög, eller välj klippet och tryck "Lägg här". Så många högar du vill. Namnge dem när du är klar, och markera den som är mest LeTrend.'),
+    el('div', { class: 'hog', ondragover: e => e.preventDefault(), ondrop: e => fall(e, null) }, el('div', { class: 'huvud' }, el('b', {}, `Osorterade (${lösa.length})`)), el('div', { class: 'kort' }, lösa.map(kortet))),
+    ...K.hogar.map(h => el('div', { class: 'hog', ondragover: e => { e.preventDefault(); e.currentTarget.classList.add('over') }, ondragleave: e => e.currentTarget.classList.remove('over'), ondrop: e => fall(e, h.id) },
+      el('div', { class: 'huvud' },
+        el('input', { type: 'text', placeholder: `Hög ${h.id}: namn`, value: h.namn, oninput: e => { h.namn = e.target.value; spara() } }),
+        el('label', {}, el('input', { type: 'radio', name: 'mest', ...(K.mest === h.id ? { checked: '' } : {}), onchange: () => { K.mest = h.id; spara() } }), ' mest LeTrend'),
+        el('label', {}, el('input', { type: 'radio', name: 'aldrig', ...(K.aldrig === h.id ? { checked: '' } : {}), onchange: () => { K.aldrig = h.id; spara() } }), ' skulle aldrig rekommendera'),
+        valdK3 != null ? el('button', { onclick: () => flytta(valdK3, h.id) }, 'Lägg här') : '',
+        !h.kort.length && K.hogar.length > 1 ? el('button', { onclick: () => { K.hogar = K.hogar.filter(x => x !== h); spara(); rita() } }, 'ta bort') : ''),
+      el('div', { class: 'kort' }, h.kort.map(nr => kortet(D.K3.find(x => x.nr === nr)))))),
+    el('button', { onclick: () => { K.hogar.push({ id: Math.max(0, ...K.hogar.map(h => h.id)) + 1, namn: '', kort: [] }); spara(); rita() } }, '+ ny hög'))
+  const v = D.K3.find(x => x.nr === valdK3)
+  const höger = el('div', { class: 'visare' }, v ? [el('h3', {}, `Klipp ${v.nr}`), video(v.id, { autoplay: '' })] : el('p', { class: 'svag' }, 'Tryck på ett klipp för att spela det här.'))
+  yta.append(el('div', { class: 'k3' }, vänster, höger))
+}
+
+document.getElementById('export').onclick = () => {
+  const blob = new Blob([JSON.stringify({ exporterad: nu(), ...S }, null, 1)], { type: 'application/json' })
+  const a = el('a', { href: URL.createObjectURL(blob), download: `kontroll-svar-${new Date().toISOString().slice(0, 16).replace(/:/g, '')}.json` }); a.click()
+}
+rita()
+</script>
+</body>
+</html>

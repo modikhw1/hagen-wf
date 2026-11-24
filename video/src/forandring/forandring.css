@@ -1,0 +1,122 @@
+/* Videoförändring. Samma papper och bläck som kundrummet. Blått = kameran, orange/lila = rollerna. */
+.fv { min-height: 100%; display: flex; flex-direction: column; }
+
+.fv-top { display: flex; align-items: center; gap: 22px; padding: 14px 24px; flex-wrap: wrap; }
+.fv-title { display: flex; align-items: baseline; gap: 12px; }
+.fv-title b { font-size: 20px; letter-spacing: -0.02em; }
+.fv-vert { font-weight: 700; color: var(--cm); background: var(--cm-soft); padding: 2px 10px; border-radius: 999px; font-size: 13px; }
+.fv-clip { display: flex; align-items: center; gap: 8px; color: var(--g3); }
+.fv-av { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--g1); color: var(--ink); font-size: 12px; }
+.fv-real { font-size: 12px; font-weight: 700; color: var(--ink); border: 1.5px solid var(--ink); border-radius: 999px; padding: 1px 9px; }
+.fv-check { margin-left: auto; font-size: 12px; color: var(--ok); }
+.fv-check.bad { color: var(--cust); font-weight: 700; }
+
+.fv-main { flex: 1; display: flex; justify-content: center; align-items: flex-start; gap: 48px; padding: 26px 24px 60px; }
+
+/* ---------- telefonen ---------- */
+.fv-player { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: none; }
+.fv-phone { position: relative; border: 2px solid var(--ink); border-radius: 30px; padding: 8px; background: var(--paper); }
+.fv-phone canvas { display: block; border-radius: 22px; }
+.fv-progress { position: absolute; top: 18px; left: 20px; right: 20px; display: flex; gap: 4px; }
+.fv-progress i { flex: 1; height: 3px; border-radius: 3px; background: rgba(31, 31, 31, .18); overflow: hidden; }
+.fv-progress b { display: block; height: 100%; background: var(--ink); }
+.fv-controls { display: flex; align-items: center; gap: 12px; }
+.fv-play { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--ink); background: var(--paper); transition: transform .15s; }
+.fv-play:hover { transform: translateY(-1px); }
+.fv-time { font-size: 12px; color: var(--g3); font-variant-numeric: tabular-nums; width: 90px; }
+
+/* ---------- tidslinjen ---------- */
+.fv-board { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+.fv-strip { position: relative; height: 222px; cursor: ew-resize; user-select: none; touch-action: none; }
+.fv-scene { position: absolute; top: 0; height: 100%; display: flex; justify-content: center; }
+.fv-thumb { position: relative; border: 2px solid var(--ink); border-radius: 12px 5px 11px 6px / 6px 11px 5px 12px; overflow: hidden; background: var(--g1); transition: border-color .2s, box-shadow .2s, transform .2s; }
+.fv-thumb img { display: block; width: 100%; height: 100%; pointer-events: none; }
+.fv-scene.now .fv-thumb { border-color: var(--cm); box-shadow: 0 0 0 3px var(--cm-soft); transform: translateY(-3px); }
+.fv-num { position: absolute; top: 5px; left: 7px; font-size: 12px; font-weight: 700; color: var(--ink); background: rgba(251, 250, 247, .85); border-radius: 6px; padding: 0 5px; }
+.fv-scene.now .fv-num { color: var(--cm); }
+.fv-in { position: absolute; left: -11px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; background: var(--paper); border-radius: 50%; display: grid; place-items: center; }
+.fv-trans { width: 18px; height: 18px; color: var(--ink); }
+.fv-trans:not(.t-klipp) { color: var(--cm); }
+.fv-head { position: absolute; top: -8px; bottom: -8px; width: 2px; margin-left: -1px; background: var(--cm); border-radius: 2px; pointer-events: none; }
+.fv-head::before { content: ''; position: absolute; top: -5px; left: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--cm); }
+
+.fv-rows { position: relative; height: 110px; }
+.fv-col { position: absolute; top: 0; padding: 0 6px; display: flex; flex-direction: column; gap: 5px; border-left: 1px dashed var(--g2); }
+.fv-col:first-child { border-left: 0; }
+.fv-text { font-size: 12px; font-weight: 700; color: var(--g3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fv-col.now .fv-text { color: var(--ink); }
+.fv-row { display: flex; flex-wrap: wrap; gap: 3px; }
+.fv-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; line-height: 1; padding: 3px 7px; border-radius: 999px; background: var(--g1); color: var(--ink); white-space: nowrap; }
+.fv-chip i { width: 7px; height: 7px; border-radius: 50%; display: block; }
+.fv-chip.r-marco i { background: #c98a3c; }
+.fv-chip.r-nonna i { background: #7c4d6b; }
+.fv-chip.cam { background: var(--cm-soft); color: var(--cm); }
+.fv-chip.cam.op { background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--cm-soft); }
+
+.fv-manus { margin-top: 6px; }
+.fv-manus-btn { font-size: 12px; color: var(--g3); }
+.fv-manus-btn:hover { color: var(--ink); }
+.fv-manus pre { margin: 8px 0 0; max-width: 780px; max-height: 300px; overflow: auto; font-size: 11px; line-height: 1.45; background: var(--paper); border: 1px solid var(--g2); border-radius: 10px; padding: 10px 12px; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; }
+
+/* ---------- reglaget ---------- */
+.fv-thumb img { position: absolute; inset: 0; }
+.fv-badge { position: absolute; top: 5px; right: 6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; box-shadow: 0 0 0 2px var(--paper); }
+.fv-badge.byt { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--cm); }
+.fv-slider { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+.fv-end { flex: none; width: 108px; font-size: 12px; color: var(--g3); line-height: 1.2; }
+.fv-end:first-child { text-align: right; }
+.fv-track { position: relative; flex: 1; height: 56px; padding-top: 18px; }
+.fv-track input { width: 100%; margin: 0; accent-color: var(--cm); cursor: pointer; height: 20px; }
+.fv-orig { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; color: var(--g3); white-space: nowrap; }
+.fv-orig::after { content: ''; position: absolute; left: 50%; top: 15px; height: 8px; border-left: 2px dashed var(--g3); }
+.fv-mean { position: absolute; top: 15px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--paper); border: 2.5px solid var(--ink); pointer-events: none; }
+.fv-ticks { position: relative; height: 20px; margin: 2px 8px 0; }
+.fv-ticks button { position: absolute; transform: translateX(-50%); width: 22px; height: 20px; font-size: 12px; color: var(--g3); font-weight: 700; border-radius: 6px; }
+.fv-ticks button.o { text-decoration: underline dashed; text-underline-offset: 3px; }
+.fv-ticks button.on { background: var(--cm); color: #fff; text-decoration: none; }
+.fv-tol { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--g3); padding-left: 122px; }
+.fv-tol input { width: 120px; accent-color: var(--ink); }
+.fv-tol b { color: var(--ink); width: 34px; }
+.fv-sum { color: var(--ink); }
+
+/* ---------- mätning per scen ---------- */
+.fv-rows { height: 150px; }
+.fv-meas { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.fv-spark { display: block; overflow: visible; }
+.fv-spark path { fill: none; stroke-width: 1.6; stroke-linejoin: round; }
+.fv-spark .cam { stroke: var(--cm); }
+.fv-spark .mot { stroke: var(--ink); }
+.fv-v { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.fv-b { font-size: 11px; color: var(--g3); }
+.fv-b.byt { color: var(--cm); font-weight: 700; }
+
+/* ---------- uttrycksrummet ---------- */
+.fv-info { font-size: 12px; color: var(--g3); }
+.fv-fel { color: var(--cust); font-weight: 700; font-size: 13px; }
+.fv-besk { font-size: 11px; color: var(--g3); line-height: 1.25; flex-basis: 100%; }
+.fv-jev { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink); margin-left: 8px; }
+.fv-jev.av { color: var(--g3); }
+.fv-rows { height: 190px; }
+
+/* ---------- kedjan: originalets profil, målet och valen per scen ---------- */
+.fv-kedja { position: relative; margin: 2px 0 6px; }
+.fv-kedja svg { display: block; overflow: visible; }
+.fv-kedja .grid { stroke: var(--g3); stroke-opacity: .18; }
+.fv-kedja .orig { fill: none; stroke: var(--g3); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.fv-kedja .mal { fill: none; stroke: var(--cm); stroke-width: 2; stroke-opacity: .55; }
+.fv-kedja .val { fill: var(--ink); stroke: var(--paper); stroke-width: 2; }
+.fv-kedja .val.byt { fill: var(--cm); }
+.fv-kedja .avv { stroke: var(--cm); stroke-width: 1.5; stroke-opacity: .5; }
+.fv-kedja-leg { display: flex; gap: 14px; font-size: 11px; color: var(--g3); margin-top: 2px; }
+.fv-kedja-leg i { display: inline-block; width: 16px; height: 0; vertical-align: middle; margin-right: 5px; border-top: 2px solid var(--cm); opacity: .6; }
+.fv-kedja-leg i.o { border-top: 1.5px dashed var(--g3); opacity: 1; }
+.fv-kedja-leg i.v { width: 8px; height: 8px; border: 0; border-radius: 50%; background: var(--ink); opacity: 1; }
+
+.fv-forkl { display: block; font-size: 11px; color: var(--ink); background: rgba(0,0,0,.04); border-radius: 6px; padding: 3px 6px; margin-top: 3px; line-height: 1.35; }
+
+/* 2D-reglaget */
+.fv-rader2d { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; max-width: 780px; }
+.fv-rad2d { padding: 8px 10px; border-radius: 10px; background: rgba(0,0,0,.025); }
+.fv-rad2d.now { outline: 2px solid var(--cm); }
+
+.fv-spann { font-size: 11px; color: var(--g3); margin-left: 6px; }

@@ -1,0 +1,77 @@
+/* Kalibrering. Papper och bläck; blått = modellen/kameran, grönt = klart, orange = A/B-val. */
+.kal { min-height: 100%; display: flex; flex-direction: column; }
+.kal .dim { color: var(--g3); font-size: 12px; }
+.kal .pad { padding: 24px; }
+.kal-top { display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--g2); background: var(--paper); flex-wrap: wrap; }
+.kal-top > b { font-size: 20px; letter-spacing: -0.02em; }
+.kal-vert { display: flex; gap: 6px; flex-wrap: wrap; }
+.kal-vert button { font-size: 13px; border: 1.5px solid var(--g2); border-radius: 999px; padding: 4px 12px; background: var(--paper); display: inline-flex; gap: 6px; align-items: center; }
+.kal-vert button.on { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.kal-vert button.last { color: var(--g3); }
+.kal-vert .las { font-size: 11px; }
+.kal-vert .bricka { font-size: 11px; background: var(--g1); color: var(--ink); border-radius: 999px; padding: 0 6px; }
+.kal-vert .bricka.klar { background: var(--ok); color: #fff; }
+.kal-lank { margin-left: auto; font-size: 13px; color: var(--g3); }
+
+.kal-main { flex: 1; display: flex; min-height: 0; }
+.kal-status { width: 300px; flex: none; padding: 16px 18px; border-right: 1px solid var(--g2); display: flex; flex-direction: column; gap: 12px; }
+.kal-status h3 { margin: 0; font-size: 17px; }
+.kal-status p { margin: 0; }
+.kal-andar { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; color: var(--g3); border-top: 1px dashed var(--g2); padding-top: 6px; }
+.kal-andar span:last-child { text-align: right; }
+.kal-matare { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+.kal-matare .rad { display: flex; justify-content: space-between; gap: 8px; }
+.kal-matare i { display: block; height: 6px; border-radius: 6px; background: var(--g1); overflow: hidden; }
+.kal-matare i b { display: block; height: 100%; background: var(--cm); }
+.kal-matare i b.klar { background: var(--ok); }
+.kal-tal { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 12px; margin: 0; }
+.kal-tal dt { color: var(--g3); }
+.kal-tal dd { margin: 0; font-variant-numeric: tabular-nums; }
+.kal-grind { font-size: 12px; padding: 8px 10px; border-radius: 8px; background: var(--g1); }
+.kal-grind.klar { background: #e3f5ec; color: var(--ok); font-weight: 700; }
+.kal-flikar { display: flex; gap: 4px; margin-top: auto; }
+.kal-flikar button { flex: 1; font-size: 13px; padding: 6px 0; border-radius: 8px; border: 1.5px solid var(--g2); background: var(--paper); }
+.kal-flikar button.on { border-color: var(--ink); font-weight: 700; }
+
+.kal-yta { flex: 1; padding: 16px 22px; min-width: 0; overflow: auto; }
+.kal-fraga { font-size: 16px; font-weight: 700; margin: 0 0 12px; max-width: 760px; }
+.kal-par { display: flex; gap: 18px; align-items: flex-start; }
+.kal-spelare { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.kal-spelare .skarm { position: relative; width: 270px; height: 480px; border-radius: 14px; overflow: hidden; background: #111; border: 3px solid transparent; transition: border-color .15s; }
+.kal-spelare.vald .skarm { border-color: var(--cust); }
+.kal-spelare video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.kal-spelare .etikett { position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; border-radius: 50%; background: var(--paper); color: var(--ink); font-weight: 700; display: grid; place-items: center; }
+.kal-spelare figcaption { font-size: 12px; }
+.kal-spelare figcaption a { color: var(--ink); }
+.kal-knappar { display: flex; flex-direction: column; gap: 8px; padding-top: 140px; width: 170px; }
+.kal-knappar button { font-size: 14px; padding: 10px; border-radius: 10px; border: 1.5px solid var(--ink); background: var(--paper); }
+.kal-knappar button:hover { background: var(--ink); color: var(--paper); }
+.kal-knappar button.hoppa { border-color: var(--g2); color: var(--g3); font-size: 12px; padding: 6px; }
+
+.kal-rutnat { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 4px; margin-top: 10px; }
+.kal-ruta { position: relative; display: block; aspect-ratio: 9 / 16; border-radius: 6px; overflow: hidden; background: var(--g1); }
+.kal-ruta img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.kal-ruta .steg { position: absolute; bottom: 3px; right: 3px; font-size: 10px; font-weight: 700; background: rgba(251, 250, 247, .9); border-radius: 4px; padding: 0 4px; color: var(--ink); }
+
+.kal-modell table { border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+.kal-modell td { padding: 3px 8px; }
+.kal-modell td.namn { font-family: ui-monospace, Consolas, monospace; }
+.kal-modell td.tal { text-align: right; font-variant-numeric: tabular-nums; }
+.kal-modell td.stapel { position: relative; width: 260px; height: 16px; }
+.kal-modell .stapel .noll { position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px solid var(--g2); }
+.kal-modell .stapel i { position: absolute; top: 3px; height: 10px; border-radius: 3px; }
+.kal-modell .stapel i.start { background: var(--cm-soft); top: 1px; height: 14px; }
+.kal-modell .stapel i.tranad { background: var(--cm); }
+
+.kal-jev { display: flex; flex-direction: column; gap: 12px; max-width: 760px; }
+.kal-info { background: var(--cust-soft); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+.kal-kriterier { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--g3); }
+.kal-kriterier em { color: var(--cust); font-style: normal; }
+.kal-kriterier textarea { font: inherit; font-size: 13px; color: var(--ink); border: 1px solid var(--g2); border-radius: 8px; padding: 8px 10px; background: var(--paper); }
+.kal-jev-knappar { display: flex; gap: 8px; flex-wrap: wrap; }
+.kal-jev-knappar button { font-size: 13px; border: 1.5px solid var(--ink); border-radius: 999px; padding: 5px 12px; background: var(--paper); }
+.kal-jev-knappar button:disabled { border-color: var(--g2); color: var(--g3); }
+.kal-res { font-size: 14px; }
+.kal-jev pre { white-space: pre-wrap; font-size: 12px; background: var(--g1); padding: 8px 10px; border-radius: 8px; }
+.kal .fel { color: var(--cust); font-weight: 700; }
+.kal-komb { padding: 24px 32px; max-width: 720px; }
