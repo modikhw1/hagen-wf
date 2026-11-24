@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "regibordet",
+      "runtimeExecutable": "scen/.venv/Scripts/python.exe",
+      "runtimeArgs": ["-X", "utf8", "byggsten/hand/bord.py", "5197"],
+      "port": 5197
+    }
+  ]
+}
