@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ägarpanelen</title>
+<style>
+  :root { --bg:#16181c; --kort:#22252b; --text:#eceef1; --dim:#9aa0a8; --acc:#5aa2ff; --ok:#3fb27f; --mid:#d6a640; --no:#e0605e; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display:flex; align-items:center; gap:16px; padding:10px 20px; border-bottom:1px solid #2c3036; }
+  header a.hem { color:var(--text); text-decoration:none; font-weight:700; cursor:pointer; }
+  header .steg { color:var(--dim); font-variant-numeric:tabular-nums; }
+  header .bar { flex:1; height:6px; background:#2c3036; border-radius:3px; overflow:hidden; }
+  header .bar i { display:block; height:100%; background:var(--acc); width:0; transition:width .2s; }
+  main { max-width:1500px; margin:0 auto; padding:14px 20px 44px; }
+  .pass-grid { display:grid; gap:12px; max-width:860px; margin:24px auto; }
+  .pass-kort { background:var(--kort); border:1px solid #2e333c; border-radius:10px; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .pass-kort h2 { margin:0 0 4px; font-size:19px; }
+  .pass-kort .meta { color:var(--dim); font-size:13px; }
+  .mening { font-size:21px; font-weight:600; margin:4px 0 12px; }
+  .mening small { display:block; font-size:13px; font-weight:400; color:var(--dim); margin-bottom:2px; text-transform:uppercase; letter-spacing:.06em; }
+  .rad { display:flex; gap:14px; justify-content:center; align-items:flex-start; flex-wrap:wrap; }
+  .ruta { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .ruta .etikett { color:var(--dim); font-size:14px; }
+  .ruta video, .ruta img.st { height:min(54vh, 620px); aspect-ratio:9/16; background:#000; border-radius:6px; object-fit:contain; }
+  .remsor { display:flex; flex-direction:column; gap:10px; align-items:center; }
+  .remsor img { width:min(100%, 1200px); border-radius:6px; }
+  .styr { display:flex; gap:8px; justify-content:center; margin:10px 0 4px; flex-wrap:wrap; align-items:center; color:var(--dim); font-size:14px; }
+  button { font:inherit; border:1px solid #3a3f47; background:var(--kort); color:var(--text); padding:7px 14px; border-radius:6px; cursor:pointer; }
+  button:hover { border-color:var(--acc); }
+  button.vald { background:var(--acc); border-color:var(--acc); color:#08111f; font-weight:600; }
+  button:disabled { opacity:.4; cursor:default; }
+  .fragor { background:var(--kort); border-radius:8px; padding:14px 18px; margin-top:14px; display:grid; gap:12px; }
+  .fraga { display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  .fraga .q { flex:1 1 400px; }
+  .val { display:flex; gap:6px; flex-wrap:wrap; }
+  .val button { min-width:78px; }
+  .val button.vald[data-v="ja"], .val button.vald[data-v="snabbare"], .val button.vald[data-v="narmare"] { background:var(--ok); border-color:var(--ok); }
+  .val button.vald[data-v="delvis"], .val button.vald[data-v="osaker"], .val button.vald[data-v="lika"] { background:var(--mid); border-color:var(--mid); }
+  .val button.vald[data-v="nej"], .val button.vald[data-v="langsammare"], .val button.vald[data-v="langre_ifran"] { background:var(--no); border-color:var(--no); }
+  textarea { width:100%; min-height:46px; background:#1b1d22; color:var(--text); border:1px solid #3a3f47; border-radius:6px; padding:8px; font:inherit; }
+  .nav { display:flex; justify-content:space-between; align-items:center; margin-top:12px; gap:12px; }
+  .intro { max-width:760px; margin:32px auto; background:var(--kort); padding:24px 28px; border-radius:10px; }
+  .intro h1 { margin-top:0; font-size:24px; }
+  .status { color:var(--dim); font-size:13px; text-align:right; min-height:18px; }
+</style>
+</head>
+<body>
+<header>
+  <a class="hem" id="hem">Ägarpanelen</a>
+  <span class="steg" id="steg"></span>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+<main id="main"></main>
+<script>
+(() => {
+  const main = document.getElementById('main');
+  const session = 's_' + Math.random().toString(16).slice(2, 10) + Date.now().toString(16).slice(-4);
+  let aktivPass = null, passMeta = null, par = [], i = -1, svar = {}, start = 0, synkTimer = null;
+  let audioCtx = null, gainNode = null, koppladeVideo = new WeakSet();
+
+  const el = (tag, attrs = {}, ...barn) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'class') e.className = v;
+      else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v);
+    }
+    for (const b of barn) e.append(b);
+    return e;
+  };
+
+  function stoppa() {
+    if (synkTimer) clearInterval(synkTimer);
+    synkTimer = null;
+    main.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('src'); v.load(); });
+  }
+
+  function sattGainDb(db) {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+    gainNode.gain.value = Math.pow(10, db / 20);
+  }
+
+  function kopplaLjudGain(v) {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = 1.0;
+        gainNode.connect(audioCtx.destination);
+      }
+      if (!koppladeVideo.has(v)) {
+        const src = audioCtx.createMediaElementSource(v);
+        src.connect(gainNode);
+        koppladeVideo.add(v);
+      }
+    } catch (_) {}
+  }
+
+  async function visaHem() {
+    stoppa();
+    aktivPass = null;
+    history.replaceState(null, '', '/');
+    document.getElementById('steg').textContent = 'Stående panel';
+    document.getElementById('bar').style.width = '0%';
+    const r = await fetch('/api/pass');
+    const d = await r.json();
+    const lista = d.pass || [];
+    if (!lista.length) {
+      main.replaceChildren(el('div', { class: 'intro' },
+        el('h1', {}, 'Ägarpanelen är uppe'),
+        el('p', {}, 'Inga bedömningspass är publicerade ännu. Publicera ett pass via API eller infra/panel/publicera.py.')));
+      return;
+    }
+    const kort = lista.map(p => el('div', { class: 'pass-kort' },
+      el('div', {},
+        el('h2', {}, p.titel),
+        el('div', { class: 'meta' }, `${p.besvarade_par} / ${p.antal_par} par besvarade · läge: ${p.lage} · ${p.skapad || ''}`),
+        p.beskrivning ? el('div', { class: 'meta' }, p.beskrivning) : ''),
+      el('button', { class: 'vald', onclick: () => oppnaPass(p.pass_id) },
+        p.besvarade_par > 0 && p.besvarade_par < p.antal_par ? 'Fortsätt pass' : 'Öppna pass')));
+    main.replaceChildren(el('div', { class: 'pass-grid' }, ...kort));
+  }
+
+  async function oppnaPass(passId) {
+    stoppa();
+    const r = await fetch(`/api/pass/${passId}/par`);
+    if (!r.ok) { main.textContent = 'Kunde inte läsa passet.'; return; }
+    const d = await r.json();
+    aktivPass = passId;
+    passMeta = d.meta || {};
+    par = d.par || [];
+    svar = d.sparade_svar || {};
+    history.replaceState(null, '', `/pass/${passId}`);
+    intro();
+  }
+
+  function intro() {
+    stoppa();
+    const besv = Object.keys(svar).length;
+    const forstaObesvarade = Math.max(0, par.findIndex(p => !svar[p.id]));
+    document.getElementById('steg').textContent = `${besv} / ${par.length}`;
+    document.getElementById('bar').style.width = (100 * besv / Math.max(par.length, 1)) + '%';
+    main.replaceChildren(el('div', { class: 'intro' },
+      el('h1', {}, passMeta.titel || 'Blind bedömning'),
+      passMeta.beskrivning ? el('p', {}, passMeta.beskrivning) : '',
+      el('p', {}, `${par.length} blinda par. Ordningen är slumpad. Inga namn på system, klipp eller varianter visas. Dina svar och kommentarer sparas ordagrant och skrivs aldrig över.`),
+      el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' },
+        el('button', { class: 'vald', onclick: () => visa(besv > 0 && besv < par.length ? forstaObesvarade : 0) },
+          besv > 0 && besv < par.length ? `Fortsätt på par ${forstaObesvarade + 1}` : 'Börja'),
+        el('button', { onclick: visaHem }, 'Alla pass'))));
+  }
+
+  function medium(m, etikett) {
+    if (m.typ === 'remsa') return el('div', { class: 'ruta' }, el('span', { class: 'etikett' }, etikett), el('img', { src: m.url, alt: etikett }));
+    const e = m.typ === 'video'
+      ? el('video', { src: m.url, muted: '', loop: '', playsinline: '', preload: 'auto' })
+      : el('img', { class: 'st', src: m.url, alt: etikett });
+    if (m.typ === 'video') e.muted = true;
+    return el('div', { class: 'ruta' }, el('span', { class: 'etikett' }, etikett), e);
+  }
+
+  function knappar(val, aktuelltVal, sattTill) {
+    const g = el('div', { class: 'val' });
+    for (const [kod, text] of val) {
+      const b = el('button', { 'data-v': kod, onclick: () => { sattTill(kod); g.querySelectorAll('button').forEach(x => x.classList.toggle('vald', x === b)); kollaNasta(); } }, text);
+      if (aktuelltVal === kod) b.classList.add('vald');
+      g.append(b);
+    }
+    return g;
+  }
+
+  let nastaKnapp = null, aktuellt = null;
+  function kollaNasta() {
+    const p = par[i];
+    const lage = p.lage || passMeta.lage || 'k2';
+    let klar = false;
+    if (lage === 'invarians') {
+      klar = Boolean(aktuellt.samma_handling && aktuellt.samma_tempo && aktuellt.samma_energi);
+    } else if (lage === 'par_ingrepp') {
+      klar = Boolean(aktuellt.riktning_a_tempo && aktuellt.riktning_b_tempo && aktuellt.omsesidig_tempo && aktuellt.avsikt_a && aktuellt.avsikt_b);
+    } else {
+      klar = p.sektion === 'ett_till_ett' ? Boolean(aktuellt.samma_scen) : Boolean(aktuellt.a && aktuellt.b);
+    }
+    nastaKnapp.disabled = !klar;
+  }
+
+  function visa(n) {
+    stoppa();
+    i = n;
+    if (i >= par.length) return slut();
+    const p = par[i];
+    const lage = p.lage || passMeta.lage || 'k2';
+    start = performance.now();
+    aktuellt = Object.assign({}, svar[p.id] || {});
+    document.getElementById('steg').textContent = `${i + 1} / ${par.length}`;
+    document.getElementById('bar').style.width = (100 * i / par.length) + '%';
+
+    const kids = [];
+    if (p.mening) kids.push(el('div', { class: 'mening' }, el('small', {}, p.rubrik || 'Uppgift'), p.mening));
+    else if (p.sektion === 'ett_till_ett') kids.push(el('div', { class: 'mening' }, el('small', {}, 'Ingen ändring'), 'Är detta samma scen?'));
+    else kids.push(el('div', { class: 'mening' }, el('small', {}, 'Blind jämförelse'), 'Jämför vänster och höger'));
+
+    const M = p.media || {};
+    const etiketter = p.etiketter || {};
+    const rutor = [];
+    for (const [k, defLabel] of [['original', 'Vänster (referens)'], ['fore', 'Utan ändring'], ['efter', 'Höger (kandidat)'], ['a', 'Klipp A'], ['b', 'Klipp B']]) {
+      if (M[k]) rutor.push(medium(M[k], etiketter[k] || defLabel));
+    }
+    const arRemsa = Object.values(M).some(x => x && x.typ === 'remsa');
+    kids.push(arRemsa ? el('div', { class: 'remsor' }, ...rutor) : el('div', { class: 'rad' }, ...rutor));
+
+    const vlista = rutor.map(r => r.querySelector('video')).filter(Boolean);
+    if (vlista.length) {
+      const k = el('div', { class: 'styr' });
+      const namn = rutor.filter(r => r.querySelector('video')).map(r => r.querySelector('.etikett').textContent);
+      k.append('Ljud från: ');
+      const ljudKnappar = [];
+      const sattLjud = (idx) => {
+        vlista.forEach((v, j) => { v.muted = j !== idx; });
+        ljudKnappar.forEach((b, j) => b.classList.toggle('vald', j === idx + 1));
+        if (idx >= 0) aktuellt.ljud_hort = true;
+      };
+      const av = el('button', { onclick: () => sattLjud(-1) }, 'av'); av.classList.add('vald'); ljudKnappar.push(av); k.append(av);
+      vlista.forEach((v, j) => { const b = el('button', { onclick: () => sattLjud(j) }, namn[j] || `video ${j + 1}`); ljudKnappar.push(b); k.append(b); });
+      if (p.tillat_gain_komp) {
+        k.append(el('span', { style: 'width:10px' }));
+        k.append('Uppspelningskompensation: ');
+        const gKnappar = [];
+        for (const db of [0, 6, 12]) {
+          const gb = el('button', { onclick: () => {
+            vlista.forEach(kopplaLjudGain);
+            sattGainDb(db);
+            aktuellt.gain_komp_db = db;
+            gKnappar.forEach(x => x.classList.toggle('vald', x === gb));
+          } }, `+${db} dB`);
+          if (db === 0) gb.classList.add('vald');
+          gKnappar.push(gb); k.append(gb);
+        }
+      }
+      k.append(el('span', { style: 'width:12px' }));
+      k.append(el('button', { onclick: () => { vlista.forEach(v => { v.currentTime = 0; v.play(); }); } }, 'Från början'));
+      k.append(el('button', { onclick: () => { const sp = !vlista[0].paused; vlista.forEach(v => sp ? v.pause() : v.play()); } }, 'Paus / spela'));
+      kids.push(k);
+      vlista.forEach(v => v.play().catch(() => {}));
+      if (p.synk !== false && vlista.length > 1) {
+        synkTimer = setInterval(() => {
+          const ref = vlista[0];
+          for (const v of vlista.slice(1)) {
+            if (Math.abs(v.currentTime - ref.currentTime) > 0.2 && v.duration && ref.currentTime < v.duration) v.currentTime = ref.currentTime;
+            if (ref.paused !== v.paused) ref.paused ? v.pause() : v.play().catch(() => {});
+          }
+        }, 250);
+      }
+    }
+
+    const fr = el('div', { class: 'fragor' });
+    if (lage === 'invarians') {
+      const yn = [['ja', 'ja'], ['nej', 'nej'], ['osaker', 'osäker']];
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, '1) Samma handling, ord och poäng läsbar?'),
+        knappar(yn, aktuellt.samma_handling, v => aktuellt.samma_handling = v)));
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, '2) Samma framförandetempo?'),
+        knappar(yn, aktuellt.samma_tempo, v => aktuellt.samma_tempo = v)));
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, '3) Samma upplevda energi?'),
+        knappar(yn, aktuellt.samma_energi, v => aktuellt.samma_energi = v)));
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, '4) Går höger snabbare än vänster? (frivillig tempokontroll)'),
+        knappar([['snabbare', 'snabbare'], ['lika', 'lika'], ['langsammare', 'långsammare'], ['osaker', 'osäker']],
+          aktuellt.snabbare, v => aktuellt.snabbare = v)));
+    } else if (lage === 'par_ingrepp') {
+      const rVal = [['snabbare', 'snabbare'], ['lika', 'ungefär lika'], ['langsammare', 'långsammare'], ['osaker', 'osäker']];
+      const yn = [['ja', 'ja'], ['nej', 'nej'], ['osaker', 'osäker']];
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, '1a) Tempo för A jämfört med originalet?'),
+        knappar(rVal, aktuellt.riktning_a_tempo, v => aktuellt.riktning_a_tempo = v)));
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, '1b) Tempo för B jämfört med originalet?'),
+        knappar(rVal, aktuellt.riktning_b_tempo, v => aktuellt.riktning_b_tempo = v)));
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, '2) Har tempo i A och B kommit närmare eller längre ifrån varandra?'),
+        knappar([['narmare', 'närmare'], ['lika', 'oförändrat'], ['langre_ifran', 'längre ifrån'], ['osaker', 'osäker']],
+          aktuellt.omsesidig_tempo, v => aktuellt.omsesidig_tempo = v)));
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, '3a) Avsikt och särart kvar i A?'),
+        knappar(yn, aktuellt.avsikt_a, v => aktuellt.avsikt_a = v)));
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, '3b) Avsikt och särart kvar i B?'),
+        knappar(yn, aktuellt.avsikt_b, v => aktuellt.avsikt_b = v)));
+    } else if (p.sektion === 'ett_till_ett') {
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, 'Är detta samma scen (rum, personer, kamera)?'),
+        knappar([['ja', 'ja'], ['delvis', 'delvis'], ['nej', 'nej']], aktuellt.samma_scen, v => aktuellt.samma_scen = v)));
+    } else {
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, 'a) Syns det som meningen bad om?'),
+        knappar([['ja', 'ja'], ['delvis', 'delvis'], ['nej', 'nej']], aktuellt.a, v => aktuellt.a = v)));
+      fr.append(el('div', { class: 'fraga' }, el('div', { class: 'q' }, 'b) Är det fortfarande samma klipp där meningen inte ändrade något?'),
+        knappar([['ja', 'ja'], ['delvis', 'delvis'], ['nej', 'nej']], aktuellt.b, v => aktuellt.b = v)));
+    }
+
+    const kom = el('textarea', { placeholder: 'Kommentar (sparas ordagrant, frivilligt)' });
+    kom.value = aktuellt.kommentar || '';
+    kom.addEventListener('input', () => aktuellt.kommentar = kom.value);
+    fr.append(kom);
+    kids.push(fr);
+
+    const status = el('div', { class: 'status', id: 'status' });
+    nastaKnapp = el('button', { class: 'vald', onclick: () => skicka(p) }, i + 1 === par.length ? 'Spara och avsluta' : 'Spara och nästa');
+    kids.push(el('div', { class: 'nav' },
+      el('button', { onclick: () => (i > 0 ? visa(i - 1) : intro()) }, 'Tillbaka'), status, nastaKnapp));
+    main.replaceChildren(...kids);
+    kollaNasta();
+    window.scrollTo(0, 0);
+  }
+
+  async function skicka(p) {
+    nastaKnapp.disabled = true;
+    const post = Object.assign({}, aktuellt, { par: p.id, nr: p.nr || (i + 1), session, sekunder: Math.round((performance.now() - start) / 100) / 10 });
+    try {
+      const r = await fetch(`/api/pass/${aktivPass}/svar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(post) });
+      if (!r.ok) throw new Error(r.status);
+      svar[p.id] = aktuellt;
+      visa(i + 1);
+    } catch (e) {
+      document.getElementById('status').textContent = 'Kunde inte spara (' + e.message + ').';
+      nastaKnapp.disabled = false;
+    }
+  }
+
+  function slut() {
+    stoppa();
+    document.getElementById('steg').textContent = `${par.length} / ${par.length}`;
+    document.getElementById('bar').style.width = '100%';
+    main.replaceChildren(el('div', { class: 'intro' },
+      el('h1', {}, 'Klart, tack'),
+      el('p', {}, `${Object.keys(svar).length} av ${par.length} svar är sparade (skrivs aldrig över).`),
+      el('div', { style: 'display:flex;gap:10px' },
+        el('button', { onclick: () => visa(0) }, 'Gå igenom igen'),
+        el('button', { class: 'vald', onclick: visaHem }, 'Tillbaka till alla pass'))));
+  }
+
+  document.getElementById('hem').addEventListener('click', visaHem);
+  const m = location.pathname.match(/^\/pass\/([a-z0-9][a-z0-9_-]{1,63})\/?$/);
+  if (m) oppnaPass(m[1]); else visaHem();
+})();
+</script>
+</body>
+</html>
