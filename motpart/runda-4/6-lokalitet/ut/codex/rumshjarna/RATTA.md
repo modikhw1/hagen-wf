@@ -1,0 +1,16 @@
+Alla 12 punkter är rättade. Endast de fem tillåtna filerna ändrades. Syntaxkontroll och 14 syntetiska prov passerar i temporär katalog utanför `ut/`. Inga klipp eller riktiga Modal-anrop kördes; jag har inte ändrat `ut/`.
+
+1. [lokalitet.py:786](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/lokalitet.py:786): ×1,15 gäller bara `person0`. Provat med lika djupt rum i ringen.
+2. [lokalitet.py:1112](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/lokalitet.py:1112): L9b:s orundade rotation styr fyllnaden; över 0,5° och okänd rotation utesluts. Återprojicering kommenterad som nästa steg. Gränsfall provade.
+3. [lokalitet.py:828](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/lokalitet.py:828): Trianglar följer antagen före genererad proveniens. Alla trianglar i ett blandat syntetiskt nät kontrollerade.
+4. [lokalitet.py:726](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/lokalitet.py:726): Skalgrinden jämför råa MoGe-djup; `kz` behålls för tillämpningen. Provat med `kz=0,4` och skalgränserna.
+5. [hjarna.py:35](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/rumshjarna/hjarna.py:35), [hjarna.py:55](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/rumshjarna/hjarna.py:55): Rutmetadata och cachekontroll av prompt, referenser och innehållshashar; gamla bilder arkiveras. Ändrade indata och cacheträff provade.
+6. [hjarna.py:106](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/rumshjarna/hjarna.py:106): Reservvalet filtrerar otillåtna ankarkandidater. Oberoende 4,0 px väljs framför ankare 2,5 px.
+7. [lokalitet.py:733](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/lokalitet.py:733), [rest.py:9](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/rumshjarna/rest.py:9): Egen fullupplöst DIS-mätning med grindarnas synlighetsmask. Maskningen och en translation på 5 px provade.
+8. [likhet.py:24](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/rumshjarna/likhet.py:24): Betingning läses från vald källa i `fyllnad.json`. Oberoende, direkta och gemensamma ankare provade.
+9. [lokalitet.py:767](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/lokalitet.py:767): Kantborttagning kräver även djupsprång i originalet. Plan yta bevaras trots felaktig hypotes.
+10. [hjarna.py:161](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/rumshjarna/hjarna.py:161), [lokalitet.py:696](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/lokalitet.py:696): Verkliga bildmått skickas vidare; fel former avvisas med orsak. Felaktiga djup-, mask- och bildformer provade.
+11. [hjarna.py:92](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/rumshjarna/hjarna.py:92): Giltighetsmask warpas, sparas och utesluter ogiltiga pixlar från grindar och genererad fyllnad. Förskjuten bildkant provad.
+12. [hjarna.py:118](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/rumshjarna/hjarna.py:118), [modal_obs.py:159](C:/Users/praiseworthy/Desktop/hagen-wf/motpart/runda-4/6-lokalitet/modal_obs.py:159): Gamla observationer ersätts efter komplett validering. Returkod, saknade, gamla och felformade resultat provade; gamla filer bevarades.
+
+KLAR

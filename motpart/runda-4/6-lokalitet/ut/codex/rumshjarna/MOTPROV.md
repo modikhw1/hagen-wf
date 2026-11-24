@@ -1,0 +1,25 @@
+1. **fel — `lokalitet.py:733`**: Djupkravet för personkärnan används även i den vidgade ringen. Om ringen innehåller vägg på 2 m och en annan ruta observerar samma vägg på 2 m, underkänns observationen eftersom den inte ligger bakom 2,3 m. Hypotesen tillåts sedan fylla där. Motprovet gav 28 genererade celler trots tillgängliga observationer. Begränsa 15-procentskravet till `person0`.
+
+2. **fel — `lokalitet.py:735`**: Observationer och hypotes jämförs på samma pixelindex även när kameran roterat mellan nyckelrutorna; `main` beräknar uttryckligen sådana rotationer. Vid exempelvis fem graders panorering avser `Z2[y,x]` och `Zg0[y,x]` olika delar av rummet. Återprojicera observationerna till mittrutans kamera och jämför djup där, med motsvarande källkoordinater för texturen.
+
+3. **fel — `lokalitet.py:775`**: Majoritetsinstansen kan ge en triangel med en genererad `-4`-punkt och två observerade väggpunkter väggens tilltro och originaltextur. Den genererade geometrin visas då även när genererade bitar ska döljas, och kan textureras med personen. Motprovet gav 84 genererade hörn i den observerade väggbiten. Dela trianglar vid proveniensgränser eller låt genererad/antagen tilltro följa varje triangel som innehåller sådana hörn.
+
+4. **fel — `lokalitet.py:1133`**: Skalgrinden kontrollerar `kz`, som även innehåller kroppens metriska skala och originaldjupets brännviddsomräkning. Med identiska MoGe-djup och kroppsskala 0,4 blir `dfel=0`, men `kz=0,4` avvisas. Normalisera bort dessa kända faktorer innan modellernas relativa skala bedöms; kontrollera eventuell affin bildskala separat.
+
+5. **fel — `rumshjarna/hjarna.py:44`**: Bildcachen godtas enbart eftersom målfilen finns. Ändrad prompt, originalruta eller ankarbild återanvänder därför föregående resultat; sparad `prompt_sha` kontrolleras aldrig. Även `ruta_png()` på rad 36 återanvänder samma fil när tagningens mittruta ändras. Nyckla cachen med videokälla, rutnummer, prompt och innehållshashar för samtliga referensbilder, och ogiltigförklara beroende resultat.
+
+6. **fel — `rumshjarna/hjarna.py:156`**: Reservgrenen kringgår ankarkandidatens tvåpixelsgräns. Med oberoende kandidat på 4 px och ankarkandidat på 2,5 px misslyckas villkoret på rad 153, men `min(bud, key=med)` väljer ändå ankarkandidaten. Den kan sedan passera lokalitetens trepixelsgräns. Filtrera bort otillåtna ankarkandidater före reservvalet.
+
+7. **fel — `rumshjarna/hjarna.py:141`**: Synlighetsmasken för DIS utesluter personer men inte överlagrad text, trots kontraktet i `rest.py`. Text som V2 korrekt tar bort räknas därför som förskjutet rumsinnehåll. Gradienturvalet på `rest.py:20` kan dessutom prioritera bokstavskanterna och avvisa en korrekt bild. Uteslut samma överläggsmask som används i lokalitetens djup- och kantgrind.
+
+8. **fel — `rumshjarna/likhet.py:49`**: `betingat()` använder planerat ankare och genereringsbehov i stället för den faktiskt valda kandidatens beroenden. Två oberoende valda bilder i samma L7-grupp märks därför som betingade, och en legitim utseendekonflikt undertrycks. Läs proveniens från `fyllnad.json` och följ den valda bildens verkliga referensberoenden.
+
+9. **risk — `lokalitet.py:719`**: En lokalt felaktig hypotes kan undanröja verkliga observationer. Om en riktig bordskant ligger på 2 m men hypotesen placerar ytan på 3 m, klassas kanten som flygpixlar; vakten på rad 735 kan även avvisa andra rutors observation av samma bordskant. Globala medianmått kan fortfarande godkänna hypotesen. Kräv oberoende stöd för personkant innan observerad geometri tas bort.
+
+10. **risk — `lokalitet.py:1118`**: För 540×960 stämmer kedjan: halvupplöst djup är 480×270 och F=3 ger 160×90, med samma sampling för original och hypotes. Storleksavvikelser hanteras däremot genom beskärning. `hjarna.py:166` använder dessutom `bildobs` standardstorlek 540×960. Ett original på 360×640 får därmed hypotesens övre vänstra del i stället för motsvarande skalade bild; större original kan ge formfel. Skicka originalets faktiska mått till observationen och kontrollera formerna före användning.
+
+11. **risk — `rumshjarna/hjarna.py:75`**: `BORDER_REPLICATE` skapar bildinnehåll där ECC-transformen behöver pixlar utanför den genererade bilden. Vid exempelvis 50 pixels förskjutning blir en remsa upprepade kantpixlar, som MoGe kan behandla som giltigt rum. Warpa även en giltighetsmask med noll utanför källbilden och uteslut dessa områden från grind och fyllnad.
+
+12. **risk — `rumshjarna/hjarna.py:166`**: Ett misslyckat Modal-anrop stoppar inte körningen och dess felutskrift förs inte vidare. Eftersom gamla observationsfiler redan raderats på rad 164–165 kan körningen avslutas normalt medan `lokalitet.py` sedan hoppar över saknade hypoteser utan avvisningsorsak. Kontrollera returkod och förväntade utdata, rapportera stderr och ersätt tidigare observationer först efter ett komplett lyckat resultat.
+
+SAMMANFATTNING: 8 fel, 4 risker

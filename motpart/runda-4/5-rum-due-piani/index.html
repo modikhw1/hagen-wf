@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Due Piani · rum och kamera</title>
+<script type="importmap">{"imports":{"three":"/three/three.module.js"}}</script>
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/extra.css"></head><body>
+<header><div><span class="eyebrow">FÖRVÄRLDEN / PROV 02 · DUE PIANI</span><h1>Ligger rum, kamera och rätt närmare originalet?</h1></div></header>
+<p class="intro">Samma original, samma kroppsspår och samma renderare. A är den frysta baslinjen. B rättar kamera, lutning, stöd och maträtt med bildstöd. Börja i S2, S8 och S10. S1 är kontroll: en person med tallrik ska inte få ett bord.</p>
+<div id="risk" role="status">Laddar…</div>
+<main class="views" id="views">
+<section><h2><span>01</span> Original</h2><div class="viewport"><video id="original" preload="auto" playsinline controls src="/media/original"></video></div><p>Bild och ljud. Styr uppspelningen.</p></section>
+</main>
+<section class="transport"><button id="play" disabled>Spela</button><output id="clock">0.00 s</output><input id="seek" aria-label="Tid" type="range" min="0" max="19.4" value="0" step="0.001" disabled><span id="shot">—</span></section>
+<div id="shots" aria-label="Hoppa till tagning"></div>
+<section class="controls"><label><input type="checkbox" id="uncertain" checked> Visa antagna delar i cyan</label><label><input type="checkbox" id="slow"> Halv fart</label><output id="timing"></output></section>
+<section class="shotinfo"><h2>Vad B gjorde i tagningen</h2><div id="info">—</div></section>
+<section class="judgement"><div><h2>Din bedömning</h2><p>Gäller vald variant och aktuell tidpunkt. Sparas ordagrant tillsammans med variantens hash.</p></div>
+<form id="feedback"><label>Variant <select id="fvariant"></select></label><label>Jämfört med A <select id="dom"><option value="osaker">Osäker</option><option value="narmare_original">Närmare originalet</option><option value="samma">Ingen skillnad</option><option value="samre">Sämre</option></select></label>
+<textarea id="comment" maxlength="4000" placeholder="Vad stämmer nu, vad är fortfarande fel?" aria-label="Kommentar"></textarea><button id="save" disabled>Spara vid denna tidpunkt</button><output id="saved" role="status"></output></form></section>
+<details><summary>Recept och proveniens</summary><pre id="provenance"></pre></details>
+<script type="module" src="/app.js"></script></body></html>

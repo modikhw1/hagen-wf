@@ -1,0 +1,83 @@
+--- forvarld_karna/scen_brygga.py
++++ motpart/runda-1-claude/g7_scen_brygga.py
+@@ -29,8 +29,9 @@
+ 
+ import numpy as np
+ 
+-HIT = pathlib.Path(__file__).resolve().parent
+-ROT = HIT.parent
++ROT = pathlib.Path(__file__).resolve().parents[2]   # G7-PATCH: kopian bor i motpart/runda-1-claude/
++HIT = ROT / "forvarld_karna"
++sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+ sys.path.insert(0, str(HIT))
+ sys.path.insert(0, str(ROT / "byggsten/brygga"))
+ 
+@@ -306,6 +307,10 @@
+ 
+             q_seq = np.load(seq_fil)
+             n_seq = len(q_seq["pose"])
++            # G7-PATCH P1: SAM skattade cam_t under sin egen fokal f_sam. Byte till renderfokal f_px med bevarad
++            # bildposition = skala bara djupet (F-ramens z) med f_px/f_sam. Originalet skalade x, y och z med
++            # kappa = f_sann/f_kedja, vilket flyttar bålen radiellt mot bildmitten med faktorn f_px/f_sam.
++            djup_skala = np.array([1.0, 1.0, f_px / float(q_seq["fokal"])])
+             kallor = [
+                 HARLEDD.get(n, (n,)) if n not in ("huvud_upp", "nasa_mal") else ("c_head",)
+                 for n in LEDER_T1
+@@ -319,7 +324,7 @@
+                 pose_f = q_seq["pose"][f_ix]
+                 ct_raw = q_seq["cam_t_ra"][f_ix]
+                 bal_m = pose_f[sp2_ix, :3] / 100.0
+-                c_cam = (pose_f[:, :3] / 100.0 - bal_m) + kappa * (bal_m + (ct_raw @ F.T))
++                c_cam = (pose_f[:, :3] / 100.0 - bal_m) + (bal_m + (ct_raw @ F.T)) * djup_skala  # G7-PATCH P1
+                 alla_w = (c_cam @ R_cam.T) + C_world
+                 raw_fots.append(min(alla_w[IX["l_foot"], 2], alla_w[IX["r_foot"], 2]))
+                 raw_backen.append(alla_w[IX["c_spine0"], 2])
+@@ -335,10 +340,15 @@
+                     z_skift = mal_backen_z - med_backen_z
+             z_kropp = 0.0
+             if idx_p == 0:
+-                ny_cz = max(0.92, C_world[2] + z_skift)
++                # G7-PATCH P2: kamera och kropp flyttas alltid tillsammans (2D bevaras). Originalet klämde kameran
++                # vid 0,92 m och lade resten på kroppen, vilket flyttade kroppen nedåt i bild (gelato s1, notan s2/s6/s7).
++                ny_cz = C_world[2] + z_skift
++                if ny_cz < 0.92:
++                    beslut.append(dict(regel="R18_kamerahojd_konflikt", person=pid, tagning=sid, kamera_z=round(float(ny_cz), 3),
++                                       orsak="Fot-/sitthöjden kräver kamerahöjd under 0,92 m; behålls för 2D-trohet och rapporteras."))
+                 z_kam_delta = ny_cz - C_world[2]
+                 C_world[2] = ny_cz
+-                z_kropp = z_skift - z_kam_delta
++                z_kropp = 0.0
+                 q_cam = mat_till_quat(R_cam)
+             else:
+                 z_kropp = z_skift
+@@ -350,7 +360,7 @@
+                 pose_f = q_seq["pose"][f_ix]
+                 ct_raw = q_seq["cam_t_ra"][f_ix]
+                 bal_m = pose_f[sp2_ix, :3] / 100.0
+-                c_cam = (pose_f[:, :3] / 100.0 - bal_m) + kappa * (bal_m + (ct_raw @ F.T))
++                c_cam = (pose_f[:, :3] / 100.0 - bal_m) + (bal_m + (ct_raw @ F.T)) * djup_skala  # G7-PATCH P1
+                 alla_w = (c_cam @ R_cam.T) + C_world
+                 if z_kropp != 0.0:
+                     alla_w[:, 2] += z_kropp
+@@ -630,12 +640,20 @@
+         ),
+     )
+ 
++    # G7-PATCH P3: trohet mot oberoende 2D (SAM-2D, YOLO-ruta/-mask) på det slutliga paketet.
++    import g7_oberoende
++    obs_d = json.loads(obs.model_dump_json())
++    for r in g7_oberoende.mat_paket(klipp_namn, paket, obs_d, ingest=ingest):
++        paket["trohet"][f"{r['tagning']}:{r['person']}"] = dict(
++            metod="g7_oberoende", led_med=r["led_med"], led_p90=r["led_p90"], i_box=r["i_box"], iou=r["iou"],
++            i_mask=r["i_mask"], spok_andel=r["spok_andel"], flaggad=r["flaggad"], skal=r["skal"])
+     ut_mapp.mkdir(parents=True, exist_ok=True)
+     paket_fil = ut_mapp / "paket.json"
+     paket_fil.write_text(json.dumps(paket, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+ 
+     # --- 3. Kör Kvalitetsgrindar G1–G7 ---
+-    rader = grindar.mat(paket)
++    import g7_oberoende
++    rader = g7_oberoende.grindar_per_person(paket)  # G7-PATCH P4
+     samman = grindar.sammanfatta(rader)
+     (ut_mapp / "paket_grindar.json").write_text(
+         json.dumps(

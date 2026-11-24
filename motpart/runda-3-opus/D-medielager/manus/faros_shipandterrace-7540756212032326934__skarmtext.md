@@ -1,0 +1,25 @@
+# Manus: faros_shipandterrace-7540756212032326934 (ändring: byt_text)
+
+Längd 8.6 s, 3 scener. Ljud: musik under. Språk i tal: sv.
+
+**Idén [kort]:** Två kollegor löser ett trångt arbetsutrymme genom att göra en dramatisk, synkroniserad dans för att passera varandra.
+
+**Takter [kort, otidsatta]:** krok: Texten etablerar trångboddheten medan en kollega försöker gå förbi den andre. · punchline: I stället för att knuffas gör de en koordinerad snurr/dansmanöver i takt till musiken. · avslut: De passerar varandra, ler och återgår till arbetet.
+
+| # | tid | vem [mätt] | var [mätt, gissning] | vad sägs [mätt] | text på skärmen [mätt] | hur [mätt] | ändrat |
+|---|---|---|---|---|---|---|---|
+| 1 | 0.0–2.53 s (2.53 s) | 2 personer | kök | . | "Testa vår nya meny i helgen" (ljus text (#fffffd), med kontur, överst, 0.1–2.5 s in i scenen) | halvbild, rörlig kamera eller mycket rörelse i bild, person | NY TEXT: "Testa vår nya meny i helgen" (i stället för "POV: you work at a small
+place") |
+| 2 | 2.53–4.83 s (2.3 s) | 2 personer | kök | . | "Testa vår nya meny i helgen" (ljus text (#fffffd), med kontur, överst, 0.0–2.3 s in i scenen) | närbild, rörlig kamera eller mycket rörelse i bild, person | NY TEXT: "Testa vår nya meny i helgen" (i stället för "POV: you work at a small
+place") |
+| 3 | 4.83–8.63 s (3.8 s) | 1 person | kök | – | "Testa vår nya meny i helgen" (ljus text (#fffffd), med kontur, överst, 0.0–3.8 s in i scenen) | halvbild, rörlig kamera eller mycket rörelse i bild, person | NY TEXT: "Testa vår nya meny i helgen" (i stället för "POV: you work at a small
+place") |
+
+## Att spela in, scen för scen
+
+1. Filma halvbild av 2 personer i/vid kök, rörlig kamera eller mycket rörelse i bild. Cirka 2.5 s. Säg: ".". Text på skärmen: "Testa vår nya meny i helgen". **NY TEXT: "Testa vår nya meny i helgen" (i stället för "POV: you work at a small
+place")**
+2. Filma närbild av 2 personer i/vid kök, rörlig kamera eller mycket rörelse i bild. Cirka 2.3 s. Säg: ".". Text på skärmen: "Testa vår nya meny i helgen". **NY TEXT: "Testa vår nya meny i helgen" (i stället för "POV: you work at a small
+place")**
+3. Filma halvbild av 1 person i/vid kök, rörlig kamera eller mycket rörelse i bild. Cirka 3.8 s. Text på skärmen: "Testa vår nya meny i helgen". **NY TEXT: "Testa vår nya meny i helgen" (i stället för "POV: you work at a small
+place")**

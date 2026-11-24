@@ -1,0 +1,7 @@
+.views{grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:18px}
+#shots button.fokus{border-color:#d3af6e}
+#shots button.kontroll{border-style:dashed}
+.shotinfo{background:var(--panel);border-radius:8px;padding:14px 16px;margin:10px 0;font-size:13px}
+.shotinfo ul{margin:6px 0 0;padding-left:18px;color:var(--muted)}
+.shotinfo b{color:var(--ink);font-weight:600}
+@media(max-width:760px){.views{grid-template-columns:repeat(2,minmax(0,1fr))}}

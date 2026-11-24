@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Förvärlden · Första visuella provet</title>
+<script type="importmap">{"imports":{"three":"/three/three.module.js"}}</script>
+<link rel="stylesheet" href="/style.css"></head><body>
+<header><div><span class="eyebrow">FÖRVÄRLDEN / PROV 01</span><h1>Håller scenen för en förändring?</h1></div><label>Utvecklingsklipp <select id="clip" disabled></select></label></header>
+<p class="intro">Se originalet och den sparade 3D-tolkningen samtidigt. Börja med om tolkningen går att läsa. Pröva sedan ett snävare eller vidare utsnitt.</p>
+<div id="risk" role="status">Laddar underlaget…</div>
+<main class="views">
+<section><h2><span>01</span> Original</h2><div class="viewport"><video id="original" preload="auto" playsinline controls></video></div><p>Originalets bild och ljud. Gemensam uppspelning.</p></section>
+<section><h2><span>02</span> Sparad 3D-tolkning</h2><div class="viewport"><canvas id="baseline"></canvas></div><p>Alla tagningar och rörelser från befintlig ingest. Kvaliteten prövas här.</p></section>
+<section><h2><span>03</span> Kameraprov <output id="factorText">0 %</output></h2><div class="viewport"><canvas id="changed"></canvas></div><p>Endast linsen ändras. Kroppar, kontaktgeometri och kamerabana är identiska med 02.</p></section>
+</main>
+<section class="transport"><button id="play" disabled>Spela</button><output id="clock">0.00 s</output><input id="seek" aria-label="Tid" type="range" min="0" max="1" value="0" step="0.001" disabled><span id="shot">—</span></section>
+<div id="shots" aria-label="Hoppa till tagning"></div>
+<section class="controls"><label>Vidare <input id="lens" aria-label="Linsändring" type="range" min="-20" max="20" value="0" step="1" disabled> Snävare</label><button id="undo" disabled>Ångra utsnitt</button><label><input type="checkbox" id="uncertain" checked> Visa antagna delar i cyan</label><output id="timing"></output></section>
+<section class="judgement"><div><h2>Vad går att arbeta vidare med?</h2><p>Detta är en öppen baslinjegranskning. Kameraprovet visar inte att systemet har lärt sig stil eller mening.</p></div><form id="feedback"><label>Din bedömning <select id="verdict"><option value="osaker">Osäker</option><option value="baslinje_faller">3D-tolkningen faller redan före ändringen</option><option value="baslinje_lasbar">3D-tolkningen är läsbar nog att pröva vidare</option><option value="andring_anvandbar">Ändringen är användbar</option><option value="andring_faller">Ändringen förstör något viktigt</option></select></label><textarea id="comment" maxlength="4000" placeholder="Vad stämmer eller bryter ryggraden? Kommentaren sparas ordagrant." aria-label="Kommentar"></textarea><button id="save" disabled>Spara bedömning vid denna tidpunkt</button><output id="saved" role="status"></output></form></section>
+<details><summary>Underlag, begränsningar och mätning</summary><p>Två tidigare utvecklingsklipp, inga nya GPU-körningar. Ansikte, text, material och miljö är inte fullständigt återskapade. Cyan följer ingestens egna osäkerhetsmarkeringar och täcker inte alla fel. Denna första loop är ett prov av arbetsrepresentationen och visningen.</p><pre id="provenance"></pre></details>
+<script type="module" src="/app.js"></script></body></html>
