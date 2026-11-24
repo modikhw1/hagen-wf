@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scenmotorn</title>
+<style>
+  :root { --bg:#14161a; --yta:#1d2026; --linje:#2c313a; --text:#e6e8eb; --dim:#8a919c; --ok:#5fbf7f; --varn:#e0b04a; --fel:#e06a5a; --acc:#6aa8e0; }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 system-ui, sans-serif; }
+  main { display:grid; grid-template-columns:380px 1fr; gap:16px; padding:16px; max-width:1300px; margin:auto }
+  @media (max-width:860px){ main{ grid-template-columns:1fr } }
+  canvas { width:360px; height:640px; background:#000; border-radius:8px; display:block }
+  .rad { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:6px 0 }
+  select, input, button { background:var(--yta); color:var(--text); border:1px solid var(--linje); border-radius:6px; padding:6px 8px; font:inherit }
+  input#kmd { flex:1; min-width:240px }
+  button { cursor:pointer }
+  .tid { display:flex; height:46px; border:1px solid var(--linje); border-radius:6px; overflow:hidden; margin:8px 0; position:relative }
+  .tid div { border-right:1px solid var(--bg); padding:3px 5px; font-size:11px; overflow:hidden; white-space:nowrap; cursor:pointer }
+  .tid .spel { position:absolute; top:0; bottom:0; width:2px; background:#fff; border:0; padding:0 }
+  .kort { background:var(--yta); border:1px solid var(--linje); border-radius:8px; padding:10px 12px; margin:8px 0 }
+  .dim { color:var(--dim) } .ok{color:var(--ok)} .varn{color:var(--varn)} .fel{color:var(--fel)}
+  table { border-collapse:collapse; width:100%; font-size:12.5px } td,th { text-align:left; padding:3px 6px; border-bottom:1px solid var(--linje); vertical-align:top }
+  code { background:#0c0d10; padding:1px 4px; border-radius:4px }
+  #logg div { padding:3px 0; border-bottom:1px dashed var(--linje) }
+</style>
+</head>
+<body>
+<main>
+  <section>
+    <div class="rad">
+      <select id="fall">
+        <option value="a-sketch-servering|2d">A · 2D-spår · sketch servering</option>
+        <option value="b-tilltal-ravara|semantisk">B · semantisk graf · tilltal råvara</option>
+        <option value="c-sketch-tre|rum">C · rum 2,5D · sketch tre personer</option>
+      </select>
+      <button id="spela">▶</button>
+      <label class="dim"><input type="checkbox" id="orig"> original</label>
+    </div>
+    <canvas id="c" width="360" height="640"></canvas>
+    <div class="dim" id="tidtext"></div>
+  </section>
+  <section>
+    <div class="kort">
+      <div class="rad"><input id="kmd" placeholder="t.ex.  scen 2 gestikulerar  ·  ta bort scen 3  ·  scen 1 närbild  ·  scen 4 snabbare" autocomplete="off"><button id="kor">Ändra</button><button id="aterstall">Återställ</button></div>
+      <div class="dim" id="hjalp"></div>
+    </div>
+    <div class="tid" id="tid"></div>
+    <div class="kort"><b>Senaste ändringar</b> <span class="dim">(tid = tolkning + ändring + första ritning)</span><div id="logg"></div></div>
+    <div class="kort"><b>Scen</b> <span id="scenrubrik" class="dim"></span><div id="scen"></div></div>
+    <div class="kort"><b>Motiv i biblioteket</b> <span class="dim" id="bibinfo"></span><div id="bib" style="max-height:220px;overflow:auto"></div></div>
+  </section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const cv = $('#c'), g = cv.getContext('2d');
+let BIB, REF, REFX, STR, ORIG, S, platta = null, t0 = 0, spelar = true, T = 0;
+const UTSNITT_ZOOM = { detalj: 2.4, närbild: 1.7, halvbild: 1.15, total: 0.85, pov: 1.3 };
+const AVSIKT_F = { krok:'#e07a5a', uppbyggnad:'#6aa8e0', vändning:'#c38be0', payoff:'#5fbf7f' };
+const BEN = [[1,2],[1,3],[3,5],[2,4],[4,6],[1,7],[2,8],[7,8],[7,9],[9,11],[8,10],[10,12]]; // index i spar-kp (13 leder: näsa, axlar, armbågar, händer, höfter, knän, fötter)
+const BEN_M = [[1,2],[1,3],[3,5],[2,4],[4,6],[1,7],[2,8],[7,8]];                            // 9 leder i motiv
+
+async function las(u){ const r = await fetch(u, {cache:'no-store'}); if(!r.ok) throw new Error(u); return r.json(); }
+
+async function init(){
+  [BIB, REF, STR] = await Promise.all([las('../data/bibliotek/motiv.json'), las('../data/bibliotek/referens.json'), las('../data/bibliotek/struktur.json')]);
+  REFX = new Float32Array(REF.X);
+  $('#bibinfo').textContent = `${BIB.motiv.length} motiv · ${BIB.klipp_trani} klipp · d90 ${REF.d90}`;
+  $('#bib').innerHTML = '<table><tr><th>id</th><th>namn</th><th>fönster</th><th>klipp</th></tr>' + BIB.motiv.map(m => `<tr><td>${m.id}</td><td>${m.namn}</td><td>${m.antal}</td><td>${m.klipp}</td></tr>`).join('') + '</table>';
+  $('#hjalp').innerHTML = 'Kommandon: <code>ta bort scen N</code> <code>dubbla scen N</code> <code>flytta scen N först|sist|efter M</code> <code>scen N 2.5s</code> <code>scen N längre|kortare</code> <code>scen N närbild|halvbild|total|detalj</code> <code>scen N &lt;motivord&gt;</code> (t.ex. gestikulerar, går, närmar, böjd, stilla) <code>scen N snabbare|långsammare</code> <code>spegla scen N</code> <code>scen N avsikt vändning</code> <code>slå ihop scen N och M</code> <code>aN till bord|ut</code> (C)';
+  await laddaFall();
+}
+
+async function laddaFall(){
+  const [namn, metod] = $('#fall').value.split('|');
+  ORIG = await las(`../data/${namn}/scen-${metod}.json`);
+  platta = null;
+  if (ORIG.bakgrund?.platta){ platta = new Image(); platta.src = `../data/${namn}/${ORIG.bakgrund.platta}`; }
+  aterstall();
+}
+function aterstall(){ S = structuredClone(ORIG); S.scener.forEach(s => { s.langd = s.slut - s.start; s.fart = 1; s.spegel = false; s.ersatt = null; s.origUtsnitt = s.kamera?.utsnitt; }); $('#logg').innerHTML=''; ritaTid(); t0 = performance.now(); }
+
+/* ---------- närhet ---------- */
+function vektor(pose, rel){ const v = []; for (let i=0;i<pose.length;i++){ for (const p of pose[i]) v.push(p[0], p[1]); v.push(rel[i][0]*12, rel[i][1]*12, rel[i][2]*12); } return v; }
+function narhet(v, k){ const D = REF.dim, n = REFX.length / D; let best = 1e9; const d90 = k ? REF.d90_kontext[k] : REF.d90;
+  for (let i=0;i<n;i++){ if (k && REF.kontext[i]!==k) continue; let d=0; const o=i*D; for (let j=0;j<D;j++){ const x=REFX[o+j]-v[j]; d+=x*x; if (d>best) break; } if (d<best) best=d; } return Math.max(0, Math.min(100, 100*(1-0.2*Math.sqrt(best)/d90))); }
+function motivVariant(m, fart=1, spegel=false){
+  const Tn = m.pose.length; let pose = [], rel = [];
+  for (let i=0;i<Tn;i++){ const k = Math.min(Tn-1, Math.floor(i*fart)); pose.push(m.pose[k].map(p=>[...p])); rel.push(m.rel[k].map(x=>x*fart)); }
+  if (spegel){ const byt=[0,2,1,4,3,6,5,8,7]; pose = pose.map(f => byt.map(j => [-f[j][0], f[j][1]])); rel = rel.map(r => [-r[0], r[1], r[2]]); }
+  return { pose, rel };
+}
+function strukturPoang(x, k){ const c = STR[k]; return Math.max(0, Math.min(100, 100*(1-0.2*Math.abs(Math.log(Math.max(0.05,x))-c.median_log)/c.q90))); }
+
+/* ---------- semantiska kommandon -> patch ---------- */
+const ORD = { gestikulerar:'gestikulerar', gest:'gestikulerar', går:'går_åt', gå:'går_åt', höger:'går_åt_höger', vänster:'går_åt_vänster', närmar:'närmar_sig', fram:'närmar_sig', undan:'drar_sig_undan', böjd:'böjd_framåt', böjer:'böjd_framåt', lagar:'böjd_framåt', stilla:'står_stilla', står:'står_stilla', håller:'håller_fram', visar:'håller_fram', högt:'händer_högt', jublar:'händer_högt', armar:'armar_ut' };
+function tolka(txt){
+  txt = txt.toLowerCase().trim(); let m;
+  const N = x => parseInt(x)-1;
+  if (m = txt.match(/^ta bort scen (\d+)/)) return {op:'bort', i:N(m[1])};
+  if (m = txt.match(/^(dubbla|upprepa) scen (\d+)/)) return {op:'dubbla', i:N(m[2])};
+  if (m = txt.match(/^flytta scen (\d+) (först|sist|efter (\d+))/)) return {op:'flytta', i:N(m[1]), till: m[2]==='först'?0: m[2]==='sist'?-1: N(m[3])+1};
+  if (m = txt.match(/^slå ihop scen (\d+) och (\d+)/)) return {op:'ihop', i:N(m[1]), j:N(m[2])};
+  if (m = txt.match(/^spegla scen (\d+)/)) return {op:'spegla', i:N(m[1])};
+  if (m = txt.match(/^scen (\d+) avsikt (\S+)/)) return {op:'avsikt', i:N(m[1]), v:m[2]};
+  if (m = txt.match(/^scen (\d+) ([\d.,]+) ?s/)) return {op:'langd', i:N(m[1]), v:parseFloat(m[2].replace(',','.'))};
+  if (m = txt.match(/^scen (\d+) (längre|kortare)/)) return {op:'langdf', i:N(m[1]), f: m[2]==='längre'?1.5:0.66};
+  if (m = txt.match(/^scen (\d+) (snabbare|långsammare)/)) return {op:'fart', i:N(m[1]), f: m[2]==='snabbare'?1.5:0.66};
+  if (m = txt.match(/^scen (\d+) (detalj|närbild|halvbild|total|pov)/)) return {op:'utsnitt', i:N(m[1]), v:m[2]};
+  if (m = txt.match(/^a(\d+) till (bord|ut)/)) return {op:'aktor', a:'a'+m[1], mal:m[2]};
+  if (m = txt.match(/^scen (\d+) (.+)/)){ const ord = m[2].split(/\s+/).map(w => ORD[w] || ORD[Object.keys(ORD).find(k => w.startsWith(k))]).filter(Boolean); if (ord.length) return {op:'motiv', i:N(m[1]), ord}; }
+  return null;
+}
+function valjMotiv(ord){
+  let bast=null, bp=-1;
+  for (const m of BIB.motiv){ const p = ord.filter(o => m.namn.includes(o)).length*10 - m.namn.split('+').length + Math.log(m.antal); if (p>bp){ bp=p; bast=m; } }
+  return bast;
+}
+function utfor(p){
+  const sc = S.scener, s = sc[p.i];
+  if (p.i !== undefined && !s && p.op!=='aktor') return 'ingen sådan scen';
+  switch(p.op){
+    case 'bort': sc.splice(p.i,1); return `scen ${p.i+1} borta`;
+    case 'dubbla': sc.splice(p.i+1,0,structuredClone(s)); return `scen ${p.i+1} dubblad`;
+    case 'flytta': { const [x]=sc.splice(p.i,1); sc.splice(p.till<0?sc.length:Math.min(p.till,sc.length),0,x); return 'flyttad'; }
+    case 'ihop': { const b = sc[p.j]; if(!b) return 'ingen sådan scen'; s.langd += b.langd; s.handelser = [...(s.handelser||[]), ...(b.handelser||[])]; sc.splice(p.j,1); return 'ihopslagna'; }
+    case 'spegla': s.spegel = !s.spegel; if(!s.ersatt) s.ersatt = s.figurer?.[0]?.motiv?.[0]?.motiv || BIB.motiv[0].id; return 'speglad';
+    case 'avsikt': s.avsikt = p.v; return 'avsikt '+p.v;
+    case 'langd': s.langd = p.v; return `längd ${p.v}s`;
+    case 'langdf': s.langd *= p.f; return `längd ${s.langd.toFixed(1)}s`;
+    case 'fart': s.fart *= p.f; if(!s.ersatt) s.ersatt = s.figurer?.[0]?.motiv?.[0]?.motiv || BIB.motiv[0].id; return `fart ×${s.fart.toFixed(2)}`;
+    case 'utsnitt': s.kamera = {...s.kamera, utsnitt:p.v}; return 'utsnitt '+p.v;
+    case 'motiv': { const m = valjMotiv(p.ord); s.ersatt = m.id; return `motiv ${m.id} ${m.namn}`; }
+    case 'aktor': { S.aktorFlytt = S.aktorFlytt||{}; S.aktorFlytt[p.a] = p.mal; return `${p.a} → ${p.mal}`; }
+  }
+}
+function bedom(p){
+  // närhet för det som ändrades + hastighet (hur långt från originalet)
+  const ut = [];
+  const s = S.scener[p.op==='bort'?-1:p.i];
+  if (s && s.ersatt){ const m = BIB.motiv.find(x=>x.id===s.ersatt); const v = motivVariant(m, s.fart, s.spegel); const vv = vektor(v.pose, v.rel);
+    const seg = s.figurer?.[0]?.motiv?.[0]; const k = seg?.kontext;
+    ut.push(['rörelse'+(k?' ('+k+')':''), narhet(vv, k)]);
+    if (seg?.vek){ const a = Math.sqrt(vv.reduce((acc,x,i)=>acc+(x-seg.vek[i])**2,0))/REF.d90; ut.push(['avstånd från orig ×d90', -a]); } }
+  if (s && ['langd','langdf','dubbla','ihop'].includes(p.op)) ut.push(['scenlängd', strukturPoang(s.langd,'scenlangd')]);
+  ut.push(['antal scener', strukturPoang(S.scener.length,'antal_scener')]);
+  ut.push(['klipplängd', strukturPoang(S.scener.reduce((a,x)=>a+x.langd,0),'klipplangd')]);
+  return ut;
+}
+function hastighet(){
+  // andel av klippets tid som skiljer sig från originalet (struktur + rörelse + kamera), 0..1
+  const L = ORIG.scener.reduce((a,x)=>a+(x.slut-x.start),0); let d = 0;
+  const oid = ORIG.scener.map(x=>x.i);
+  S.scener.forEach((s,k) => { const o = ORIG.scener.find(x=>x.i===s.i); if(!o){ d+=s.langd; return; }
+    if (oid.indexOf(s.i)!==k) d += 0.3*s.langd; if (s.ersatt) d += Math.min(s.langd,1.6*Math.ceil(s.langd/1.6))*(s.spegel?1:0.8);
+    d += Math.abs(s.langd-(o.slut-o.start)); if (s.kamera?.utsnitt!==o.kamera?.utsnitt) d += 0.5*s.langd; });
+  ORIG.scener.forEach(o => { if (!S.scener.some(s=>s.i===o.i)) d += (o.slut-o.start); });
+  return Math.min(1, d/L);
+}
+function kor(){
+  const txt = $('#kmd').value; const a = performance.now();
+  const p = tolka(txt); if(!p){ logg(`<span class="fel">förstod inte:</span> ${txt}`); return; }
+  const svar = utfor(p); ritaTid(); rita(); const ms = performance.now()-a;
+  const b = bedom(p).map(([k,v]) => v<0 ? `${k} <b>${(-v).toFixed(2)}</b>` : `${k} <b class="${v>=80?'ok':v>=60?'varn':'fel'}">${v.toFixed(0)}</b>`).join(' · ');
+  logg(`<code>${txt}</code> → ${svar} · <b>${ms.toFixed(1)} ms</b> · ${b} · hastighet <b>${(hastighet()*100).toFixed(0)} %</b>`);
+}
+function logg(h){ const d=document.createElement('div'); d.innerHTML=h; $('#logg').prepend(d); }
+
+/* ---------- tidslinje ---------- */
+function total(){ return S.scener.reduce((a,s)=>a+s.langd,0); }
+function ritaTid(){
+  const L = total(); $('#tid').innerHTML = S.scener.map((s,k) => `<div data-k="${k}" style="width:${s.langd/L*100}%;background:${AVSIKT_F[s.avsikt]||'#2a2f38'}55" title="${s.kamera?.utsnitt||''}">${k+1} · ${s.langd.toFixed(1)}s<br>${s.kamera?.utsnitt||''}${s.ersatt?' · '+s.ersatt:''}</div>`).join('') + '<div class="spel" id="spelh"></div>';
+  $('#tid').querySelectorAll('[data-k]').forEach(el => el.onclick = () => { const k=+el.dataset.k; t0 = performance.now() - S.scener.slice(0,k).reduce((a,s)=>a+s.langd,0)*1000; });
+}
+function scenVid(t){ let a=0; for (let k=0;k<S.scener.length;k++){ const s=S.scener[k]; if (t < a+s.langd) return {s, k, tau:t-a}; a+=s.langd; } return null; }
+
+/* ---------- ritning ---------- */
+function interp(spar, t){ if(!spar?.length) return null; let b = spar[0]; for (const x of spar){ if (x.t<=t) b=x; else break; } return Math.abs(b.t-t)<0.35 ? b : null; }
+function rita(){
+  const W=cv.width, H=cv.height; g.setTransform(1,0,0,1,0,0); g.fillStyle='#000'; g.fillRect(0,0,W,H);
+  const L = total(); if (!L) return; const t = T % L; const hit = scenVid(t); if(!hit) return; const {s,k,tau} = hit;
+  const origTid = s.start + tau * ((s.slut - s.start)/s.langd);
+  const visaOrig = $('#orig').checked;
+  // kamera: zoom relativt originalutsnitt
+  const z = visaOrig ? 1 : (UTSNITT_ZOOM[s.kamera?.utsnitt]||1)/(UTSNITT_ZOOM[s.origUtsnitt]||1);
+  const fig0 = s.figurer?.[0]; const f0 = fig0 && interp(fig0.spar, origTid);
+  const cx = f0 ? (f0.box[0]+f0.box[2])/2*W : W/2, cy = f0 ? (f0.box[1]+ (f0.box[3]-f0.box[1])*0.25)*H : H/2;
+  g.translate(cx, cy); g.scale(z, z); g.translate(-cx, -cy);
+  // bakgrund
+  if (platta?.complete) { g.globalAlpha = 0.55; g.drawImage(platta, 0, 0, W, H); g.globalAlpha = 1; }
+  else { g.fillStyle = `hsl(${(String(s.rum).charCodeAt(1)||0)*47%360} 18% 16%)`; g.fillRect(0,0,W,H); g.fillStyle='#ffffff22'; g.fillRect(0,H*0.72,W,H*0.28); }
+  for (const an of (S.bakgrund?.ankare||[])){ g.strokeStyle='#e0b04a99'; g.strokeRect(an.u*W-24, an.v*H-10, 48, 20); g.fillStyle='#e0b04a'; g.font='10px system-ui'; g.fillText(an.namn, an.u*W-20, an.v*H+4); }
+  // figurer
+  (s.figurer||[]).forEach((f, j) => {
+    const fr = interp(f.spar, origTid); if (!fr) return;
+    let flytt = 0; const akt = S.aktorer?.find(a => a.spar?.includes(String(f.aktor).slice(1)));
+    if (!visaOrig && akt && S.aktorFlytt?.[akt.id]){ const mal = S.aktorFlytt[akt.id]; const an = S.bakgrund.ankare.find(x=>x.namn==='table'); const p = Math.min(1, Math.max(0,(origTid-akt.in)/2));
+      flytt = mal==='ut' ? p*W*0.7 : an ? p*(an.u*W - (fr.box[0]+fr.box[2])/2*W) : 0; }
+    const farg = ['#6aa8e0','#e07a5a','#5fbf7f','#c38be0','#e0b04a'][j%5];
+    if (!visaOrig && j===0 && s.ersatt){
+      const m = BIB.motiv.find(x=>x.id===s.ersatt); const v = motivVariant(m, s.fart, s.spegel);
+      const fi = Math.floor((tau*10)) % v.pose.length; const P = v.pose[fi];
+      const sk = (fr.box[3]-fr.box[1])*H*0.28, ax = (fr.box[0]+fr.box[2])/2*W, ay = fr.box[1]*H + sk*1.1;
+      let dx = 0; for (let i=0;i<=fi;i++) dx += v.rel[i][0]*sk; // förflyttning ur motivets rörelse
+      ritaSkelett(P.map(p => [ax+dx+p[0]*sk, ay+p[1]*sk]), BEN_M, farg, sk, true);
+      g.fillStyle='#fff'; g.font='11px system-ui'; g.fillText(m.id+' '+m.namn, 8, H-12);
+    } else {
+      const pts = fr.kp.map(p => p ? [p[0]*W+flytt, p[1]*H] : null);
+      ritaSkelett(pts, BEN, farg, (fr.box[3]-fr.box[1])*H*0.28, false);
+    }
+  });
+  g.setTransform(1,0,0,1,0,0);
+  // planvy (2,5D): golvet ovanifrån, x i sidled, z = djup från kameran
+  if (S.aktorer?.[0]?.bana){
+    const PW=120, PH=150, px=W-PW-8, py=H-PH-28, X = x => px+PW/2+x*PW/3.2, Z = z => py+PH-z*PH/5.5;
+    g.fillStyle='#000c'; g.fillRect(px,py,PW,PH); g.strokeStyle='#fff3'; g.strokeRect(px,py,PW,PH);
+    g.fillStyle='#fff8'; g.font='9px system-ui'; g.fillText('plan · kamera ↓', px+4, py+11);
+    for (const an of (S.bakgrund?.ankare||[])){ g.fillStyle = an.namn==='table'?'#e0b04a':'#e0b04a66'; g.fillRect(X(an.pos[0])-5, Z(an.pos[2])-4, 10, 8); }
+    S.aktorer.forEach((a,j) => { const farg=['#6aa8e0','#e07a5a','#5fbf7f','#c38be0','#e0b04a'][j%5];
+      g.strokeStyle=farg+'88'; g.beginPath(); a.bana.forEach((q,i) => i?g.lineTo(X(q.x),Z(q.z)):g.moveTo(X(q.x),Z(q.z))); g.stroke();
+      let q = null; for (const b of a.bana) if (b.t<=origTid) q=b;
+      if (q && origTid<=a.ut+0.3){ let x=q.x, z=q.z; const mal=S.aktorFlytt?.[a.id];
+        if (mal && !visaOrig){ const an=S.bakgrund.ankare.find(n=>n.namn==='table'); const p=Math.min(1,Math.max(0,(origTid-a.in)/2)); if(mal==='ut'){ x+=p*2; } else if(an){ x+=p*(an.pos[0]-x); z+=p*(an.pos[2]-z); } }
+        g.fillStyle=farg; g.beginPath(); g.arc(X(x),Z(z),4,0,7); g.fill(); g.fillText(a.id, X(x)+5, Z(z)+3); } });
+  }
+  g.fillStyle='#000a'; g.fillRect(0,0,W,22); g.fillStyle='#fff'; g.font='12px system-ui';
+  g.fillText(`scen ${k+1}/${S.scener.length} · ${s.kamera?.utsnitt||''} · ${s.avsikt||''}${s.spegel?' · speglad':''}${s.fart!==1?' · ×'+s.fart.toFixed(2):''}`, 8, 15);
+  const sp = $('#spelh'); if (sp) sp.style.left = (t/L*100)+'%';
+  $('#tidtext').textContent = `${t.toFixed(1)} / ${L.toFixed(1)} s · ${S.metod}`;
+  if (rita.senast !== s){ rita.senast = s; $('#scenrubrik').textContent = `${k+1} · ${s.langd.toFixed(1)} s · ${s.kamera?.utsnitt||''} · ${s.kamera?.rorelse||''}`;
+    const mot = (s.figurer||[]).flatMap(f => (f.motiv||[]).map(m => `${f.aktor} ${m.start.toFixed(1)}s ${m.motiv} ${m.motiv_namn} <b class="${m.narhet>=80?'ok':'varn'}">${m.narhet}</b>`));
+    $('#scen').innerHTML = `<table><tr><th>händelser</th><th>motiv (närhet)</th><th>föremål</th></tr><tr><td>${(s.handelser||[]).map(h => `${h.t?.toFixed?.(1)??''} ${h.aktor} <b>${h.verb}</b> ${h.objekt||h.mal||h.varde||h.text||h.riktning||''}`).join('<br>')||'–'}</td><td>${mot.join('<br>')||'–'}</td><td>${(s.foremal||[]).map(f=>f.klass+' '+f.andel).join('<br>')||'–'}</td></tr></table>`; }
+}
+function ritaSkelett(pts, ben, farg, sk, motiv){
+  g.lineWidth = Math.max(3, sk*0.12); g.lineCap='round'; g.strokeStyle=farg;
+  for (const [a,b] of ben){ if (pts[a] && pts[b]){ g.beginPath(); g.moveTo(...pts[a]); g.lineTo(...pts[b]); g.stroke(); } }
+  const n = pts[0]; if (n){ g.fillStyle = farg; g.beginPath(); g.arc(n[0], n[1], Math.max(6, sk*0.35), 0, 7); g.fill(); }
+  if (motiv && pts[7] && pts[8]){ g.globalAlpha=.35; g.fillStyle=farg; g.fillRect(Math.min(pts[7][0],pts[8][0])-4, pts[7][1], Math.abs(pts[7][0]-pts[8][0])+8, sk*1.4); g.globalAlpha=1; }
+}
+function loop(){ if (spelar) T = (performance.now()-t0)/1000; rita(); requestAnimationFrame(loop); }
+
+$('#fall').onchange = laddaFall; $('#kor').onclick = kor; $('#kmd').onkeydown = e => { if (e.key==='Enter') kor(); };
+$('#aterstall').onclick = aterstall; $('#spela').onclick = () => { spelar=!spelar; if(spelar) t0 = performance.now()-T*1000; };
+// testläge: #fall=0&kmd=scen 2 gestikulerar;ta bort scen 3&t=5  (kör kommandon efter laddning, fryser tiden)
+async function hashTest(){
+  const h = new URLSearchParams(location.hash.slice(1)); if (!h.has('fall') && !h.has('kmd')) return;
+  if (h.has('fall')){ $('#fall').selectedIndex = +h.get('fall'); await laddaFall(); }
+  for (const k of (h.get('kmd')||'').split(';').filter(Boolean)){ $('#kmd').value = k; kor(); }
+  if (h.has('t')){ spelar = false; T = +h.get('t'); }
+}
+init().then(hashTest).then(loop).catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre class="fel">${e}</pre>`); });
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+"type":"agent_message","text":"The first native mask checks improved S1–S3 and S6, but regressed S4, S5, and S7. Visual inspection also caught a head-rotation shortcut in the fit. I’ve added a constraint to preserve the original head orientation and will measure the revised renders before calling the result acceptable."

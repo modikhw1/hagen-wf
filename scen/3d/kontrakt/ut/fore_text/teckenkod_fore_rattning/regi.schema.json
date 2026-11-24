@@ -1,0 +1,5078 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "regi.schema.json",
+  "title": "regi",
+  "description": "Ordnad lista med redigeringar mot en kalla. MÃ¥l anges med semantiska id (scen, person, prop, replik), aldrig bildrutor. Tid anges i sekunder pÃ¥ kÃ¤llklockan.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "SÃ¶kvÃ¤g till detta schema.",
+      "type": "string"
+    },
+    "schema_version": {
+      "description": "Kontraktsversion.",
+      "const": "regi/1"
+    },
+    "kalla": {
+      "description": "Vilken kalla regin gÃ¤ller.",
+      "type": "object",
+      "properties": {
+        "klipp_id": {
+          "description": "klipp.id i kalla.json.",
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "description": "klipp.sha256 i kalla.json.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "revision": {
+          "description": "kalla.revision regin skrevs mot.",
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "klipp_id",
+        "sha256",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "kund": {
+      "description": "Kunden regin gÃ¶rs fÃ¶r. null = ingen kund angiven.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "description": "Kundprofilens id.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namn": {
+          "description": "Kundens namn.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "namn"
+      ],
+      "additionalProperties": false
+    },
+    "skapad": {
+      "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "edits": {
+      "description": "Redigeringarna i den ordning de tillÃ¤mpas.",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/byt_replik"
+          },
+          {
+            "$ref": "#/$defs/lagg_till_replik"
+          },
+          {
+            "$ref": "#/$defs/casta"
+          },
+          {
+            "$ref": "#/$defs/byt_miljo"
+          },
+          {
+            "$ref": "#/$defs/byt_prop"
+          },
+          {
+            "$ref": "#/$defs/lagg_till_prop"
+          },
+          {
+            "$ref": "#/$defs/ta_bort_prop"
+          },
+          {
+            "$ref": "#/$defs/flytta_prop"
+          },
+          {
+            "$ref": "#/$defs/ta_bort_scen"
+          },
+          {
+            "$ref": "#/$defs/lagg_till_scen"
+          },
+          {
+            "$ref": "#/$defs/duplicera_scen"
+          },
+          {
+            "$ref": "#/$defs/flytta_scen"
+          },
+          {
+            "$ref": "#/$defs/trimma_scen"
+          },
+          {
+            "$ref": "#/$defs/skarmtext"
+          },
+          {
+            "$ref": "#/$defs/renderkamera"
+          },
+          {
+            "$ref": "#/$defs/rorelse"
+          },
+          {
+            "$ref": "#/$defs/uttryck"
+          },
+          {
+            "$ref": "#/$defs/forenkla"
+          },
+          {
+            "$ref": "#/$defs/tillat"
+          },
+          {
+            "$ref": "#/$defs/fri_scen"
+          },
+          {
+            "$ref": "#/$defs/flagga"
+          },
+          {
+            "$ref": "#/$defs/satt_intention"
+          },
+          {
+            "$ref": "#/$defs/satt_serieposition"
+          }
+        ]
+      }
+    },
+    "utdata": {
+      "description": "Vad som ska levereras.",
+      "type": "object",
+      "properties": {
+        "fps_taljare": {
+          "description": "Bildfrekvens, tÃ¤ljare.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "fps_namnare": {
+          "description": "Bildfrekvens, nÃ¤mnare.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "bredd": {
+          "description": "Bredd i pixlar.",
+          "type": "integer",
+          "minimum": 16
+        },
+        "hojd": {
+          "description": "HÃ¶jd i pixlar.",
+          "type": "integer",
+          "minimum": 16
+        },
+        "stil_ref": {
+          "description": "Id eller sÃ¶kvÃ¤g till stilreferens. null = neutrala dockor.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ljudpolicy": {
+          "description": "original = kÃ¤llans ljud, designade_rostar = nya rÃ¶ster ersÃ¤tter tal, blandat_duckad = nya rÃ¶ster Ã¶ver originalet som sÃ¤nks, tyst = inget ljud.",
+          "type": "string",
+          "enum": [
+            "original",
+            "designade_rostar",
+            "blandat_duckad",
+            "tyst"
+          ]
+        },
+        "render_backend": {
+          "description": "blender_mhr = ingest/mhr_rig.py, blender_bake = scen3d.json via bake, threejs_forhandsvisning = spelaren, seedance = generativ video via PS2-fÃ¶rpackning.",
+          "type": "string",
+          "enum": [
+            "blender_mhr",
+            "blender_bake",
+            "threejs_forhandsvisning",
+            "seedance"
+          ]
+        }
+      },
+      "required": [
+        "fps_taljare",
+        "fps_namnare",
+        "bredd",
+        "hojd",
+        "stil_ref",
+        "ljudpolicy",
+        "render_backend"
+      ],
+      "additionalProperties": false
+    },
+    "ramar": {
+      "description": "Vad som mÃ¥ste bevaras. Ã–vertrÃ¤delser Ã¤r fel, utom det som tillat-redigeringar medger.",
+      "type": "object",
+      "properties": {
+        "bevara_beats": {
+          "description": "Beat-id som inte fÃ¥r tas bort eller ordnas om. Tom lista = inga lÃ¥sta. [\"alla\"] = alla.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bevara_klippoffset_s": {
+          "description": "HÃ¶gsta tillÃ¥tna avvikelse i sekunder fÃ¶r klippens placering mot talet (J-klipp, FRON-1.5: Â±0,05 s). null = ingen grÃ¤ns.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "tillat_retiming": {
+          "description": "Sant om scenernas lÃ¤ngder fÃ¥r Ã¤ndras.",
+          "type": "boolean"
+        },
+        "max_talfaktor": {
+          "description": "HÃ¶gsta taltakt relativt originalet (SYFTE.md: 1,15). null = ingen grÃ¤ns.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "required": [
+        "bevara_beats",
+        "bevara_klippoffset_s",
+        "tillat_retiming",
+        "max_talfaktor"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "kalla",
+    "edits",
+    "utdata",
+    "ramar"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "byt_replik": {
+      "description": "Byter text, sprÃ¥k och rÃ¶st pÃ¥ en befintlig replik. OmkÃ¶rning: tal, tidslinje (om tidspolicy Ã¤r forlang_scen), bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "byt_replik"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "replik": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "description": "Ny text.",
+          "type": "string"
+        },
+        "sprak": {
+          "description": "SprÃ¥kkod fÃ¶r nya texten.",
+          "type": "string"
+        },
+        "rost": {
+          "description": "RÃ¶stval fÃ¶r en replik. Ingen likhet med kÃ¤llpersonen.",
+          "type": "object",
+          "properties": {
+            "motor": {
+              "description": "RÃ¶stmotor, till exempel piper. null = motorns standard.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rost_id": {
+              "description": "RÃ¶stens id hos motorn. null = standard.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "stil": {
+              "description": "Fri anvisning om rÃ¶sten. null = ingen.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "motor",
+            "rost_id",
+            "stil"
+          ],
+          "additionalProperties": false
+        },
+        "tidspolicy": {
+          "description": "samma_lucka = rÃ¶sten ska rymmas i kÃ¤llrepliken tid (fartgrÃ¤ns i ramar.max_talfaktor), forlang_scen = scenen fÃ¶rlÃ¤ngs fÃ¶r den nya texten.",
+          "type": "string",
+          "enum": [
+            "samma_lucka",
+            "forlang_scen"
+          ]
+        },
+        "max_talfaktor": {
+          "description": "HÃ¶gsta tillÃ¥tna taltakt relativt originalet. null = ramar.max_talfaktor.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "replik",
+        "text",
+        "sprak",
+        "rost",
+        "tidspolicy",
+        "max_talfaktor"
+      ],
+      "additionalProperties": false
+    },
+    "lagg_till_replik": {
+      "description": "LÃ¤gger till en replik. AnvÃ¤nds nÃ¤r klippet saknar tal. OmkÃ¶rning: tal, tidslinje, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "lagg_till_replik"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "ny_id": {
+          "description": "Id fÃ¶r den nya repliken.",
+          "type": "string",
+          "minLength": 1
+        },
+        "scen": {
+          "description": "Scen-id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "talare": {
+          "description": "Person-id fÃ¶r talaren.",
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "description": "Texten.",
+          "type": "string"
+        },
+        "sprak": {
+          "description": "SprÃ¥kkod.",
+          "type": "string"
+        },
+        "rost": {
+          "description": "RÃ¶stval fÃ¶r en replik. Ingen likhet med kÃ¤llpersonen.",
+          "type": "object",
+          "properties": {
+            "motor": {
+              "description": "RÃ¶stmotor, till exempel piper. null = motorns standard.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rost_id": {
+              "description": "RÃ¶stens id hos motorn. null = standard.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "stil": {
+              "description": "Fri anvisning om rÃ¶sten. null = ingen.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "motor",
+            "rost_id",
+            "stil"
+          ],
+          "additionalProperties": false
+        },
+        "start_s": {
+          "description": "Ã–nskad start pÃ¥ kÃ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "slut_s": {
+          "description": "Ã–nskat slut. null = efter rÃ¶stens lÃ¤ngd.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "i_bild": {
+          "description": "Sant om talaren ska synas i bild.",
+          "type": "boolean"
+        },
+        "tidspolicy": {
+          "description": "samma_lucka = rÃ¶sten ska rymmas i kÃ¤llrepliken tid (fartgrÃ¤ns i ramar.max_talfaktor), forlang_scen = scenen fÃ¶rlÃ¤ngs fÃ¶r den nya texten.",
+          "type": "string",
+          "enum": [
+            "samma_lucka",
+            "forlang_scen"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "ny_id",
+        "scen",
+        "talare",
+        "text",
+        "sprak",
+        "rost",
+        "start_s",
+        "slut_s",
+        "i_bild",
+        "tidspolicy"
+      ],
+      "additionalProperties": false
+    },
+    "casta": {
+      "description": "Binder en person i klippet till en roll hos kunden och vÃ¤ljer utseende. OmkÃ¶rning: utseende, tal (om rÃ¶st anges), bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "casta"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "person": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "kundroll": {
+          "description": "Kundens roll (hagen-ui: CardRole).",
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Rollens id i kundkortet.",
+              "type": "string",
+              "minLength": 1
+            },
+            "namn": {
+              "description": "Rollens namn. null = ej angivet.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "namn"
+          ],
+          "additionalProperties": false
+        },
+        "utseende": {
+          "description": "Utseende. Alla fÃ¤lt Ã¤r valfria och Ã¤ndrar bara det som anges.",
+          "type": "object",
+          "properties": {
+            "rigg_ref": {
+              "description": "Id eller sÃ¶kvÃ¤g till en kompatibel karaktÃ¤rsrigg.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "troja_farg": {
+              "description": "Hex, till exempel #2f4f6f.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hud": {
+              "description": "Hex eller null.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "har": {
+              "description": "Hex eller null.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "harstil": {
+              "description": "Frisyr eller null.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hojd_m": {
+              "description": "LÃ¤ngd i meter eller null.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0.3,
+              "maximum": 2.5
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "rost": {
+          "description": "RÃ¶st fÃ¶r personens repliker. null = ingen Ã¤ndring.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/rost"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "person",
+        "kundroll",
+        "utseende"
+      ],
+      "additionalProperties": false
+    },
+    "byt_miljo": {
+      "description": "Byter rummet i en eller flera scener. OmkÃ¶rning: rum, kontakt (om rakna_om_kontakt), bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "byt_miljo"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Scen-id eller \"alla\" fÃ¶r hela klippet.",
+          "type": "string",
+          "minLength": 1
+        },
+        "rum": {
+          "description": "Det nya rummet.",
+          "type": "object",
+          "properties": {
+            "kalla": {
+              "description": "VarifrÃ¥n rummet kommer (hagen-ui picture.venue.source).",
+              "type": "string",
+              "enum": [
+                "bank",
+                "upload",
+                "ord",
+                "neutral"
+              ]
+            },
+            "tillgang_id": {
+              "description": "Id fÃ¶r lokalbildens tillgÃ¥ng. null = ingen.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ord": {
+              "description": "Beskrivande ord nÃ¤r kÃ¤llan Ã¤r ord.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "beskrivning": {
+              "description": "Fritext. null = ingen.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rumsmall_id": {
+              "description": "Valfritt mall-id i rumsmall/. Har fÃ¶retrÃ¤de framfÃ¶r tillgang_id.",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kalla",
+            "tillgang_id",
+            "ord",
+            "beskrivning"
+          ],
+          "additionalProperties": false
+        },
+        "ankare": {
+          "description": "Bindningar mellan fasta delar i kÃ¤llrummet och det nya rummet.",
+          "type": "array",
+          "items": {
+            "description": "En bindning.",
+            "type": "object",
+            "properties": {
+              "fran": {
+                "description": "Fast del i kÃ¤llrummet, till exempel bar_counter_1.",
+                "type": "string",
+                "minLength": 1
+              },
+              "till": {
+                "description": "Motsvarande del i nya rummet.",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "fran",
+              "till"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "rakna_om_kontakt": {
+          "description": "Sant om golv- och stÃ¶dkontakt ska rÃ¤knas om fÃ¶r personerna.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen",
+        "rum"
+      ],
+      "additionalProperties": false
+    },
+    "byt_prop": {
+      "description": "Byter typ eller utseende pÃ¥ en befintlig rekvisita. OmkÃ¶rning: prop, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "byt_prop"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "prop": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "ny_typ": {
+          "description": "Ny semantisk typ.",
+          "type": "string"
+        },
+        "tillgang_id": {
+          "description": "Id fÃ¶r 3D-tillgÃ¥ng. null = primitiv lÃ¥da i uppmÃ¤tt storlek.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "matt_m": {
+          "description": "Nya mÃ¥tt [bredd, hÃ¶jd, djup] i meter. null = behÃ¥ll uppmÃ¤tta.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "prop",
+        "ny_typ"
+      ],
+      "additionalProperties": false
+    },
+    "lagg_till_prop": {
+      "description": "LÃ¤gger till en rekvisita. OmkÃ¶rning: prop, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "lagg_till_prop"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "ny_id": {
+          "description": "Id fÃ¶r nya rekvisitan.",
+          "type": "string",
+          "minLength": 1
+        },
+        "typ": {
+          "description": "Semantisk typ.",
+          "type": "string"
+        },
+        "tillgang_id": {
+          "description": "Id fÃ¶r tillgÃ¥ng. null = primitiv.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "matt_m": {
+          "description": "MÃ¥tt [bredd, hÃ¶jd, djup] i meter. null = tillgÃ¥ngens egna.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "scen": {
+          "description": "Scen-id eller \"alla\" fÃ¶r hela klippet.",
+          "type": "string",
+          "minLength": 1
+        },
+        "stod": {
+          "description": "Id fÃ¶r det den vilar pÃ¥. null = golvet.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "faste": {
+          "description": "Hur rekvisitan hÃ¥lls.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "person": {
+              "description": "Person-id.",
+              "type": "string",
+              "minLength": 1
+            },
+            "led": {
+              "description": "Ledens namn.",
+              "type": "string"
+            },
+            "hand": {
+              "description": "Hand eller null.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "vanster",
+                "hoger",
+                null
+              ]
+            }
+          },
+          "required": [
+            "person",
+            "led",
+            "hand"
+          ],
+          "additionalProperties": false
+        },
+        "plats": {
+          "description": "Placering relativt ett annat objekt.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "relativt": {
+              "description": "Id fÃ¶r objektet placeringen utgÃ¥r frÃ¥n.",
+              "type": "string",
+              "minLength": 1
+            },
+            "forskjutning_m": {
+              "description": "FÃ¶rskjutning i meter i objektets lokala axlar [x,y,z].",
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": [
+            "relativt",
+            "forskjutning_m"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "ny_id",
+        "typ",
+        "scen"
+      ],
+      "additionalProperties": false
+    },
+    "ta_bort_prop": {
+      "description": "Tar bort en rekvisita. OmkÃ¶rning: prop, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "ta_bort_prop"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "prop": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "scen": {
+          "description": "Scen-id eller \"alla\" fÃ¶r hela klippet.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "prop",
+        "scen"
+      ],
+      "additionalProperties": false
+    },
+    "flytta_prop": {
+      "description": "Flyttar en rekvisita. OmkÃ¶rning: prop, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "flytta_prop"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "prop": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "scen": {
+          "description": "Scen-id eller \"alla\" fÃ¶r hela klippet.",
+          "type": "string",
+          "minLength": 1
+        },
+        "till": {
+          "description": "Placering relativt ett annat objekt.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "relativt": {
+              "description": "Id fÃ¶r objektet placeringen utgÃ¥r frÃ¥n.",
+              "type": "string",
+              "minLength": 1
+            },
+            "forskjutning_m": {
+              "description": "FÃ¶rskjutning i meter i objektets lokala axlar [x,y,z].",
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": [
+            "relativt",
+            "forskjutning_m"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "prop",
+        "scen",
+        "till"
+      ],
+      "additionalProperties": false
+    },
+    "ta_bort_scen": {
+      "description": "Tar bort en scen. OmkÃ¶rning: tidslinje, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "ta_bort_scen"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen"
+      ],
+      "additionalProperties": false
+    },
+    "lagg_till_scen": {
+      "description": "LÃ¤gger till en ny scen. OmkÃ¶rning: tidslinje, rorelse, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "lagg_till_scen"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "ny_id": {
+          "description": "Id fÃ¶r nya scenen.",
+          "type": "string",
+          "minLength": 1
+        },
+        "efter": {
+          "description": "Scen som den nya scenen fÃ¶ljer. null = fÃ¶rst.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "mall": {
+          "description": "Vad den nya scenen byggs av.",
+          "type": "object",
+          "properties": {
+            "fran_scen": {
+              "description": "Befintlig scen vars rÃ¶relse Ã¥teranvÃ¤nds. null = ingen.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "motiv": {
+              "description": "RÃ¶relsemotiv ur biblioteket. null = ingen.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "fran_scen",
+            "motiv"
+          ],
+          "additionalProperties": false
+        },
+        "langd_s": {
+          "description": "LÃ¤ngd i sekunder.",
+          "type": "number",
+          "minimum": 0.1
+        },
+        "personer": {
+          "description": "Person-id i scenen.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "ny_id",
+        "efter",
+        "mall",
+        "langd_s",
+        "personer"
+      ],
+      "additionalProperties": false
+    },
+    "duplicera_scen": {
+      "description": "Kopierar en scen. Kopian Ã¤r tyst om inte med_ljud Ã¤r sant. OmkÃ¶rning: tidslinje, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "duplicera_scen"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "ny_id": {
+          "description": "Id fÃ¶r kopian.",
+          "type": "string",
+          "minLength": 1
+        },
+        "efter": {
+          "description": "Scen kopian fÃ¶ljer. null = direkt efter originalet.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "med_ljud": {
+          "description": "Sant om repliken upprepas.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen",
+        "ny_id",
+        "efter",
+        "med_ljud"
+      ],
+      "additionalProperties": false
+    },
+    "flytta_scen": {
+      "description": "Flyttar en scen i ordningen. OmkÃ¶rning: tidslinje, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "flytta_scen"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "efter": {
+          "description": "Scen den hamnar efter. null = fÃ¶rst.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen",
+        "efter"
+      ],
+      "additionalProperties": false
+    },
+    "trimma_scen": {
+      "description": "Ã„ndrar en scens bÃ¶rjan eller slut. Minst ett av start_s och slut_s anges. OmkÃ¶rning: tidslinje, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "trimma_scen"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "start_s": {
+          "description": "Ny start pÃ¥ kÃ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "slut_s": {
+          "description": "Nytt slut pÃ¥ kÃ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "lage": {
+          "description": "replik_sakert = pauser krymper och ord klipps aldrig (op.py langd), klipp_slut = slutet klipps, stracka = hela scenen snabbas eller saktas.",
+          "type": "string",
+          "enum": [
+            "replik_sakert",
+            "klipp_slut",
+            "stracka"
+          ]
+        },
+        "max_talfaktor": {
+          "description": "HÃ¶gsta taltakt. null = ramar.max_talfaktor.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen",
+        "lage"
+      ],
+      "additionalProperties": false
+    },
+    "skarmtext": {
+      "description": "LÃ¤gger till, byter eller tar bort skÃ¤rmtext. OmkÃ¶rning: bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "skarmtext"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "atgard": {
+          "description": "Vad som gÃ¶rs.",
+          "type": "string",
+          "enum": [
+            "lagg_till",
+            "byt",
+            "ta_bort"
+          ]
+        },
+        "skarmtext_id": {
+          "description": "Id fÃ¶r skÃ¤rmtexten.",
+          "type": "string",
+          "minLength": 1
+        },
+        "scen": {
+          "description": "Scen-id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "description": "Texten. null vid ta_bort.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start_s": {
+          "description": "Start. null = scenens start.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "slut_s": {
+          "description": "Slut. null = scenens slut.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "stil": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Upplöst 2D-stil.",
+              "properties": {
+                "font": {
+                  "type": "string",
+                  "description": "Lokalt installerad fontfil. Valet är en approximation."
+                },
+                "storlek_px": {
+                  "type": "number",
+                  "minimum": 1,
+                  "description": "Fontstorlek i källpixlar."
+                },
+                "justering": {
+                  "type": "string",
+                  "enum": [
+                    "vanster",
+                    "center",
+                    "hoger"
+                  ],
+                  "description": "Vänster, mitten eller höger i boxen."
+                },
+                "farg": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$",
+                  "description": "Teckenfärg som hex RGB."
+                },
+                "kontur_farg": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$",
+                  "description": "Konturfärg som hex RGB."
+                },
+                "kontur_px": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "Konturtjocklek i källpixlar."
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          ],
+          "description": "Stilobjekt; äldre fria strängar avvisas tydligt vid kompilering."
+        },
+        "box": {
+          "type": "array",
+          "description": "X, Y, bredd, höjd i källpixlar; bildens övre vänstra hörn är origo.",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "atgard",
+        "skarmtext_id",
+        "scen"
+      ],
+      "additionalProperties": false
+    },
+    "renderkamera": {
+      "description": "Anger kameran som ska renderas. Skild frÃ¥n den uppmÃ¤tta kameran, som aldrig Ã¤ndras. OmkÃ¶rning: kamera, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "renderkamera"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Scen-id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "kamera_id": {
+          "description": "Id fÃ¶r renderkameran, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "lage": {
+          "description": "folj_uppmatt = samma vÃ¤g som kÃ¤llkameran, stativ = fast kamera, nyckelbilder = egna nycklar, dolly/zoom/orbit = rÃ¶relse mot eller runt mÃ¥l.",
+          "type": "string",
+          "enum": [
+            "folj_uppmatt",
+            "stativ",
+            "nyckelbilder",
+            "dolly",
+            "zoom",
+            "orbit"
+          ]
+        },
+        "inramning": {
+          "description": "Utsnitt. null = ofÃ¶rÃ¤ndrat.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "hel",
+            "halv",
+            "nara",
+            null
+          ]
+        },
+        "mal": {
+          "description": "MÃ¥l fÃ¶r kameran. null = inget.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/mal_kamera"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fov_grader": {
+          "description": "Vertikal synvinkel i grader. null = ur inramning.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 5,
+          "maximum": 140
+        },
+        "faktor": {
+          "description": "FÃ¶r dolly: slutavstÃ¥nd som andel av startavstÃ¥ndet. null = ej dolly.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.05
+        },
+        "grader": {
+          "description": "FÃ¶r orbit: grader runt mÃ¥let. null = ej orbit.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "nyckelbilder": {
+          "description": "FÃ¶r nyckelbilder: nycklar. Tom annars.",
+          "type": "array",
+          "items": {
+            "description": "En kameranyckel.",
+            "type": "object",
+            "properties": {
+              "t_s": {
+                "description": "Tid i sekunder frÃ¥n scenens start.",
+                "type": "number",
+                "minimum": 0
+              },
+              "pos_m": {
+                "description": "Position i rummets vÃ¤rldskoordinater [x,y,z].",
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "mal_m": {
+                "description": "Blickpunkt [x,y,z].",
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "fov_grader": {
+                "description": "Vertikal synvinkel i grader.",
+                "type": "number",
+                "minimum": 5,
+                "maximum": 140
+              }
+            },
+            "required": [
+              "t_s",
+              "pos_m",
+              "mal_m",
+              "fov_grader"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen",
+        "kamera_id",
+        "lage"
+      ],
+      "additionalProperties": false
+    },
+    "rorelse": {
+      "description": "Byter en persons rÃ¶relse mot ett namngivet motiv ur rÃ¶relsebiblioteket. OmkÃ¶rning: rorelse, tidslinje, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "rorelse"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "person": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "scen": {
+          "description": "Scen-id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "motiv": {
+          "description": "Motivets namn i biblioteket, till exempel lyssna, reagera, gestikulera, ga.",
+          "type": "string"
+        },
+        "bibliotek": {
+          "description": "Biblioteket.",
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Bibliotekets id.",
+              "type": "string"
+            },
+            "version": {
+              "description": "Version.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "version"
+          ],
+          "additionalProperties": false
+        },
+        "intervall": {
+          "description": "Del av scenen. null = hela.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/intervall"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hastighet": {
+          "description": "Tidsskala, 1 = som i biblioteket.",
+          "type": "number",
+          "minimum": 0.25,
+          "maximum": 4
+        },
+        "intensitet": {
+          "description": "RÃ¶relsemÃ¤ngd, 1 = ofÃ¶rÃ¤ndrad.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "blandning_s": {
+          "description": "Ã–vergÃ¥ngstid i sekunder.",
+          "type": "number",
+          "minimum": 0
+        },
+        "rotjustering": {
+          "description": "Hur rÃ¶relsens rot lÃ¤ggs i rummet.",
+          "type": "string",
+          "enum": [
+            "behall_uppmatt_rot",
+            "till_plats",
+            "till_mal"
+          ]
+        },
+        "kontaktpolicy": {
+          "description": "behall_fotkontakt = fÃ¶tterna hÃ¥lls mot golvet, fri = ingen kontaktkorrektion.",
+          "type": "string",
+          "enum": [
+            "behall_fotkontakt",
+            "fri"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "person",
+        "scen",
+        "motiv",
+        "bibliotek",
+        "hastighet",
+        "intensitet",
+        "blandning_s",
+        "rotjustering",
+        "kontaktpolicy"
+      ],
+      "additionalProperties": false
+    },
+    "uttryck": {
+      "description": "SÃ¤tter ett ansiktsuttryck i ett intervall. OmkÃ¶rning: rorelse (ansikte), bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "uttryck"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "person": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "intervall": {
+          "description": "Intervallet pÃ¥ kÃ¤llklockan.",
+          "$ref": "#/$defs/intervall"
+        },
+        "forinstallning": {
+          "description": "FÃ¶rinstÃ¤llning (op.py humor).",
+          "type": "string",
+          "enum": [
+            "neutral",
+            "happy",
+            "angry",
+            "sad",
+            "stressed"
+          ]
+        },
+        "mangd": {
+          "description": "Styrka 0 till 1.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "person",
+        "intervall",
+        "forinstallning",
+        "mangd"
+      ],
+      "additionalProperties": false
+    },
+    "forenkla": {
+      "description": "FÃ¶renklar scenen enligt harnessens verb forenkla. OmkÃ¶rning: kamera eller tidslinje beroende pÃ¥ regler, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "forenkla"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Scen-id eller \"alla\" fÃ¶r hela klippet.",
+          "type": "string",
+          "minLength": 1
+        },
+        "regler": {
+          "description": "Vad som fÃ¶renklas.",
+          "type": "array",
+          "items": {
+            "description": "Regel.",
+            "type": "string",
+            "enum": [
+              "statisk_kamera",
+              "inga_effekter",
+              "farre_personer"
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen",
+        "regler"
+      ],
+      "additionalProperties": false
+    },
+    "tillat": {
+      "description": "Villkorad tolerans: fÃ¶rlagans drag fÃ¥r vara kvar om de uppstÃ¥r, men tvingas inte. PÃ¥verkar inte rendering, bara vad som rÃ¤knas som fel. Ingen omkÃ¶rning: pÃ¥verkar bara kontroller och status.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "tillat"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Scen. null = hela klippet.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "drag": {
+          "description": "FÃ¶rlagans personliga drag, till exempel att en kopp tappas.",
+          "type": "string"
+        },
+        "villkor": {
+          "description": "Villkoret, formulerat som \"om ...\" (h-anpassa8: skriv aldrig in misstag).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen",
+        "drag",
+        "villkor"
+      ],
+      "additionalProperties": false
+    },
+    "fri_scen": {
+      "description": "Harnessens fritt: kunden gÃ¶r som hen vill eller stryker. OmkÃ¶rning: tidslinje, bygg, rendera.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "fri_scen"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Semantiskt id i kalla. Ett id som bÃ¶rjar med PLATSHALLARE: finns inte i kalla Ã¤n och mÃ¥ste ersÃ¤ttas innan kÃ¶rning.",
+          "type": "string",
+          "minLength": 1
+        },
+        "lage": {
+          "description": "platshallare = scenen finns kvar som neutral platshÃ¥llare, stryk = scenen tas bort.",
+          "type": "string",
+          "enum": [
+            "platshallare",
+            "stryk"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen",
+        "lage"
+      ],
+      "additionalProperties": false
+    },
+    "flagga": {
+      "description": "Markerar en olÃ¶st risk eller frÃ¥ga. PÃ¥verkar inte rendering men blockerar status klar. Ingen omkÃ¶rning: pÃ¥verkar bara kontroller och status.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "flagga"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Scen. null = hela klippet.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "orsak": {
+          "description": "Vad som Ã¤r olÃ¶st.",
+          "type": "string"
+        },
+        "allvar": {
+          "description": "risk eller fraga.",
+          "type": "string",
+          "enum": [
+            "risk",
+            "fraga"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "scen",
+        "orsak",
+        "allvar"
+      ],
+      "additionalProperties": false
+    },
+    "satt_intention": {
+      "description": "Ã„ndrar eller anger krok, vÃ¤ndning eller payoff fÃ¶r kundversionen. Ingen omkÃ¶rning: pÃ¥verkar bara kontroller och status.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "satt_intention"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "falt": {
+          "description": "Vilket moment.",
+          "type": "string",
+          "enum": [
+            "karna",
+            "krok",
+            "vandning",
+            "payoff"
+          ]
+        },
+        "vad": {
+          "description": "Nya innehÃ¥llet.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Scen. null = ingen.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "falt",
+        "vad",
+        "scen"
+      ],
+      "additionalProperties": false
+    },
+    "satt_serieposition": {
+      "description": "SÃ¤tter klippets plats i en serie fÃ¶r kunden. Ingen omkÃ¶rning: pÃ¥verkar bara kontroller och status.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id fÃ¶r redigeringen, unikt i regin.",
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "description": "Operationens namn.",
+          "const": "satt_serieposition"
+        },
+        "ursprung": {
+          "description": "Vem eller vad redigeringen kom frÃ¥n. FÃ¶rslag frÃ¥n harnessen anger verb och skÃ¤l.",
+          "oneOf": [
+            {
+              "description": "Redigeringen gjordes av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid cm.",
+                  "const": "cm"
+                },
+                "av": {
+                  "description": "Vem. null = okÃ¤nt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "description": "Redigeringen fÃ¶reslogs av harnessen och kan ha godkÃ¤nts av CM.",
+              "type": "object",
+              "properties": {
+                "typ": {
+                  "description": "Alltid harness-forslag.",
+                  "const": "harness-forslag"
+                },
+                "harness": {
+                  "description": "Vad harnessen sade.",
+                  "type": "object",
+                  "properties": {
+                    "atgard": {
+                      "description": "Harnessens verb. h-scener.mjs anvÃ¤nder behall, fritt, byt_produkt, byt_lokal, frontfigur, risk, eget_tal, forenkla. h-anpassa8.mjs anvÃ¤nder behall, byt, eget_tal, forenkla, tillat, fritt.",
+                      "type": "string",
+                      "enum": [
+                        "behall",
+                        "byt",
+                        "byt_produkt",
+                        "byt_lokal",
+                        "frontfigur",
+                        "risk",
+                        "eget_tal",
+                        "forenkla",
+                        "tillat",
+                        "fritt"
+                      ]
+                    },
+                    "beat_nr": {
+                      "description": "Beatets nr i scenplanen. null = scen utan beat.",
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "funktion": {
+                      "description": "Beatets funktion. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "krok",
+                        "uppbyggnad",
+                        "vandning",
+                        "punchline",
+                        "visning",
+                        "tilltal",
+                        "avslut",
+                        null
+                      ]
+                    },
+                    "skal": {
+                      "description": "Harnessens skÃ¤l (h-scener.mjs: skal). null = ingen.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kalla_fil": {
+                      "description": "Scenplanen som fÃ¶rslaget kom ur, frÃ¥n repots rot. null = okÃ¤nd.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "atgard",
+                    "beat_nr",
+                    "funktion",
+                    "skal",
+                    "kalla_fil"
+                  ],
+                  "additionalProperties": false
+                },
+                "godkand_av_cm": {
+                  "description": "Sant om CM har godkÃ¤nt fÃ¶rslaget. null = inte granskat.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "tid": {
+                  "description": "Tidpunkt, ISO 8601. null = okÃ¤nd.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "typ",
+                "harness"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "kommentar": {
+          "description": "Fritext, till exempel varfÃ¶r ett id Ã¤r en platshÃ¥llare.",
+          "type": "string"
+        },
+        "serie_id": {
+          "description": "Serie-id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "position": {
+          "description": "Plats frÃ¥n 1.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "av": {
+          "description": "Antal klipp. null = okÃ¤nt.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "ursprung",
+        "serie_id",
+        "position",
+        "av"
+      ],
+      "additionalProperties": false
+    },
+    "rost": {
+      "description": "RÃ¶stval fÃ¶r en replik. Ingen likhet med kÃ¤llpersonen.",
+      "type": "object",
+      "properties": {
+        "motor": {
+          "description": "RÃ¶stmotor, till exempel piper. null = motorns standard.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rost_id": {
+          "description": "RÃ¶stens id hos motorn. null = standard.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stil": {
+          "description": "Fri anvisning om rÃ¶sten. null = ingen.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "motor",
+        "rost_id",
+        "stil"
+      ],
+      "additionalProperties": false
+    },
+    "intervall": {
+      "description": "Ett tidsintervall pÃ¥ scenens kÃ¤llklocka.",
+      "type": "object",
+      "properties": {
+        "start_s": {
+          "description": "Start i sekunder.",
+          "type": "number",
+          "minimum": 0
+        },
+        "slut_s": {
+          "description": "Slut i sekunder.",
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "start_s",
+        "slut_s"
+      ],
+      "additionalProperties": false
+    },
+    "mal_kamera": {
+      "description": "Vad kameran riktas mot.",
+      "type": "object",
+      "properties": {
+        "typ": {
+          "description": "Typ av mÃ¥l.",
+          "type": "string",
+          "enum": [
+            "person",
+            "prop",
+            "punkt"
+          ]
+        },
+        "id": {
+          "description": "Id fÃ¶r personen eller rekvisitan. null om typ Ã¤r punkt.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "punkt": {
+          "description": "Namngiven punkt, till exempel huvud, eller null.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "typ",
+        "id",
+        "punkt"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

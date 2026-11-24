@@ -1,0 +1,8 @@
+- `framfor` förs för bilddeklarerade möbler via [deklaration_till_hand.py](C:/Users/praiseworthy/Desktop/hagen-wf/scen/3d/ingest/deklaration_till_hand.py:154).
+- [mobellyft.py](C:/Users/praiseworthy/Desktop/hagen-wf/scen/3d/kontrakt/mobellyft.py:68) klämmer kameradjupet och loggar gräns, ankarkälla och marginaler.
+- Vid omöjliga marginaler prioriteras ordningen kamera–möbel–person och `granskonflikt` sätts; detta gäller S9.
+- Testet i [test_snabb.py](C:/Users/praiseworthy/Desktop/hagen-wf/scen/3d/kontrakt/test_snabb.py:106) täcker både möjligt och trångt intervall.
+- Tester: `test_deklaration` 7, `test_rum` 3, `test_scenbrief` 5 och `test_snabb` 14 — alla OK.
+- Rapport: [LOGG.md](C:/Users/praiseworthy/Desktop/hagen-wf/scen/3d/kontrakt/ut/foremal_logg/LOGG.md:29).
+- Verifiera: `klipp_kor.py b-tilltal-ravara prepare --variant n06-mobel --deklaration ingest/ut/b-tilltal-ravara-tagningar/brief/uppsattning2/deklaration_n06.json`
+- Rendera: `klipp_kor.py b-tilltal-ravara render --variant n06-mobel --deklaration ingest/ut/b-tilltal-ravara-tagningar/brief/uppsattning2/deklaration_n06.json`

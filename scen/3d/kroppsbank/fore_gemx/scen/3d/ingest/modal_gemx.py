@@ -1,0 +1,273 @@
+"""GEM-X Body Motion on Modal. No local torch imports/inference.
+
+From project root, PYTHONIOENCODING=utf-8:
+  scen/.venv/Scripts/python.exe -m modal run scen/3d/ingest/modal_gemx.py --mode prepare
+  scen/.venv/Scripts/python.exe -m modal run scen/3d/ingest/modal_gemx.py --mode evaluate
+Downloads only public body assets; never requests gated hand weights.
+"""
+import io
+import json
+import time
+import zipfile
+from pathlib import Path
+import modal
+
+ROOT = Path(__file__).resolve().parents[3]
+BANK = ROOT / 'scen/3d/kroppsbank'
+SHA = '4aef1452e5df171deff4f293c08e643eb450981e'
+WEIGHTS_SHA = 'b111f2dcf3ebcf57965fd53499cb645dfa5ba25c'
+SOMA_SHA = 'd281db2d01553f7230c56e764cec00fe27ef23f7'
+app = modal.App('hagen-gemx-body')
+vol = modal.Volume.from_name('gemx-body-v033', create_if_missing=True)
+image = (
+    modal.Image.debian_slim(python_version='3.12')
+    .apt_install('git', 'ffmpeg', 'libgl1', 'libglib2.0-0', 'build-essential')
+    .pip_install('torch==2.10.0', index_url='https://download.pytorch.org/whl/cu128')
+    .run_commands('git clone https://github.com/NVlabs/GEM-X.git /opt/gemx',
+                  f'cd /opt/gemx && git checkout {SHA}',
+                  "python -m pip install '/opt/gemx[video]' huggingface_hub")
+    .env({'TORCH_ALLOW_TF32_CUBLAS_OVERRIDE': '0', 'OMP_NUM_THREADS': '4',
+          'HF_HUB_DISABLE_IMPLICIT_TOKEN': '1'})
+)
+
+
+@app.function(image=image, volumes={'/data': vol}, timeout=3600, memory=16384)
+def prepare():
+    import hashlib
+    import importlib.metadata
+    import shutil
+    import urllib.request
+    from huggingface_hub import hf_hub_download
+    started = time.monotonic()
+    folders = {'nvidia/GEM-X': ('weights', WEIGHTS_SHA, [
+        'body_s240000.ckpt', 'body_config.json', 'vitpose.pth',
+        'body_video_native77.yaml', 'motion_native77_e774_s292175.ckpt',
+        'motion_stats_raw.npz', 'motion_native77.yaml']),
+        'nvidia/SOMA-X': ('soma', SOMA_SHA, ['SOMA_neutral.npz',
+        'SOMA_template_rig.usda', 'SOMA_procedural_transforms.json', 'correctives_model.pt'])}
+    inventory = []
+    for repo, (folder, revision, names) in folders.items():
+        for name in names:
+            path = Path(hf_hub_download(repo, name, revision=revision,
+                                      local_dir=f'/data/{folder}', token=False))
+            inventory.append({'repo': repo, 'revision': revision, 'file': name,
+                              'bytes': path.stat().st_size})
+            print('cached', repo, name, path.stat().st_size, flush=True)
+            vol.commit()
+    detector = Path('/data/weights/yolox_humanart.onnx')
+    url = 'https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_x_8xb8-300e_humanart-a39d44ed.zip'
+    if not detector.exists():
+        archive = Path('/data/weights/yolox_humanart.zip')
+        urllib.request.urlretrieve(url, archive)
+        with zipfile.ZipFile(archive) as z:
+            name = next(n for n in z.namelist() if n.endswith('/end2end.onnx'))
+            with z.open(name) as source, detector.open('wb') as dest:
+                shutil.copyfileobj(source, dest)
+    inventory.append({'file': detector.name, 'source': url, 'bytes': detector.stat().st_size,
+                      'sha256': hashlib.sha256(detector.read_bytes()).hexdigest()})
+    # Import-only preflight on CPU; catches missing runtime dependencies before a GPU is reserved.
+    from gem.inference.body_video import run_body_video
+    from gem.inference.postprocess import postprocess_motion_result
+    from gem.motion.geometry import MotionGeometry
+    versions = {n: importlib.metadata.version(n) for n in ['torch', 'gem', 'py-soma-x', 'transformers', 'onnxruntime']}
+    result = {'files': inventory, 'versions': versions, 'git_sha': SHA,
+              'cpu_prepare_s': time.monotonic() - started}
+    Path('/data/prepared.json').write_text(json.dumps(result, indent=2))
+    vol.commit()
+    return result
+
+
+@app.function(image=image, gpu='L40S', volumes={'/data': vol}, timeout=1650,
+              memory=32768, cpu=4, max_containers=1, scaledown_window=2)
+def predict(shots, run_id):
+    """Sequential shots and people; retain native predictions and both FK variants."""
+    started = time.monotonic()
+    import traceback
+    import subprocess
+    import dataclasses
+    import gc
+    import numpy as np
+    import torch
+    try:
+        import gem.inference.body_video as bv
+        from gem.common.detectors.tracks import TrackResult, square_crops, smooth_boxes
+        from gem.inference.postprocess import postprocess_motion_result
+        from gem.inference.serialization import save_predictions
+        from gem.motion.geometry import MotionGeometry
+        assert Path('/data/prepared.json').exists(), 'Run CPU prepare first'
+        torch.set_num_threads(4)
+        import_s = time.monotonic() - started
+        gpu = subprocess.check_output(['nvidia-smi', '--query-gpu=name,memory.total', '--format=csv,noheader']).decode().strip()
+        yield {'kind': 'loaded', 'import_s': import_s, 'gpu': gpu}
+        for shot in shots:
+            shot_start = time.monotonic()
+            folder = Path('/data/runs') / run_id / shot['id']
+            folder.mkdir(parents=True, exist_ok=True)
+            video = folder / 'input.mp4'
+            video.write_bytes(shot['video'])
+            records = []
+            for pid in shot['pids']:
+                if time.monotonic() - started > 1450:
+                    raise TimeoutError('Stop before the 30 GPU-minute startup allowance is exhausted')
+                person_start = time.monotonic()
+                torch.cuda.reset_peak_memory_stats()
+                out = folder / pid
+                out.mkdir(exist_ok=True)
+                config = bv.load_body_video_config('/data/weights/body_video_native77.yaml')
+                config['camera']['intrinsics'] = shot['K']
+                config['pose']['batch_size'] = 4
+                config['observations']['batch_size'] = 4
+                tracks_source = shot['tracks']
+                # Upstream CLI supports no supplied motion boxes. Only replace tracking,
+                # keeping upstream smoothing/crop convention, models and camera estimation.
+                def supplied_tracks(frames, detector, **options):
+                    n = len(frames)
+                    assert n == shot['meta']['N'], (n, shot['meta']['N'])
+                    observed_ids = sorted(int(f) for f in tracks_source[pid])
+                    assert observed_ids
+                    values = np.asarray([tracks_source[pid][str(f)] for f in observed_ids], np.float32)
+                    boxes = np.column_stack([np.interp(np.arange(n), observed_ids, values[:, j]) for j in range(4)]).astype(np.float32)
+                    seen = np.isin(np.arange(n), observed_ids)
+                    all_boxes = [np.asarray([v[str(f)] for v in tracks_source.values() if str(f) in v], np.float32).reshape(-1, 4) for f in range(n)]
+                    others = [np.asarray([v[str(f)] for p,v in tracks_source.items() if p != pid and str(f) in v], np.float32).reshape(-1,4) for f in range(n)]
+                    return TrackResult(np.arange(n), boxes,
+                        square_crops(smooth_boxes(boxes), options.get('bbox_enlarge',1.2)),
+                        np.full(n, int(pid), np.int32), seen, (observed_ids[0], observed_ids[-1]),
+                        all_boxes, others, all_boxes, [np.ones(len(b),np.float32) for b in all_boxes],
+                        ['supplied_observed' if s else 'supplied_interpolated_assumed' for s in seen])
+                original = bv.detect_track
+                bv.detect_track = supplied_tracks
+                try:
+                    raw = bv.run_body_video(str(video), config, device='cuda',
+                        progress=lambda s: print(shot['id'],pid,s,flush=True))
+                finally:
+                    bv.detect_track = original
+                forward_s = time.monotonic() - person_start
+                save_predictions(raw, out / 'raw.pt')
+                # Commit raw result before optional IK/geometry, so a failure is recoverable.
+                vol.commit()
+                ik_start = time.monotonic()
+                processed = postprocess_motion_result(raw, soma_assets='/data/soma', device='cuda')
+                save_predictions(processed, out / 'contact_ik.pt')
+                ik_s = time.monotonic() - ik_start
+                geometry = MotionGeometry('/data/soma', device='cuda', chunk_size=8)
+                faces = geometry.faces.numpy()
+                np.save(out / 'faces.npy', faces)
+                for variant, result in [('raw',raw), ('contact_ik',processed)]:
+                    camera_joints, world_joints = [], []
+                    for coordinate, collected in [('incam',camera_joints), ('global',world_joints)]:
+                        for start, chunk in geometry.iter_chunks(result[f'pred_soma_params_{coordinate}']):
+                            collected.append(chunk['joints'][0].numpy())
+                            if coordinate == 'incam':
+                                dest = out / variant
+                                dest.mkdir(exist_ok=True)
+                                for offset, vertices in enumerate(chunk['vertices'][0].numpy()):
+                                    np.savez_compressed(dest / f'{start+offset:04d}.npz', vertices_camera_m=vertices)
+                    np.savez_compressed(out / f'{variant}_joints.npz',
+                        camera_m=np.concatenate(camera_joints), world_m=np.concatenate(world_joints),
+                        intrinsics=raw['conditions']['K_fullimg'][0].numpy(),
+                        contact_logits=raw['static_conf_logits'].numpy(),
+                        observed=raw['tracking']['observed_primary'])
+                # Native joint names from SOMA rig (no guessed numeric map).
+                from pxr import Usd, UsdSkel
+                stage = Usd.Stage.Open('/data/soma/SOMA_template_rig.usda')
+                skeletons = [UsdSkel.Skeleton(p) for p in stage.Traverse() if p.IsA(UsdSkel.Skeleton)]
+                joint_paths = list(skeletons[0].GetJointsAttr().Get())
+                (out / 'joint_names.json').write_text(json.dumps(joint_paths))
+                record = {'person':pid, 'frames':int(raw['length'][0]), 'forward_s':forward_s,
+                    'contact_ik_s':ik_s, 'total_s':time.monotonic()-person_start,
+                    'vram_peak_allocated_bytes':torch.cuda.max_memory_allocated(),
+                    'vram_peak_reserved_bytes':torch.cuda.max_memory_reserved(),
+                    'git_sha':SHA, 'tracking':'personer.json; upstream smooth_boxes and square_crops; linear gap fill assumed',
+                    'intrinsics_origin':'manifest; inherited estimate, not measured calibration'}
+                (out / 'timing.json').write_text(json.dumps(record,indent=2))
+                records.append(record)
+                del geometry, raw, processed
+                gc.collect()
+                torch.cuda.empty_cache()
+                vol.commit()
+                print('PERSON_DONE', shot['id'], json.dumps(record),flush=True)
+            timing = {'people':records,'shot_s':time.monotonic()-shot_start,'gpu':gpu,'import_s':import_s}
+            (folder / 'timing.json').write_text(json.dumps(timing,indent=2))
+            archive = folder.with_suffix('.zip')
+            with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
+                for p in folder.rglob('*'):
+                    if p.is_file() and p.name != 'input.mp4': z.write(p,p.relative_to(folder))
+            vol.commit()
+            yield {'kind':'shot','id':shot['id'],'timing':timing,'archive':archive.read_bytes()}
+        yield {'kind':'done','gpu_function_s':time.monotonic()-started}
+    except Exception:
+        yield {'kind':'error','gpu_function_s':time.monotonic()-started,'traceback':traceback.format_exc()}
+
+
+def backup(relative):
+    import shutil
+    source = ROOT / relative
+    target = BANK / 'fore_gemx' / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if source.exists() and not target.exists(): shutil.copy2(source,target)
+
+
+@app.local_entrypoint()
+def main(mode: str = 'prepare'):
+    from datetime import datetime, timezone
+    start = time.monotonic()
+    out = BANK / 'ut/gemx'
+    out.mkdir(parents=True,exist_ok=True)
+    if mode == 'prepare':
+        result = prepare.remote()
+        result['build_and_prepare_wall_s'] = time.monotonic()-start
+        (out/'prepare.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+        print(json.dumps(result,indent=2))
+        return
+    if mode != 'evaluate': raise ValueError('mode must be prepare or evaluate')
+    # Local work is input serialization, budgets and output writes only.
+    manifest = json.loads((BANK/'manifest.json').read_text(encoding='utf-8'))
+    shots=[]
+    for s in manifest['shots']:
+        if (out/s['id']/'timing.json').exists(): continue
+        s = {k:v for k,v in s.items() if k != 'source_sha256'}
+        s['tracks'] = json.loads((ROOT/s['folder']/'personer.json').read_text(encoding='utf-8'))
+        s['video'] = (ROOT/s['video']).read_bytes()
+        shots.append(s)
+    if not shots: return
+    budget_path = BANK/'budget.json'
+    budget = json.loads(budget_path.read_text(encoding='utf-8'))
+    backup(Path('scen/3d/kroppsbank/budget.json'))
+    used = budget['charged_upper_bound_seconds']
+    active = [r for r in budget.get('reservations',[]) if r.get('candidate','').startswith('gemx')]
+    if active: raise RuntimeError('Unsettled GEM-X reservation: check Modal app before resuming')
+    if used+1800 > 5400: raise RuntimeError('Insufficient GPU budget')
+    if sum(e.get('charged_upper_bound_seconds',0) for e in budget['events'] if e.get('candidate')=='gemx-startup') >= 1800:
+        raise RuntimeError('GEM-X startup budget exhausted')
+    run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+    budget['reservations']=[{'candidate':'gemx-startup','seconds':1800,'run_id':run_id}]
+    budget['gemx_startup_cap_seconds']=1800
+    budget['charged_upper_bound_seconds']=used+1800
+    budget_path.write_text(json.dumps(budget,indent=2),encoding='utf-8')
+    # Never settle on a local disconnect: reservation remains for manual reconciliation.
+    gpu_start=time.monotonic()
+    events=[]
+    for result in predict.remote_gen(shots,run_id):
+        if result['kind']=='shot':
+            target=out/result['id']; target.mkdir(parents=True,exist_ok=True)
+            data=result.pop('archive')
+            (target/'predictions.zip').write_bytes(data)
+            with zipfile.ZipFile(io.BytesIO(data)) as z:
+                for name in z.namelist():
+                    resolved=(target/name).resolve()
+                    if not resolved.is_relative_to(target.resolve()): raise ValueError(name)
+                z.extractall(target)
+        events.append(result)
+        (out/f'run_{run_id}.json').write_text(json.dumps(events,indent=2),encoding='utf-8')
+        print(json.dumps(result),flush=True)
+    elapsed=time.monotonic()-gpu_start
+    remote_s=max((e.get('gpu_function_s',0) for e in events),default=0)
+    charge=min(1800,elapsed+15)
+    budget['events'].append({'candidate':'gemx-startup','run_id':run_id,
+        'remote_call_wall_s':elapsed,'gpu_function_s':remote_s,
+        'charged_upper_bound_seconds':charge,'success':events[-1]['kind']=='done'})
+    budget['reservations']=[]
+    budget['charged_upper_bound_seconds']=used+charge
+    budget_path.write_text(json.dumps(budget,indent=2),encoding='utf-8')
+    if events[-1]['kind']!='done': raise RuntimeError('Stage 1 failed; see run JSON. Stop before pipeline integration.')

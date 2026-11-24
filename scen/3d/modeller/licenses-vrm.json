@@ -1,0 +1,44 @@
+[
+  {
+    "source": "https://opengameart.org/sites/default/files/base_female.zip",
+    "member": "Base_Female.vrm",
+    "sha256": "1995f174f6c8f2211f3c56c9e5fe4f9daf27ee5e648f129479582a259238149b",
+    "meta": {
+      "version": "",
+      "author": "VRoidプロジェクト",
+      "contactInformation": "",
+      "reference": "",
+      "title": "Base_Female",
+      "texture": 24,
+      "allowedUserName": "Everyone",
+      "violentUssageName": "Allow",
+      "sexualUssageName": "Allow",
+      "commercialUssageName": "Allow",
+      "otherPermissionUrl": "https://hub.vroid.com/license?allowed_to_use_user=everyone&characterization_allowed_user=everyone&corporate_commercial_use=allow&credit=unnecessary&modification=allow&personal_commercial_use=profit&redistribution=allow&sexual_expression=allow&version=1&violent_expression=allow",
+      "licenseName": "CC0",
+      "otherLicenseUrl": "https://hub.vroid.com/license?allowed_to_use_user=everyone&characterization_allowed_user=everyone&corporate_commercial_use=allow&credit=unnecessary&modification=allow&personal_commercial_use=profit&redistribution=allow&sexual_expression=allow&version=1&violent_expression=allow"
+    },
+    "approved": true
+  },
+  {
+    "source": "https://opengameart.org/sites/default/files/base_male.zip",
+    "member": "Base_Male.vrm",
+    "sha256": "ab9af434a229283c192546486f9e6eb9cd855bf7d8d45b5037ac211938cb903c",
+    "meta": {
+      "version": "",
+      "author": "VRoidプロジェクト",
+      "contactInformation": "",
+      "reference": "",
+      "title": "Base_Male",
+      "texture": 24,
+      "allowedUserName": "Everyone",
+      "violentUssageName": "Allow",
+      "sexualUssageName": "Allow",
+      "commercialUssageName": "Allow",
+      "otherPermissionUrl": "https://hub.vroid.com/license?allowed_to_use_user=everyone&characterization_allowed_user=everyone&corporate_commercial_use=allow&credit=unnecessary&modification=allow&personal_commercial_use=profit&redistribution=allow&sexual_expression=allow&version=1&violent_expression=allow",
+      "licenseName": "CC0",
+      "otherLicenseUrl": "https://hub.vroid.com/license?allowed_to_use_user=everyone&characterization_allowed_user=everyone&corporate_commercial_use=allow&credit=unnecessary&modification=allow&personal_commercial_use=profit&redistribution=allow&sexual_expression=allow&version=1&violent_expression=allow"
+    },
+    "approved": true
+  }
+]

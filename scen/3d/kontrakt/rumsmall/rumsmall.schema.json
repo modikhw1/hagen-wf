@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "rumsmall/1. Malltal, ingen påstådd rumsrekonstruktion.",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Format.",
+      "const": "rumsmall/1"
+    },
+    "id": {
+      "type": "string",
+      "description": "Mall-id.",
+      "minLength": 1
+    },
+    "beskrivning": {
+      "type": "string",
+      "description": "Vad mallen föreställer."
+    },
+    "fiktiv": {
+      "type": "boolean",
+      "description": "Sant för helt påhittad kundlokal."
+    },
+    "status": {
+      "type": "string",
+      "description": "Alla numeriska värden i delar och ankare kommer från mallen.",
+      "const": "mall"
+    },
+    "antaganden": {
+      "type": "array",
+      "description": "Skäl och gränser.",
+      "items": {
+        "type": "string",
+        "description": "Ett skäl."
+      }
+    },
+    "delar": {
+      "type": "array",
+      "description": "Parametriska byggdelar.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "description": "En typad parametrisk del. Lokalt XY på golvet; mått X,Y,Z. Alla tal är mallvärden.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unikt delnamn.",
+            "minLength": 1
+          },
+          "typ": {
+            "type": "string",
+            "description": "Procedurbyggare.",
+            "enum": [
+              "golv",
+              "vagg",
+              "bord",
+              "stol",
+              "bardisk",
+              "hylla",
+              "fonster",
+              "lampa"
+            ]
+          },
+          "pos_m": {
+            "type": "array",
+            "description": "Delens lokala origo på golvet, alternativt nederkanten för vägg/fönster/lampa.",
+            "items": {
+              "type": "number",
+              "description": "Meter."
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "matt_m": {
+            "type": "array",
+            "description": "Bredd, djup, totalhöjd till sits/skiva. Meter.",
+            "items": {
+              "type": "number",
+              "description": "Positivt mallmått.",
+              "minimum": 0.001
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "yaw_rad": {
+            "type": "number",
+            "description": "Rotation kring +Z."
+          },
+          "material": {
+            "type": "object",
+            "description": "Enkelt material.",
+            "properties": {
+              "farg": {
+                "type": "string",
+                "description": "Färg.",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "ben_farg": {
+                "type": "string",
+                "description": "Ben/kantfärg.",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              }
+            },
+            "required": [
+              "farg"
+            ],
+            "additionalProperties": false
+          },
+          "ankare": {
+            "type": "array",
+            "description": "Delens stödankare.",
+            "items": {
+              "type": "object",
+              "description": "Ankare som delen tillhandahåller, i delens lokala ram.",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Stabilt namn.",
+                  "minLength": 1
+                },
+                "typ": {
+                  "type": "string",
+                  "description": "Stödets funktion.",
+                  "enum": [
+                    "sate",
+                    "bordskant",
+                    "staplats",
+                    "sta_bakom",
+                    "annat"
+                  ]
+                },
+                "pos_m": {
+                  "type": "array",
+                  "description": "Golvpunkten under sitt/ståplats; bordskant ligger på skivan.",
+                  "items": {
+                    "type": "number",
+                    "description": "Meter."
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "riktning_rad": {
+                  "type": "number",
+                  "description": "Framåt från +X, radianer."
+                },
+                "sate_hojd_m": {
+                  "type": "number",
+                  "description": "Sitsens ovansida över golv, mallvärde.",
+                  "minimum": 0.1
+                },
+                "backen_over_sate_m": {
+                  "type": "number",
+                  "description": "Ledcentrum över sitsens yta, mallvärde för mjukdelar.",
+                  "minimum": 0
+                },
+                "fotled_over_golv_m": {
+                  "type": "number",
+                  "description": "Fotledens ledcentrum över sulan, mallvärde.",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "id",
+                "typ",
+                "pos_m",
+                "riktning_rad"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "folj_ankare": {
+            "type": "string",
+            "description": "Valfritt mätt ankare som delen snäpps till efter rigid passning."
+          },
+          "modell_ref": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Valfri framtida lokal modellreferens. Laddas inte nu."
+          },
+          "texturprojektion": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "Reserverat för framtida projektion från källbilder. Används inte nu.",
+            "additionalProperties": true
+          },
+          "oppen_mitt": {
+            "type": "boolean",
+            "description": "Mall för öppen monterram och låg sockel i stället för hel ogenomskinlig låda. Klara glasytor utelämnas i Workbench."
+          },
+          "massiv": {
+            "type": "boolean",
+            "description": "Sant bygger bord/disk som en ogenomskinlig låda från golv till ovansida i stället för skiva på ben."
+          }
+        },
+        "required": [
+          "id",
+          "typ",
+          "pos_m",
+          "matt_m",
+          "yaw_rad",
+          "material",
+          "ankare"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "beskrivning",
+    "fiktiv",
+    "status",
+    "antaganden",
+    "delar"
+  ],
+  "additionalProperties": false
+}

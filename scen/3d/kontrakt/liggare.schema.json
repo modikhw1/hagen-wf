@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "liggare.schema.json",
+  "title": "liggare",
+  "description": "0031: vad handlingarna i ett klipp betyder och vad som får ändras. Skrivs vid ingest av en stark modell ur källan, handlingsspåret och relevanslistan. Fakta är korta predikat, pred(arg, arg, ...), med entiteternas id som argument. Jev läser bara ytan (jev_yta), aldrig hela liggaren.",
+  "type": "object",
+  "properties": {
+    "schema_version": {"description": "Kontraktsversion.", "const": "liggare/1"},
+    "klipp": {"description": "Klippets id, som i källan.", "type": "string"},
+    "kalla": {"description": "Källan liggaren skrevs mot.", "type": "object", "properties": {
+      "fil": {"description": "Källans sökväg, relativ till liggaren.", "type": "string"},
+      "revision": {"description": "Källans revision.", "type": "integer"}}, "required": ["fil", "revision"], "additionalProperties": false},
+    "skriven_av": {"description": "Vem eller vad som skrev liggaren, och med vilken prompt.", "type": "object", "properties": {
+      "modell": {"description": "Modellen (eller uppdragstagaren som stark modell).", "type": "string"},
+      "prompt": {"description": "Promptens fil.", "type": "string"},
+      "tid": {"description": "ISO 8601.", "type": ["string", "null"]}}, "required": ["modell", "prompt"], "additionalProperties": false},
+    "entiteter": {"description": "Allt som kan vara argument i ett faktum.", "type": "array", "items": {"$ref": "#/$defs/entitet"}},
+    "starttillstand": {"description": "Fakta som är sanna i klippets första ruta.", "type": "array", "items": {"$ref": "#/$defs/faktum"}},
+    "handelser": {"description": "Händelser i tidsordning, över handlingsspårets segment.", "type": "array", "items": {"$ref": "#/$defs/handelse"}},
+    "forlopp": {"description": "Händelser som hör ihop under ett syfte; den enhet CM oftast menar.", "type": "array", "items": {"$ref": "#/$defs/forlopp"}},
+    "mening": {"description": "Vad som bär poängen, vad som är tillfälligt och vad som ramar.", "type": "object", "properties": {
+      "poang": {"description": "Poängen i en mening.", "type": "string"},
+      "bar": {"description": "Roller eller fakta som bär poängen (till exempel ge.mottagare=kund).", "type": "array", "items": {"type": "string"}},
+      "tillfalligt": {"description": "Det som kan ändras utan att poängen faller (till exempel ge.kroppsdel).", "type": "array", "items": {"type": "string"}},
+      "ramar": {"description": "Det som ramar men inte bär.", "type": "array", "items": {"type": "string"}}}, "required": ["poang", "bar", "tillfalligt"], "additionalProperties": false},
+    "frihetsgrader": {"description": "Lagliga ändringar med värdedomän, utförandenivå, spridning och regi-mall.", "type": "array", "items": {"$ref": "#/$defs/frihetsgrad"}}
+  },
+  "required": ["schema_version", "klipp", "kalla", "skriven_av", "entiteter", "starttillstand", "handelser", "forlopp", "mening", "frihetsgrader"],
+  "additionalProperties": false,
+  "$defs": {
+    "faktum": {"description": "Ett predikat, pred(arg, ...). Argumenten är entiteters id eller korta konstanter (hoger, vanster).", "type": "string", "pattern": "^[a-z_]+\\([^()]*\\)$"},
+    "entitet": {"description": "En entitet med affordanser.", "type": "object", "properties": {
+      "id": {"description": "Unikt id.", "type": "string", "minLength": 1},
+      "typ": {"description": "person, kroppsdel, foremal, innehall, mobel, plats eller text.", "type": "string", "enum": ["person", "kroppsdel", "foremal", "innehall", "mobel", "plats", "text"]},
+      "namn": {"description": "Läsbart namn.", "type": "string"},
+      "agare": {"description": "För kroppsdel: personen. Annars null.", "type": ["string", "null"]},
+      "kalla_ref": {"description": "Id i källan eller planen (person, objekt, handföremål, skärmtext). null = finns inte där (till exempel innehållet).", "type": ["string", "null"]},
+      "affordanser": {"description": "Vad den kan göras med eller göra (kan_bara, kan_halla, kan_tas_med_sked, kan_ta_emot, ...).", "type": "array", "items": {"type": "string"}},
+      "kalla": {"description": "matt, last eller antagen.", "type": "string", "enum": ["matt", "last", "antagen"]}},
+      "required": ["id", "typ", "affordanser", "kalla"], "additionalProperties": false},
+    "handelse": {"description": "En händelse: ram, roller, förvillkor och effekt.", "type": "object", "properties": {
+      "id": {"description": "Unikt id.", "type": "string", "minLength": 1},
+      "ram": {"description": "Ett verb ur ett litet förråd (ge, ta, ta_emot, skopa, lyfta, rakna_fram, halla, luta_sig, rata_pa_sig, sta, tala, titta, gissa, vaga, ...).", "type": "string"},
+      "segment": {"description": "Handlingsspårets segment-id som händelsen täcker.", "type": "array", "items": {"type": "string"}},
+      "rutor": {"description": "Källrutor [första, sista+1).", "type": "array", "items": {"type": "integer"}, "minItems": 2, "maxItems": 2},
+      "roller": {"description": "Roll -> entitet-id (agent, sak, mottagare, verktyg, kalla, kroppsdel, mal).", "type": "object", "additionalProperties": {"type": "string"}},
+      "forvillkor": {"description": "Fakta som måste vara sanna före.", "type": "array", "items": {"$ref": "#/$defs/faktum"}},
+      "effekt": {"description": "Fakta som läggs till och tas bort.", "type": "object", "properties": {
+        "lagg_till": {"description": "Blir sanna.", "type": "array", "items": {"$ref": "#/$defs/faktum"}},
+        "ta_bort": {"description": "Upphör.", "type": "array", "items": {"$ref": "#/$defs/faktum"}}}, "required": ["lagg_till", "ta_bort"], "additionalProperties": false},
+      "kalla": {"description": "matt (gränser och hållning ur mätning), last (ur en modell) eller antagen.", "type": "string", "enum": ["matt", "last", "antagen"]},
+      "anmarkning": {"description": "Fritt, kort.", "type": ["string", "null"]}},
+      "required": ["id", "ram", "segment", "rutor", "roller", "forvillkor", "effekt", "kalla"], "additionalProperties": false},
+    "forlopp": {"description": "Ett förlopp.", "type": "object", "properties": {
+      "id": {"description": "Unikt id.", "type": "string", "minLength": 1},
+      "syfte": {"description": "Syftet i några ord.", "type": "string"},
+      "handelser": {"description": "Händelsernas id i ordning.", "type": "array", "items": {"type": "string"}},
+      "rutor": {"description": "Källrutor [första, sista+1).", "type": "array", "items": {"type": "integer"}, "minItems": 2, "maxItems": 2}},
+      "required": ["id", "syfte", "handelser", "rutor"], "additionalProperties": false},
+    "frihetsgrad": {"description": "En laglig ändring.", "type": "object", "properties": {
+      "id": {"description": "Unikt id; Jev-ytan pekar hit.", "type": "string", "minLength": 1},
+      "galler": {"description": "Händelse- eller förlopps-id, eller entitet-id för en entitets egenskap.", "type": "string"},
+      "parameter": {"description": "Vad som ändras: kroppsdel, tempo, antal, sak, finns, ordning, ...", "type": "string"},
+      "varde_nu": {"description": "Värdet i källan."},
+      "doman": {"description": "Lagliga värden.", "type": "object", "properties": {
+        "typ": {"description": "mangd eller intervall.", "type": "string", "enum": ["mangd", "intervall"]},
+        "varden": {"description": "För mangd.", "type": "array"},
+        "min": {"description": "För intervall.", "type": "number"},
+        "max": {"description": "För intervall.", "type": "number"}}, "required": ["typ"], "additionalProperties": false},
+      "niva": {"description": "Utförandenivå: 3d (direkt), redigering (rörelseredigeringsmodell) eller generering (ny generering).", "type": "string", "enum": ["3d", "redigering", "generering"]},
+      "bar_meningen": {"description": "Sant om ändringen rör något som bär poängen (kompilatorn varnar).", "type": "boolean"},
+      "spridning": {"description": "Det som måste följa med.", "type": "object", "properties": {
+        "handelser": {"description": "Händelser som ändras.", "type": "array", "items": {"type": "string"}},
+        "fakta": {"description": "Fakta som ändras, som 'gammalt -> nytt'.", "type": "array", "items": {"type": "string"}},
+        "foremal": {"description": "Fästen eller föremål som flyttas.", "type": "array", "items": {"type": "string"}}}, "required": ["handelser", "fakta"], "additionalProperties": false},
+      "text": {"description": "En rad till Jev, med {varde} för värdet.", "type": "string"},
+      "regi": {"description": "Regi-mall: edits med {varde} som platshållare; null = ingen operation finns (nivån saknas).", "type": ["array", "null"], "items": {"type": "object"}}},
+      "required": ["id", "galler", "parameter", "doman", "niva", "spridning", "text", "regi"], "additionalProperties": false}
+  }
+}

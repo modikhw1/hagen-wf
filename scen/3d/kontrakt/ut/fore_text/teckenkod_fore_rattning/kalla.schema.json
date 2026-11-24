@@ -1,0 +1,2105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kalla.schema.json",
+  "title": "kalla",
+  "description": "Frusen, uppmÃƒÂ¤tt beskrivning av ett kÃƒÂ¤llklipp. TvÃƒÂ¥ lager: semantik (vad klippet ÃƒÂ¤r) och matning (pekare till mÃƒÂ¤tfiler med koordinater och kvalitet). Redigeras aldrig. Ãƒâ€žndringar gÃƒÂ¶rs i regi.json.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "SÃƒÂ¶kvÃƒÂ¤g till detta schema.",
+      "type": "string"
+    },
+    "schema_version": {
+      "description": "Kontraktsversion.",
+      "const": "kalla/1"
+    },
+    "revision": {
+      "description": "Ãƒâ€“kar nÃƒÂ¤r semantiska lagret fylls pÃƒÂ¥ (till exempel efter transkribering). Regin anger vilken revision den skrevs mot.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "klipp": {
+      "description": "Vilket klipp detta ÃƒÂ¤r.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Stabilt klipp-id. Samma som harnessens id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "konto": {
+          "description": "Kontot klippet kommer frÃƒÂ¥n. null = okÃƒÂ¤nt.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sha256": {
+          "description": "SHA-256 fÃƒÂ¶r kÃƒÂ¤llvideon. Regin pekar hit fÃƒÂ¶r att veta att den hÃƒÂ¶r till rÃƒÂ¤tt kÃƒÂ¤lla.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "video": {
+          "description": "KÃƒÂ¤llvideon.",
+          "type": "object",
+          "properties": {
+            "sokvag": {
+              "description": "Relativ sÃƒÂ¶kvÃƒÂ¤g frÃƒÂ¥n kalla.json.",
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "description": "Filformat, till exempel mp4.",
+              "type": "string"
+            },
+            "bredd": {
+              "description": "Bredd i pixlar.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "hojd": {
+              "description": "HÃƒÂ¶jd i pixlar.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "ljud": {
+              "description": "Sant om videon har ett ljudspÃƒÂ¥r. null = okÃƒÂ¤nt.",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "sokvag",
+            "format",
+            "bredd",
+            "hojd",
+            "ljud"
+          ],
+          "additionalProperties": false
+        },
+        "beskrivning": {
+          "description": "Klippet i en mening. null = ingen.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "beskrivning_kalla": {
+          "description": "VarifrÃƒÂ¥n beskrivningen kommer. null = ingen.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "konto",
+        "sha256",
+        "video",
+        "beskrivning",
+        "beskrivning_kalla"
+      ],
+      "additionalProperties": false
+    },
+    "tidsbas": {
+      "description": "KÃƒÂ¤llklockan.",
+      "type": "object",
+      "properties": {
+        "fps_taljare": {
+          "description": "Bildfrekvens, tÃƒÂ¤ljare.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "fps_namnare": {
+          "description": "Bildfrekvens, nÃƒÂ¤mnare.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "antal_rutor": {
+          "description": "Antal bildrutor.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "langd_s": {
+          "description": "LÃƒÂ¤ngd i sekunder.",
+          "type": "number",
+          "minimum": 0
+        },
+        "regel": {
+          "description": "Hur tid och ruta hÃƒÂ¤nger ihop.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fps_taljare",
+        "fps_namnare",
+        "antal_rutor",
+        "langd_s",
+        "regel"
+      ],
+      "additionalProperties": false
+    },
+    "semantik": {
+      "description": "Det semantiska lagret: vad klippet ÃƒÂ¤r. Fruset efter ingest. Tomma listor och null betyder att uppgiften saknas, och kvalitet sÃƒÂ¤ger vilket steg som skulle ge den.",
+      "type": "object",
+      "properties": {
+        "scener": {
+          "description": "Scenerna i tidsordning.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scen"
+          }
+        },
+        "beats": {
+          "description": "Harnessens beats, om scenplan finns.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/beat"
+          }
+        },
+        "repliker": {
+          "description": "Replikerna med ordtider. Tom lista = klippet saknar kÃƒÂ¤nt tal eller transkript.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/replik"
+          }
+        },
+        "personer": {
+          "description": "Personerna.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/person"
+          }
+        },
+        "props": {
+          "description": "Rekvisita.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/prop"
+          }
+        },
+        "rum": {
+          "description": "Rummen.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/rum"
+          }
+        },
+        "skarmtext": {
+          "description": "SkÃƒÂ¤rmtext i kÃƒÂ¤llan.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skarmtext"
+          }
+        },
+        "ljud": {
+          "description": "Ljudets art i kÃƒÂ¤llan.",
+          "type": "object",
+          "properties": {
+            "tal": {
+              "description": "Talets art, till exempel inget, monolog eller dialog. Fritext eftersom ordfÃƒÂ¶rrÃƒÂ¥det kommer frÃƒÂ¥n e4-lagret. null = okÃƒÂ¤nt.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "musik": {
+              "description": "Sant om klippet har musik. null = okÃƒÂ¤nt.",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "trendljud": {
+              "description": "Sant om ljudet ÃƒÂ¤r ett trendljud. null = okÃƒÂ¤nt.",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "kalla": {
+              "description": "Fil eller steg som angav detta. null = okÃƒÂ¤nt.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "tal",
+            "musik",
+            "trendljud",
+            "kalla"
+          ],
+          "additionalProperties": false
+        },
+        "intention": {
+          "description": "IdÃƒÂ©ns uppbyggnad i harnessens ord: krok, vÃƒÂ¤ndning, payoff.",
+          "type": "object",
+          "properties": {
+            "karna": {
+              "description": "IdÃƒÂ©n i en mening. null = okÃƒÂ¤nd.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "krok": {
+              "$ref": "#/$defs/moment",
+              "description": "Kroken."
+            },
+            "vandning": {
+              "$ref": "#/$defs/moment",
+              "description": "VÃƒÂ¤ndningen."
+            },
+            "payoff": {
+              "$ref": "#/$defs/moment",
+              "description": "Utdelningen (punchline)."
+            },
+            "kalla": {
+              "description": "Hur intentionen togs fram, till exempel modellbedomd eller harness.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "karna",
+            "krok",
+            "vandning",
+            "payoff",
+            "kalla"
+          ],
+          "additionalProperties": false
+        },
+        "serie": {
+          "description": "Klippets plats i en serie. null = inte del av en serie eller okÃƒÂ¤nt.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "serie_id": {
+              "description": "Serie-id.",
+              "type": "string",
+              "minLength": 1
+            },
+            "position": {
+              "description": "Plats i serien, frÃƒÂ¥n 1.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "av": {
+              "description": "Antal klipp i serien. null = okÃƒÂ¤nt.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            }
+          },
+          "required": [
+            "serie_id",
+            "position",
+            "av"
+          ],
+          "additionalProperties": false
+        },
+        "platser": {
+          "description": "Platserna klippet utspelar sig pÃƒÂ¥ (valfri; ÃƒÂ¤ldre kalla saknar den). Ett klipp kan ha flera.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/plats"
+          }
+        }
+      },
+      "required": [
+        "scener",
+        "beats",
+        "repliker",
+        "personer",
+        "props",
+        "rum",
+        "skarmtext",
+        "ljud",
+        "intention",
+        "serie"
+      ],
+      "additionalProperties": false
+    },
+    "matning": {
+      "description": "MÃƒÂ¤tlagret: pekare till filer som ingest redan skriver, med koordinater och kvalitet. InnehÃƒÂ¥ller inga mÃƒÂ¤tvÃƒÂ¤rden sjÃƒÂ¤lv utÃƒÂ¶ver det som behÃƒÂ¶vs fÃƒÂ¶r att tolka filerna.",
+      "type": "object",
+      "properties": {
+        "koordinater": {
+          "description": "Koordinatsystem och enheter som mÃƒÂ¤tfilerna anvÃƒÂ¤nder. Anges uttryckligen eftersom ingest blandar flera.",
+          "type": "object",
+          "properties": {
+            "varld": {
+              "description": "VÃƒÂ¤rlden i varld.npz och rum.json.",
+              "type": "object",
+              "properties": {
+                "namn": {
+                  "description": "Namn pÃƒÂ¥ vÃƒÂ¤rlden.",
+                  "type": "string"
+                },
+                "handighet": {
+                  "description": "hÃƒÂ¶ger eller vÃƒÂ¤nster.",
+                  "type": "string"
+                },
+                "langdenhet": {
+                  "description": "LÃƒÂ¤ngdenhet.",
+                  "type": "string"
+                },
+                "skala_till_meter": {
+                  "description": "Faktor frÃƒÂ¥n COLMAP-enheter till meter (varld.npz: k).",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "upp": {
+                  "description": "Enhetsvektor fÃƒÂ¶r uppÃƒÂ¥t i vÃƒÂ¤rlden (varld.npz: upp).",
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "golvplan": {
+                  "description": "Hur golvplanet fÃƒÂ¶ljer av upp och golv_h.",
+                  "type": "string"
+                },
+                "beskrivning": {
+                  "description": "Vad som ÃƒÂ¤r kÃƒÂ¤nt om axlarna.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "namn",
+                "handighet",
+                "langdenhet",
+                "skala_till_meter",
+                "upp",
+                "golvplan",
+                "beskrivning"
+              ],
+              "additionalProperties": false
+            },
+            "kropp": {
+              "description": "KroppsrÃƒÂ¶relsen i sekvens_<id>.npz.",
+              "type": "object",
+              "properties": {
+                "modellrum": {
+                  "description": "Modellens rum.",
+                  "type": "string"
+                },
+                "langdenhet": {
+                  "description": "Enheter per array.",
+                  "type": "string"
+                },
+                "kvaternion_ordning": {
+                  "description": "Kvaternionernas ordning.",
+                  "type": "string"
+                },
+                "till_kameraform": {
+                  "description": "Matris frÃƒÂ¥n modellrum till kamerarum.",
+                  "type": "string"
+                },
+                "ledpost": {
+                  "description": "Vad de ÃƒÂ¥tta vÃƒÂ¤rdena per led betyder.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "modellrum",
+                "langdenhet",
+                "kvaternion_ordning",
+                "till_kameraform",
+                "ledpost"
+              ],
+              "additionalProperties": false
+            },
+            "kamera": {
+              "description": "KameraspÃƒÂ¥ren.",
+              "type": "object",
+              "properties": {
+                "konvention": {
+                  "description": "Kamerans axlar.",
+                  "type": "string"
+                },
+                "rotation": {
+                  "description": "Rotationens riktning.",
+                  "type": "string"
+                },
+                "fokal_enhet": {
+                  "description": "Enhet fÃƒÂ¶r fokal.",
+                  "type": "string"
+                },
+                "centrum": {
+                  "description": "Centrumets skala per fil.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "konvention",
+                "rotation",
+                "fokal_enhet",
+                "centrum"
+              ],
+              "additionalProperties": false
+            },
+            "rum": {
+              "description": "Rummet i rum.json.",
+              "type": "object",
+              "properties": {
+                "namn": {
+                  "description": "Namn pÃƒÂ¥ rummets system.",
+                  "type": "string"
+                },
+                "vinkelenhet": {
+                  "description": "Enhet fÃƒÂ¶r yaw.",
+                  "type": "string"
+                },
+                "beskrivning": {
+                  "description": "Hur centrum, normal, size och yaw lÃƒÂ¤ses.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "namn",
+                "vinkelenhet",
+                "beskrivning"
+              ],
+              "additionalProperties": false
+            },
+            "bild": {
+              "description": "Bildens koordinater.",
+              "type": "object",
+              "properties": {
+                "namn": {
+                  "description": "Namn.",
+                  "type": "string"
+                },
+                "enhet": {
+                  "description": "Enhet.",
+                  "type": "string"
+                },
+                "beskrivning": {
+                  "description": "Hur bbox och masker lÃƒÂ¤ses.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "namn",
+                "enhet",
+                "beskrivning"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "varld",
+            "kropp",
+            "kamera",
+            "rum",
+            "bild"
+          ],
+          "additionalProperties": false
+        },
+        "kameror": {
+          "description": "UppmÃƒÂ¤tta kameror.",
+          "type": "array",
+          "items": {
+            "description": "En uppmÃƒÂ¤tt kamera. Den ÃƒÂ¤ndras aldrig. Renderkameran i regi ÃƒÂ¤r en annan sak.",
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Stabilt kamera-id.",
+                "type": "string",
+                "minLength": 1
+              },
+              "spar_colmap": {
+                "description": "Banan i COLMAP:s egen skala (kamera.json).",
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/filref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "spar_metrisk": {
+                "description": "Banan per ruta i metrisk skala (varld.npz).",
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/filref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "fokal_px": {
+                "description": "BrÃƒÂ¤nnvidd i pixlar. null = okÃƒÂ¤nd.",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "statisk": {
+                "description": "Sant om kameran stÃƒÂ¥r still. null = okÃƒÂ¤nt.",
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "registrerade_rutor": {
+                "description": "Antal rutor COLMAP registrerade. null = okÃƒÂ¤nt.",
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "utvalda_rutor": {
+                "description": "Antal rutor COLMAP fick. null = okÃƒÂ¤nt.",
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "reprojektionsfel_px": {
+                "description": "Genomsnittligt reprojektionsfel i pixlar. null = okÃƒÂ¤nt.",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "metrisk_skala_k": {
+                "description": "Skala frÃƒÂ¥n COLMAP-enheter till meter. null = okÃƒÂ¤nd.",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "kalla_ruta0": {
+                "description": "Flerklippsfallet: kÃƒÂ¤llklippets ruta som kamerabanans och personernas ruta 0 motsvarar. Saknas fÃƒÂ¤ltet bÃƒÂ¶rjar mÃƒÂ¤tningen pÃƒÂ¥ kÃƒÂ¤llruta 0 (ett sammanhÃƒÂ¤ngande klipp).",
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "id",
+              "spar_colmap",
+              "spar_metrisk",
+              "fokal_px",
+              "statisk",
+              "registrerade_rutor",
+              "utvalda_rutor",
+              "reprojektionsfel_px",
+              "metrisk_skala_k"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "personer": {
+          "description": "MÃƒÂ¤tfiler per person.",
+          "type": "array",
+          "items": {
+            "description": "MÃƒÂ¤tfilerna fÃƒÂ¶r en person.",
+            "type": "object",
+            "properties": {
+              "person": {
+                "description": "Person-id, samma som semantik.personer[].id.",
+                "type": "string",
+                "minLength": 1
+              },
+              "rorelse": {
+                "description": "sekvens_<id>.npz: MHR-pose, rotposition, uttryck och synlighet per ruta.",
+                "$ref": "#/$defs/filref"
+              },
+              "synlighet": {
+                "description": "Per ruta: syns underkroppen.",
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/filref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "palitlighet": {
+                "description": "Per ruta: ÃƒÂ¤r anpassningen pÃƒÂ¥litlig.",
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/filref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "kontakt": {
+                "description": "Fotkontakt och glidning.",
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/filref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "rutor_inom": {
+                "description": "[fÃƒÂ¶rsta, sista+1) bildruta dÃƒÂ¤r personen ÃƒÂ¤r i bild (halvÃƒÂ¶ppet intervall i rutor).",
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "rutor_kanda": {
+                "description": "Rutor med en kroppsanpassning.",
+                "type": "integer",
+                "minimum": 0
+              },
+              "rutor_otillforlitliga": {
+                "description": "Rutor som markerats otillfÃƒÂ¶rlitliga och ersatts. null = tillfÃƒÂ¶rlitlighetsmÃƒÂ¤tning saknas.",
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "rutor_ben_synliga": {
+                "description": "Rutor dÃƒÂ¤r benen syns.",
+                "type": "integer",
+                "minimum": 0
+              },
+              "scen": {
+                "description": "Flerklippsfallet: scenen mÃƒÂ¤tningen gÃƒÂ¤ller. Saknas fÃƒÂ¤ltet eller ÃƒÂ¤r null gÃƒÂ¤ller mÃƒÂ¤tningen alla scener (ett sammanhÃƒÂ¤ngande klipp). person ÃƒÂ¤r dÃƒÂ¥ klippnivÃƒÂ¥ns id (semantik.personer[].id).",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1
+              },
+              "ingest_id": {
+                "description": "Flerklippsfallet: personens id i just den ingest-mappen (id:n ÃƒÂ¤r per tagning). null = okÃƒÂ¤nt.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "person",
+              "rorelse",
+              "synlighet",
+              "palitlighet",
+              "kontakt",
+              "rutor_inom",
+              "rutor_kanda",
+              "rutor_otillforlitliga",
+              "rutor_ben_synliga"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "rum": {
+          "description": "Rummens mÃƒÂ¤tfiler. id matchar semantik.rum[].id.",
+          "type": "array",
+          "items": {
+            "description": "Ett rums mÃƒÂ¤tfil.",
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Rum-id.",
+                "type": "string",
+                "minLength": 1
+              },
+              "fil": {
+                "description": "rum.json.",
+                "$ref": "#/$defs/filref"
+              }
+            },
+            "required": [
+              "id",
+              "fil"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "masker": {
+          "description": "Masker och personrutor.",
+          "type": "array",
+          "items": {
+            "description": "En mask- eller ruta-fil.",
+            "$ref": "#/$defs/filref"
+          }
+        },
+        "korlogg": {
+          "description": "tider.json: tid och mÃƒÂ¥tt per steg.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/filref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kvalitet": {
+          "description": "Ett utlÃƒÂ¥tande per uppgift: uppmÃƒÂ¤tt, antagen, modellbedÃƒÂ¶md eller saknas, med kÃƒÂ¤nd osÃƒÂ¤kerhet.",
+          "type": "array",
+          "items": {
+            "description": "Ett kvalitetsutlÃƒÂ¥tande om en uppgift.",
+            "type": "object",
+            "properties": {
+              "post": {
+                "description": "Vilken uppgift utlÃƒÂ¥tandet gÃƒÂ¤ller, punktad sÃƒÂ¶kvÃƒÂ¤g som semantik.rum.golv.",
+                "type": "string"
+              },
+              "status": {
+                "description": "uppmatt = mÃƒÂ¤tt ur bilden, antagen = ett antagande ersÃƒÂ¤tter mÃƒÂ¤tning, modellbedomd = en modell har bedÃƒÂ¶mt utan mÃƒÂ¤tning, saknas = ingen uppgift finns.",
+                "type": "string",
+                "enum": [
+                  "uppmatt",
+                  "antagen",
+                  "modellbedomd",
+                  "saknas"
+                ]
+              },
+              "metod": {
+                "description": "Hur uppgiften togs fram, eller varfÃƒÂ¶r den saknas.",
+                "type": "string"
+              },
+              "osakerhet": {
+                "description": "KÃƒÂ¤nd osÃƒÂ¤kerhet, till exempel skala, brÃƒÂ¤nnvidd eller golv. null = ingen kÃƒÂ¤nd.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "saknas_steg": {
+                "description": "Steget som skulle ge uppgiften, eller vad som saknas fÃƒÂ¶r att fÃƒÂ¥ den. null = inget saknas.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "kalla_fil": {
+                "description": "Fil, frÃƒÂ¥n repots rot, som utlÃƒÂ¥tandet bygger pÃƒÂ¥. null = ingen.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "post",
+              "status",
+              "metod",
+              "osakerhet",
+              "saknas_steg",
+              "kalla_fil"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "platser": {
+          "description": "MÃƒÂ¤tdelen av platserna: geometri, ankarnas lÃƒÂ¤gen, scenernas transform (valfri).",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/platsmatning"
+          }
+        }
+      },
+      "required": [
+        "koordinater",
+        "kameror",
+        "personer",
+        "rum",
+        "masker",
+        "korlogg",
+        "kvalitet"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "revision",
+    "klipp",
+    "tidsbas",
+    "semantik",
+    "matning"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "filref": {
+      "description": "Pekare till en fil som ingest redan har skrivit. SÃƒÂ¶kvÃƒÂ¤gen ÃƒÂ¤r relativ till mappen dÃƒÂ¤r kalla.json ligger.",
+      "type": "object",
+      "properties": {
+        "sokvag": {
+          "description": "Relativ sÃƒÂ¶kvÃƒÂ¤g, snedstreck framÃƒÂ¥t.",
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "description": "SHA-256 fÃƒÂ¶r filens innehÃƒÂ¥ll, 64 hextecken. Ãƒâ€žndras filen ÃƒÂ¤r pekaren inte lÃƒÂ¤ngre giltig.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "format": {
+          "description": "Filformat.",
+          "type": "string",
+          "enum": [
+            "json",
+            "npz",
+            "npy",
+            "mp4",
+            "jpg",
+            "png",
+            "md",
+            "log"
+          ]
+        },
+        "roll": {
+          "description": "Vad filen innehÃƒÂ¥ller, en mening.",
+          "type": "string"
+        },
+        "nycklar": {
+          "description": "FÃƒÂ¶r npz/npy: arrayerna i filen med form, typ och enhet. LÃƒÂ¤st ur den verkliga filen, inte antagen.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nyckel"
+          }
+        }
+      },
+      "required": [
+        "sokvag",
+        "sha256",
+        "format",
+        "roll"
+      ],
+      "additionalProperties": false
+    },
+    "nyckel": {
+      "description": "En array i en npz-fil.",
+      "type": "object",
+      "properties": {
+        "namn": {
+          "description": "Arrayens nyckel i filen.",
+          "type": "string"
+        },
+        "form": {
+          "description": "Arrayens form.",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "dtype": {
+          "description": "numpy-typ, till exempel float32 eller bool.",
+          "type": "string"
+        },
+        "enhet": {
+          "description": "Enhet om arrayen har en, annars null.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "beskrivning": {
+          "description": "Vad arrayen innehÃƒÂ¥ller.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "namn",
+        "form",
+        "dtype",
+        "enhet",
+        "beskrivning"
+      ],
+      "additionalProperties": false
+    },
+    "moment": {
+      "description": "Ett intentionsmoment (krok, vÃƒÂ¤ndning eller payoff).",
+      "type": "object",
+      "properties": {
+        "finns": {
+          "description": "Om momentet finns i klippet. null = ej bedÃƒÂ¶mt.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "vad": {
+          "description": "Vad som sker i momentet, en mening. null = ej angivet.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scen": {
+          "description": "Id fÃƒÂ¶r scenen dÃƒÂ¤r momentet sker. null = okÃƒÂ¤nt.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "required": [
+        "finns",
+        "vad",
+        "scen"
+      ],
+      "additionalProperties": false
+    },
+    "scen": {
+      "description": "En scen: ett sammanhÃƒÂ¤ngande klipp av kÃƒÂ¤llan med en funktion i idÃƒÂ©n.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Stabilt scen-id, till exempel s1. Regins redigeringar pekar hit.",
+          "type": "string",
+          "minLength": 1
+        },
+        "start_s": {
+          "description": "Start i sekunder pÃƒÂ¥ kÃƒÂ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "slut_s": {
+          "description": "Slut i sekunder pÃƒÂ¥ kÃƒÂ¤llklockan, exklusivt.",
+          "type": "number",
+          "minimum": 0
+        },
+        "funktion": {
+          "description": "Scenens funktion i idÃƒÂ©n, harnessens ordfÃƒÂ¶rrÃƒÂ¥d (h-scener.mjs). null = ej satt.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "krok",
+            "uppbyggnad",
+            "vandning",
+            "punchline",
+            "visning",
+            "tilltal",
+            "avslut",
+            null
+          ]
+        },
+        "bar": {
+          "description": "Om scenen bÃƒÂ¤r idÃƒÂ©n (karna), stÃƒÂ¶djer den (stod) eller ÃƒÂ¤r fri (fri). null = ej satt.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "karna",
+            "stod",
+            "fri",
+            null
+          ]
+        },
+        "syfte": {
+          "description": "VarfÃƒÂ¶r scenen finns, en mening. null = ej satt.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "miljo": {
+          "description": "Id fÃƒÂ¶r rummet dÃƒÂ¤r scenen utspelar sig (semantik.rum). null = okÃƒÂ¤nt.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "personer": {
+          "description": "Id fÃƒÂ¶r personerna som syns i scenen.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kamera": {
+          "description": "Id fÃƒÂ¶r den uppmÃƒÂ¤tta kameran (matning.kameror). null = okÃƒÂ¤nd.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "segmentering": {
+          "description": "VarifrÃƒÂ¥n scengrÃƒÂ¤nserna kommer.",
+          "type": "string",
+          "enum": [
+            "klippdetektering",
+            "harness",
+            "cm",
+            "antagen"
+          ]
+        },
+        "plats_id": {
+          "description": "Id fÃƒÂ¶r platsen scenen utspelar sig pÃƒÂ¥ (semantik.platser). Saknas eller null = ingen plats (ÃƒÂ¤ldre kalla).",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "bindningar": {
+          "description": "Vem som sitter eller stÃƒÂ¥r vid vilket ankare i scenen. Personer fÃƒÂ¶ljer sina ankare nÃƒÂ¤r platsen byts (byt_miljo).",
+          "type": "array",
+          "items": {
+            "description": "En bindning person till ankare.",
+            "type": "object",
+            "properties": {
+              "person": {
+                "description": "Person-id (semantik.personer).",
+                "type": "string",
+                "minLength": 1
+              },
+              "ankare": {
+                "description": "Ankar-id i scenens plats.",
+                "type": "string",
+                "minLength": 1
+              },
+              "hallning": {
+                "description": "sitter eller star.",
+                "type": "string",
+                "enum": [
+                  "sitter",
+                  "star"
+                ]
+              },
+              "status": {
+                "description": "Bindningen fÃƒÂ¶ljer av grammatik (antagen) eller mÃƒÂ¤tning.",
+                "type": "string",
+                "enum": [
+                  "uppmatt",
+                  "antagen",
+                  "modellbedomd",
+                  "saknas"
+                ]
+              }
+            },
+            "required": [
+              "person",
+              "ankare",
+              "hallning",
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "kamera_bindning": {
+          "type": "object",
+          "description": "Kameran fÃ¶ljer ankaret med uppmÃ¤tt lokal rÃ¶relse; en POV-kamera har kundsidans ankare.",
+          "properties": {
+            "ankare": {
+              "type": "string",
+              "description": "Ankar-id i scenens plats."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "uppmatt",
+                "antagen",
+                "modellbedomd"
+              ],
+              "description": "Ursprung för bindningen."
+            },
+            "metod": {
+              "type": "string",
+              "description": "Hur bindningen bestämdes."
+            }
+          },
+          "required": [
+            "ankare",
+            "status",
+            "metod"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "start_s",
+        "slut_s",
+        "funktion",
+        "bar",
+        "syfte",
+        "miljo",
+        "personer",
+        "kamera",
+        "segmentering"
+      ],
+      "additionalProperties": false
+    },
+    "beat": {
+      "description": "Ett beat ur harnessens scenplan. Skilt frÃƒÂ¥n scen eftersom ett beat saknar tider i dag.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Stabilt beat-id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "nr": {
+          "description": "Beatets nummer i scenplanen (h-scener.mjs: nr).",
+          "type": "integer",
+          "minimum": 1
+        },
+        "scen": {
+          "description": "Scenen beatet hÃƒÂ¶r till. null = inte bundet till en scen ÃƒÂ¤n.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "funktion": {
+          "description": "Harnessens funktion.",
+          "type": "string",
+          "enum": [
+            "krok",
+            "uppbyggnad",
+            "vandning",
+            "punchline",
+            "visning",
+            "tilltal",
+            "avslut"
+          ]
+        },
+        "bar": {
+          "description": "karna, stod eller fri.",
+          "type": "string",
+          "enum": [
+            "karna",
+            "stod",
+            "fri"
+          ]
+        },
+        "vad": {
+          "description": "Vad beatet gÃƒÂ¶r (h-scener.mjs: vad).",
+          "type": "string"
+        },
+        "bunden": {
+          "description": "Vad beatet ÃƒÂ¤r bundet till (v5-kortets beats[].bunden). null = ej bundet.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "produkt",
+            "lokal",
+            "person",
+            "trend",
+            "redigering",
+            null
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "nr",
+        "scen",
+        "funktion",
+        "bar",
+        "vad",
+        "bunden"
+      ],
+      "additionalProperties": false
+    },
+    "ord": {
+      "description": "Ett ord med tider.",
+      "type": "object",
+      "properties": {
+        "ord": {
+          "description": "Ordet som det stÃƒÂ¥r i texten.",
+          "type": "string"
+        },
+        "start_s": {
+          "description": "Start i sekunder pÃƒÂ¥ kÃƒÂ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "slut_s": {
+          "description": "Slut i sekunder pÃƒÂ¥ kÃƒÂ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "sannolikhet": {
+          "description": "IgenkÃƒÂ¤nningens sÃƒÂ¤kerhet 0 till 1 (ordtider.json: p). null = okÃƒÂ¤nd.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "ord",
+        "start_s",
+        "slut_s",
+        "sannolikhet"
+      ],
+      "additionalProperties": false
+    },
+    "replik": {
+      "description": "En replik i kÃƒÂ¤llan.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Stabilt replik-id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "talare": {
+          "description": "Person-id fÃƒÂ¶r talaren. null = okÃƒÂ¤nd.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "sprak": {
+          "description": "SprÃƒÂ¥kkod, till exempel sv.",
+          "type": "string"
+        },
+        "text": {
+          "description": "Texten som den sÃƒÂ¤gs.",
+          "type": "string"
+        },
+        "start_s": {
+          "description": "Start i sekunder pÃƒÂ¥ kÃƒÂ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "slut_s": {
+          "description": "Slut i sekunder pÃƒÂ¥ kÃƒÂ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "i_bild": {
+          "description": "Sant om talaren syns i bild nÃƒÂ¤r repliken sÃƒÂ¤gs, falskt om hen ÃƒÂ¤r utanfÃƒÂ¶r bild (J-klipp). null = okÃƒÂ¤nt.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "scen": {
+          "description": "Scenen dÃƒÂ¤r repliken bÃƒÂ¶rjar. null = okÃƒÂ¤nd.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "ord": {
+          "description": "Ordtider. Tom lista = inga ordtider finns.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ord"
+          }
+        },
+        "kalla": {
+          "description": "VarifrÃƒÂ¥n texten och tiderna kommer.",
+          "type": "string",
+          "enum": [
+            "whisper",
+            "manus",
+            "cm",
+            "modell",
+            "modellbedomd"
+          ]
+        },
+        "ursprung": {
+          "type": "object",
+          "description": "Modell och konfidens fÃƒÂ¶r vÃƒÂ¤rdet; ordtider har separat modell."
+        }
+      },
+      "required": [
+        "id",
+        "talare",
+        "sprak",
+        "text",
+        "start_s",
+        "slut_s",
+        "i_bild",
+        "scen",
+        "ord",
+        "kalla"
+      ],
+      "additionalProperties": false
+    },
+    "person": {
+      "description": "En person i klippet. Rollen ÃƒÂ¤r den som kunden senare castas mot.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Person-id. Samma strÃƒÂ¤ng som ingest anvÃƒÂ¤nder som person-id (nyckel i personer.json och sekvens_<id>.npz).",
+          "type": "string",
+          "minLength": 1
+        },
+        "roll": {
+          "description": "Rollen i klippet, till exempel bartender. null = ej angiven.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "beskrivning": {
+          "description": "Kort beskrivning av personen i klippet. null = ej angiven.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "roll_kalla": {
+          "description": "Vem som angav rollen: harness, cm, modell eller scen3d (handkalibrerade scen3d.json, inte mÃƒÂ¤tt). null = ingen roll angiven.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "harness",
+            "cm",
+            "modell",
+            "scen3d",
+            null,
+            "modellbedomd"
+          ]
+        },
+        "ursprung": {
+          "type": "object",
+          "description": "Modell och konfidens fÃƒÂ¶r vÃƒÂ¤rdet; ordtider har separat modell."
+        }
+      },
+      "required": [
+        "id",
+        "roll",
+        "beskrivning",
+        "roll_kalla"
+      ],
+      "additionalProperties": false
+    },
+    "prop": {
+      "description": "En flyttbar rekvisita.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Stabilt prop-id. Samma som objektets id i rum.json om det kommer dÃƒÂ¤rifrÃƒÂ¥n.",
+          "type": "string",
+          "minLength": 1
+        },
+        "typ": {
+          "description": "Semantisk typ pÃƒÂ¥ engelska snake_case, till exempel card_payment_terminal.",
+          "type": "string"
+        },
+        "etikett": {
+          "description": "Fritext-etikett frÃƒÂ¥n detekteringen. null = ingen.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "agare": {
+          "description": "Person som ÃƒÂ¤ger eller bÃƒÂ¤r fÃƒÂ¶remÃƒÂ¥let. null = ingen.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "stod": {
+          "description": "Id fÃƒÂ¶r det som fÃƒÂ¶remÃƒÂ¥let vilar pÃƒÂ¥, till exempel en fast del i rummet. null = okÃƒÂ¤nt.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "faste": {
+          "description": "Hur en rekvisita hÃƒÂ¥lls eller bÃƒÂ¤rs.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "person": {
+              "description": "Person-id.",
+              "type": "string",
+              "minLength": 1
+            },
+            "led": {
+              "description": "Ledens namn, till exempel hand_r. Namnen ska fÃƒÂ¶lja ingest/mhr_ledernamn.json, inte ett index.",
+              "type": "string"
+            },
+            "hand": {
+              "description": "Vilken hand om fÃƒÂ¶remÃƒÂ¥let hÃƒÂ¥lls. null = inte i hand.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "vanster",
+                "hoger",
+                null
+              ]
+            }
+          },
+          "required": [
+            "person",
+            "led",
+            "hand"
+          ],
+          "additionalProperties": false
+        },
+        "rum_ref": {
+          "description": "Objektets id i rum.json om det mÃƒÂ¤ts dÃƒÂ¤r. null = ej uppmÃƒÂ¤tt.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "kalla": {
+          "description": "Vad som angav fÃƒÂ¶remÃƒÂ¥let, till exempel rum.json.",
+          "type": "string"
+        },
+        "scen": {
+          "description": "Flerklippsfallet: scenen fÃƒÂ¶remÃƒÂ¥let finns i (rum_ref gÃƒÂ¤ller i den scenens rum.json). Saknas fÃƒÂ¤ltet eller ÃƒÂ¤r null finns det i alla scener.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "plats_id": {
+          "description": "Platsen vars objekt rum_ref pekar pÃƒÂ¥. Saknas eller null = rum_ref gÃƒÂ¤ller scenens eget rum.json.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "typ",
+        "etikett",
+        "agare",
+        "stod",
+        "faste",
+        "rum_ref",
+        "kalla"
+      ],
+      "additionalProperties": false
+    },
+    "rum": {
+      "description": "Ett rum. Geometrin ligger i rum.json, hit hÃƒÂ¶r bara betydelsen.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Stabilt rum-id. Samma id anvÃƒÂ¤nds i matning.rum.",
+          "type": "string",
+          "minLength": 1
+        },
+        "typ": {
+          "description": "Rumstyp i ett ord, till exempel bar.",
+          "type": "string"
+        },
+        "beskrivning": {
+          "description": "Kort beskrivning.",
+          "type": "string"
+        },
+        "vaggar": {
+          "description": "Id fÃƒÂ¶r vÃƒÂ¤ggar i rum.json.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fasta": {
+          "description": "Fasta delar som inte ÃƒÂ¤r rekvisita (disk, bord).",
+          "type": "array",
+          "items": {
+            "description": "En fast del.",
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Id i rum.json.",
+                "type": "string",
+                "minLength": 1
+              },
+              "typ": {
+                "description": "Semantisk typ, till exempel bar_counter.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "typ"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "typ",
+        "beskrivning",
+        "vaggar",
+        "fasta"
+      ],
+      "additionalProperties": false
+    },
+    "skarmtext": {
+      "description": "Text som stÃƒÂ¥r i bild i kÃƒÂ¤llan.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Stabilt id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "description": "Texten.",
+          "type": "string"
+        },
+        "start_s": {
+          "description": "Start i sekunder pÃƒÂ¥ kÃƒÂ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "slut_s": {
+          "description": "Slut i sekunder pÃƒÂ¥ kÃƒÂ¤llklockan.",
+          "type": "number",
+          "minimum": 0
+        },
+        "scen": {
+          "description": "Scen. null = okÃƒÂ¤nd.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "kalla": {
+          "description": "VarifrÃƒÂ¥n texten kommer.",
+          "type": "string",
+          "enum": [
+            "ocr",
+            "modell",
+            "cm"
+          ]
+        },
+        "box": {
+          "type": "array",
+          "description": "X, Y, bredd, hÃ¶jd i kÃ¤llpixlar; bildens Ã¶vre vÃ¤nstra hÃ¶rn Ã¤r origo.",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "stil": {
+          "type": "object",
+          "description": "UpplÃ¶st 2D-stil.",
+          "properties": {
+            "font": {
+              "type": "string",
+              "description": "Lokalt installerad fontfil. Valet är en approximation."
+            },
+            "storlek_px": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Fontstorlek i källpixlar."
+            },
+            "justering": {
+              "type": "string",
+              "enum": [
+                "vanster",
+                "center",
+                "hoger"
+              ],
+              "description": "Vänster, mitten eller höger i boxen."
+            },
+            "farg": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "description": "Teckenfärg som hex RGB."
+            },
+            "kontur_farg": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "description": "Konturfärg som hex RGB."
+            },
+            "kontur_px": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Konturtjocklek i källpixlar."
+            }
+          },
+          "additionalProperties": false
+        },
+        "typ": {
+          "type": "string",
+          "enum": [
+            "overlay",
+            "undertext"
+          ],
+          "description": "Overlay eller undertext kopplad till replik."
+        },
+        "replik": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Replik-id för undertext; null för annan text."
+        },
+        "ursprung": {
+          "type": "object",
+          "description": "Textens och lokaliseringens ursprung, metod och antaganden.",
+          "additionalProperties": true
+        },
+        "konfidens": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Konfidens för lokalisering, 0 till 1; inte en innehållssannolikhet."
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "start_s",
+        "slut_s",
+        "scen",
+        "kalla"
+      ],
+      "additionalProperties": false
+    },
+    "plats": {
+      "description": "En plats: det stÃƒÂ¤lle dÃƒÂ¤r scenerna utspelar sig. Meningen hÃƒÂ¤r (vilka ankare som finns); geometrin och transformerna ligger i matning.platser.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Stabilt plats-id, till exempel plats_1. Scener pekar hit med plats_id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "typ": {
+          "description": "Platstyp.",
+          "type": "string",
+          "enum": [
+            "inomhus",
+            "utomhus",
+            "okand"
+          ]
+        },
+        "beskrivning": {
+          "description": "Kort beskrivning.",
+          "type": "string"
+        },
+        "ankare": {
+          "description": "Namngivna semantiska ankare: sitt, bordskant, stÃƒÂ¤lle. En ersÃƒÂ¤ttningsplats behÃƒÂ¶ver bara ha ankare med samma id och typ, sÃƒÂ¥ fÃƒÂ¶ljer personerna med (byt_lokal).",
+          "type": "array",
+          "items": {
+            "description": "Ett ankare.",
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Ankarets id, till exempel stol_A. Samma id anvÃƒÂ¤nds i matning.platser[].ankare och i scenernas bindningar.",
+                "type": "string",
+                "minLength": 1
+              },
+              "typ": {
+                "description": "Ankartyp: sate (sittplats), bordskant, staplats (stÃƒÂ¥plats), annat.",
+                "type": "string",
+                "enum": [
+                  "sate",
+                  "bordskant",
+                  "staplats",
+                  "sta_bakom",
+                  "annat"
+                ]
+              },
+              "etikett": {
+                "description": "Fritext.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "typ",
+              "etikett"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "objekt": {
+          "description": "Platsens sammanslagna fasta objekt: id och etikett.",
+          "type": "array",
+          "items": {
+            "description": "Ett fast objekt.",
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Objektets id i plats.json.",
+                "type": "string",
+                "minLength": 1
+              },
+              "etikett": {
+                "description": "Etikett frÃƒÂ¥n detekteringen, till exempel table.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "etikett"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "rumsmall_id": {
+          "description": "Valfri vald rumsmall. Den passade instansen ligger hashlÃƒÂ¥st i matning.platser[].fil.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "typ",
+        "beskrivning",
+        "ankare",
+        "objekt"
+      ],
+      "additionalProperties": false
+    },
+    "platsmatning": {
+      "description": "MÃƒÂ¤tdelen av en plats: pekare till plats.json, golv, ankarnas lÃƒÂ¤gen och varje scens transform in i platsen.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Plats-id, samma som semantik.platser[].id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "fil": {
+          "description": "plats.json frÃƒÂ¥n ingest-steget plats.py (hashlÃƒÂ¥st).",
+          "$ref": "#/$defs/filref"
+        },
+        "koordinater": {
+          "description": "Platsens koordinatsystem.",
+          "type": "object",
+          "properties": {
+            "enhet": {
+              "description": "Alltid m.",
+              "type": "string"
+            },
+            "upp": {
+              "description": "UppÃƒÂ¥triktning, +Z.",
+              "type": "string"
+            },
+            "origo": {
+              "description": "Var origo ligger.",
+              "type": "string"
+            },
+            "axlar": {
+              "description": "Axlarnas riktning.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enhet",
+            "upp",
+            "origo",
+            "axlar"
+          ],
+          "additionalProperties": false
+        },
+        "golv": {
+          "description": "Platsens golv.",
+          "type": "object",
+          "properties": {
+            "hojd_m": {
+              "description": "Golvets z i platsen. 0 nÃƒÂ¤r flera tagningar lagts ihop; tagningens eget golv i identitetsfallet.",
+              "type": "number"
+            },
+            "status": {
+              "description": "Om golvhÃƒÂ¶jden ÃƒÂ¤r uppmÃƒÂ¤tt (synliga fÃƒÂ¶tter) eller antagen (kamerahÃƒÂ¶jd).",
+              "type": "string",
+              "enum": [
+                "uppmatt",
+                "antagen",
+                "modellbedomd",
+                "saknas"
+              ]
+            },
+            "kalla": {
+              "description": "VarifrÃƒÂ¥n golvet kommer.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "hojd_m",
+            "status",
+            "kalla"
+          ],
+          "additionalProperties": false
+        },
+        "ankare": {
+          "description": "Ankarnas lÃƒÂ¤gen i platsen.",
+          "type": "array",
+          "items": {
+            "description": "Ett ankares lÃƒÂ¤ge.",
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Samma id som i semantik.platser[].ankare.",
+                "type": "string",
+                "minLength": 1
+              },
+              "pos_m": {
+                "description": "Position [x,y,z] i meter i platsen; z = golv (sitt: golvet under bÃƒÂ¤ckenet).",
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "riktning_rad": {
+                "description": "Vilken vÃƒÂ¤g ankaret vÃƒÂ¤nder, vinkel kring +Z frÃƒÂ¥n +X, radianer. FÃƒÂ¶r sitt: personens framsida; fÃƒÂ¶r bordskant: ut mot sittplatsen.",
+                "type": "number"
+              },
+              "hojd_m": {
+                "description": "UppmÃƒÂ¤tt hÃƒÂ¶jd ÃƒÂ¶ver golvet (bÃƒÂ¤ckenhÃƒÂ¶jd fÃƒÂ¶r sitt/stÃƒÂ¥plats, bordsytans hÃƒÂ¶jd fÃƒÂ¶r bordskant). null = okÃƒÂ¤nd.",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "status": {
+                "description": "UppmÃƒÂ¤tt eller antaget lÃƒÂ¤ge.",
+                "type": "string",
+                "enum": [
+                  "uppmatt",
+                  "antagen",
+                  "modellbedomd",
+                  "saknas"
+                ]
+              },
+              "osakerhet_m": {
+                "description": "KÃƒÂ¤nd spridning i lÃƒÂ¤get i meter. null = okÃƒÂ¤nd.",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "metod": {
+                "description": "Hur lÃƒÂ¤get togs fram.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "pos_m",
+              "riktning_rad",
+              "hojd_m",
+              "status",
+              "osakerhet_m",
+              "metod"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "registreringar": {
+          "description": "Varje scens transform frÃƒÂ¥n tagningens egen vÃƒÂ¤rld (tyngdkraftsriktad Blender-vÃƒÂ¤rld) in i platsen.",
+          "type": "array",
+          "items": {
+            "description": "En scens registrering.",
+            "type": "object",
+            "properties": {
+              "scen": {
+                "description": "Scen-id.",
+                "type": "string",
+                "minLength": 1
+              },
+              "kamera": {
+                "description": "Kamera-id fÃƒÂ¶r scenen (matning.kameror).",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tagning": {
+                "description": "Tagningens id i plats.json.",
+                "type": "string",
+                "minLength": 1
+              },
+              "till_plats": {
+                "description": "Likformighetstransform: Rz(yaw) * x + translation, skala 1,0 (byggaren stÃƒÂ¶der inte annan skala).",
+                "type": "object",
+                "properties": {
+                  "yaw_rad": {
+                    "description": "Rotation kring +Z.",
+                    "type": "number"
+                  },
+                  "translation_m": {
+                    "description": "Translation [x,y,z] i meter.",
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "skala": {
+                    "description": "Likformig skala. Antagen 1,0.",
+                    "type": "number"
+                  },
+                  "matris": {
+                    "description": "Samma transform som 4x4-matris (rader).",
+                    "type": "array",
+                    "items": {
+                      "description": "En rad.",
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 4,
+                      "maxItems": 4
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  }
+                },
+                "required": [
+                  "yaw_rad",
+                  "translation_m",
+                  "skala",
+                  "matris"
+                ],
+                "additionalProperties": false
+              },
+              "metod": {
+                "description": "identitet = platsen ÃƒÂ¤r tagningens egen vÃƒÂ¤rld; matchning = bildmatchning mot en annan tagning; landmark = personens uppmÃƒÂ¤tta bÃƒÂ¤cken och riktning mot ett ankare; antagande = ingen koppling, antaget stÃƒÂ¤lle.",
+                "type": "string",
+                "enum": [
+                  "identitet",
+                  "matchning",
+                  "landmark",
+                  "antagande"
+                ]
+              },
+              "status": {
+                "description": "uppmatt = transformen fÃƒÂ¶ljer av mÃƒÂ¤tning mot en annan tagning eller definierar ramen; antagen = scengrammatik eller godtyckligt val.",
+                "type": "string",
+                "enum": [
+                  "uppmatt",
+                  "antagen",
+                  "modellbedomd",
+                  "saknas"
+                ]
+              },
+              "skala_status": {
+                "description": "Hur skalan 1,0 ÃƒÂ¤r faststÃƒÂ¤lld.",
+                "type": "string",
+                "enum": [
+                  "uppmatt",
+                  "antagen",
+                  "modellbedomd",
+                  "saknas"
+                ]
+              },
+              "residual_m": {
+                "description": "Median av 3D-resten fÃƒÂ¶r de bildmatchade punkterna efter transformen. null = ingen mÃƒÂ¤tning att jÃƒÂ¤mfÃƒÂ¶ra mot.",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "kommentar": {
+                "description": "Hur transformen kom till och vad som ÃƒÂ¤r antaget.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "scen",
+              "kamera",
+              "tagning",
+              "till_plats",
+              "metod",
+              "status",
+              "skala_status",
+              "residual_m",
+              "kommentar"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "rumsmall": {
+          "description": "Valfri referens till den passade mallen i plats.json.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "sha256",
+            "rms_m",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "description": "Mall-id i rumsmall/.",
+              "type": "string"
+            },
+            "sha256": {
+              "description": "Hash fÃƒÂ¶r mallen fÃƒÂ¶re passning.",
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "rms_m": {
+              "description": "Viktad ankarrest efter rigid passning, fÃƒÂ¶re stÃƒÂ¶dens lokala anpassning.",
+              "type": "number",
+              "minimum": 0
+            },
+            "status": {
+              "description": "MÃƒÂ¥ttens ursprung.",
+              "const": "mall"
+            }
+          }
+        }
+      },
+      "required": [
+        "id",
+        "fil",
+        "koordinater",
+        "golv",
+        "ankare",
+        "registreringar"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

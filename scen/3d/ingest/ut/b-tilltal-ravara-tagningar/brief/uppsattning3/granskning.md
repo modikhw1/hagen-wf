@@ -1,0 +1,208 @@
+# Granskning för ägaren
+
+Översättning i scratch: godkänd.
+
+## Gissade värden att godkänna
+
+- foremal.kottbit.bild.box_2d[0] = 471
+- foremal.kottbit.bild.box_2d[1] = 281
+- foremal.kottbit.bild.box_2d[2] = 720
+- foremal.kottbit.bild.box_2d[3] = 686
+- foremal.kottbit.bilder[0].box_2d[0] = 471
+- foremal.kottbit.bilder[0].box_2d[1] = 281
+- foremal.kottbit.bilder[0].box_2d[2] = 720
+- foremal.kottbit.bilder[0].box_2d[3] = 686
+- foremal.kottbit.bilder[10].box_2d[0] = 470
+- foremal.kottbit.bilder[10].box_2d[1] = 281
+- foremal.kottbit.bilder[10].box_2d[2] = 720
+- foremal.kottbit.bilder[10].box_2d[3] = 694
+- foremal.kottbit.bilder[1].box_2d[0] = 470
+- foremal.kottbit.bilder[1].box_2d[1] = 281
+- foremal.kottbit.bilder[1].box_2d[2] = 720
+- foremal.kottbit.bilder[1].box_2d[3] = 694
+- foremal.kottbit.bilder[2].box_2d[0] = 468
+- foremal.kottbit.bilder[2].box_2d[1] = 280
+- foremal.kottbit.bilder[2].box_2d[2] = 690
+- foremal.kottbit.bilder[2].box_2d[3] = 694
+- foremal.kottbit.bilder[3].box_2d[0] = 470
+- foremal.kottbit.bilder[3].box_2d[1] = 288
+- foremal.kottbit.bilder[3].box_2d[2] = 720
+- foremal.kottbit.bilder[3].box_2d[3] = 693
+- foremal.kottbit.bilder[4].box_2d[0] = 470
+- foremal.kottbit.bilder[4].box_2d[1] = 290
+- foremal.kottbit.bilder[4].box_2d[2] = 720
+- foremal.kottbit.bilder[4].box_2d[3] = 694
+- foremal.kottbit.bilder[5].box_2d[0] = 470
+- foremal.kottbit.bilder[5].box_2d[1] = 290
+- foremal.kottbit.bilder[5].box_2d[2] = 720
+- foremal.kottbit.bilder[5].box_2d[3] = 694
+- foremal.kottbit.bilder[6].box_2d[0] = 470
+- foremal.kottbit.bilder[6].box_2d[1] = 281
+- foremal.kottbit.bilder[6].box_2d[2] = 720
+- foremal.kottbit.bilder[6].box_2d[3] = 694
+- foremal.kottbit.bilder[7].box_2d[0] = 470
+- foremal.kottbit.bilder[7].box_2d[1] = 293
+- foremal.kottbit.bilder[7].box_2d[2] = 720
+- foremal.kottbit.bilder[7].box_2d[3] = 694
+- foremal.kottbit.bilder[8].box_2d[0] = 470
+- foremal.kottbit.bilder[8].box_2d[1] = 281
+- foremal.kottbit.bilder[8].box_2d[2] = 720
+- foremal.kottbit.bilder[8].box_2d[3] = 694
+- foremal.kottbit.bilder[9].box_2d[0] = 470
+- foremal.kottbit.bilder[9].box_2d[1] = 281
+- foremal.kottbit.bilder[9].box_2d[2] = 720
+- foremal.kottbit.bilder[9].box_2d[3] = 694
+- foremal.kottbit.storlek_m[0] = [0.15, 0.25]
+- foremal.kottbit.storlek_m[1] = [0.15, 0.25]
+- foremal.kottbit.storlek_m[2] = [0.11, 0.19]
+- foremal.kottbit.troskel = 0.6
+- foremal.vag.bild.box_2d[0] = 208
+- foremal.vag.bild.box_2d[1] = 145
+- foremal.vag.bild.box_2d[2] = 864
+- foremal.vag.bild.box_2d[3] = 853
+- foremal.vag.bilder[0].box_2d[0] = 486
+- foremal.vag.bilder[0].box_2d[1] = 145
+- foremal.vag.bilder[0].box_2d[2] = 888
+- foremal.vag.bilder[0].box_2d[3] = 574
+- foremal.vag.bilder[1].box_2d[0] = 415
+- foremal.vag.bilder[1].box_2d[1] = 0
+- foremal.vag.bilder[1].box_2d[2] = 950
+- foremal.vag.bilder[1].box_2d[3] = 706
+- foremal.vag.bilder[2].box_2d[0] = 486
+- foremal.vag.bilder[2].box_2d[1] = 145
+- foremal.vag.bilder[2].box_2d[2] = 888
+- foremal.vag.bilder[2].box_2d[3] = 574
+- foremal.vag.bilder[3].box_2d[0] = 486
+- foremal.vag.bilder[3].box_2d[1] = 145
+- foremal.vag.bilder[3].box_2d[2] = 888
+- foremal.vag.bilder[3].box_2d[3] = 574
+- foremal.vag.storlek_m[0] = [0.22, 0.38]
+- foremal.vag.storlek_m[1] = [0.3, 0.5]
+- foremal.vag.storlek_m[2] = [0.38, 0.62]
+- foremal.vag.troskel = 0.6
+- golv.hojd_m = [0.0, 0.0]
+- kameror.S1.hojd_m = [1.0, 1.8]
+- kameror.S1.spar_id = 1
+- kameror.S10.hojd_m = [1.0, 1.8]
+- kameror.S10.spar_id = 1
+- kameror.S11.hojd_m = [1.0, 1.8]
+- kameror.S11.spar_id = 1
+- kameror.S2.hojd_m = [1.0, 1.8]
+- kameror.S2.spar_id = 1
+- kameror.S3.hojd_m = [1.0, 1.8]
+- kameror.S3.spar_id = 1
+- kameror.S4.hojd_m = [1.0, 1.8]
+- kameror.S4.spar_id = 1
+- kameror.S5.hojd_m = [1.0, 1.8]
+- kameror.S5.spar_id = 1
+- kameror.S6.hojd_m = [1.0, 1.8]
+- kameror.S6.spar_id = 1
+- kameror.S7.hojd_m = [1.0, 1.8]
+- kameror.S7.spar_id = 1
+- kameror.S8.hojd_m = [1.0, 1.8]
+- kameror.S8.spar_id = 1
+- kameror.S9.hojd_m = [1.0, 1.8]
+- kameror.S9.spar_id = 1
+- niva.rekommenderad = 0.6
+- niva.varde = 0.6
+- platser.disk_A.bild.box_2d[0] = 700
+- platser.disk_A.bild.box_2d[1] = 0
+- platser.disk_A.bild.box_2d[2] = 1000
+- platser.disk_A.bild.box_2d[3] = 1000
+- platser.disk_A.bilder[0].box_2d[0] = 700
+- platser.disk_A.bilder[0].box_2d[1] = 0
+- platser.disk_A.bilder[0].box_2d[2] = 1000
+- platser.disk_A.bilder[0].box_2d[3] = 1000
+- platser.disk_A.bilder[1].box_2d[0] = 700
+- platser.disk_A.bilder[1].box_2d[1] = 0
+- platser.disk_A.bilder[1].box_2d[2] = 1000
+- platser.disk_A.bilder[1].box_2d[3] = 1000
+- platser.disk_A.bilder[2].box_2d[0] = 700
+- platser.disk_A.bilder[2].box_2d[1] = 0
+- platser.disk_A.bilder[2].box_2d[2] = 1000
+- platser.disk_A.bilder[2].box_2d[3] = 1000
+- platser.disk_A.bilder[3].box_2d[0] = 700
+- platser.disk_A.bilder[3].box_2d[1] = 0
+- platser.disk_A.bilder[3].box_2d[2] = 1000
+- platser.disk_A.bilder[3].box_2d[3] = 1000
+- platser.disk_A.storlek_m.hojd = [0.9, 1.0]
+- platser.disk_A.storlek_m.langs_x = [1.5, 2.5]
+- platser.disk_A.storlek_m.langs_y = [0.5, 0.7]
+- platser.disk_C.bild.box_2d[0] = 715
+- platser.disk_C.bild.box_2d[1] = 0
+- platser.disk_C.bild.box_2d[2] = 934
+- platser.disk_C.bild.box_2d[3] = 366
+- platser.disk_C.bilder[0].box_2d[0] = 700
+- platser.disk_C.bilder[0].box_2d[1] = 0
+- platser.disk_C.bilder[0].box_2d[2] = 1000
+- platser.disk_C.bilder[0].box_2d[3] = 500
+- platser.disk_C.bilder[1].box_2d[0] = 700
+- platser.disk_C.bilder[1].box_2d[1] = 0
+- platser.disk_C.bilder[1].box_2d[2] = 1000
+- platser.disk_C.bilder[1].box_2d[3] = 500
+- platser.disk_C.bilder[2].box_2d[0] = 680
+- platser.disk_C.bilder[2].box_2d[1] = 0
+- platser.disk_C.bilder[2].box_2d[2] = 1000
+- platser.disk_C.bilder[2].box_2d[3] = 1000
+- platser.disk_C.bilder[3].box_2d[0] = 680
+- platser.disk_C.bilder[3].box_2d[1] = 0
+- platser.disk_C.bilder[3].box_2d[2] = 1000
+- platser.disk_C.bilder[3].box_2d[3] = 1000
+- platser.disk_C.bilder[4].box_2d[0] = 680
+- platser.disk_C.bilder[4].box_2d[1] = 0
+- platser.disk_C.bilder[4].box_2d[2] = 1000
+- platser.disk_C.bilder[4].box_2d[3] = 1000
+- platser.disk_C.bilder[5].box_2d[0] = 700
+- platser.disk_C.bilder[5].box_2d[1] = 0
+- platser.disk_C.bilder[5].box_2d[2] = 1000
+- platser.disk_C.bilder[5].box_2d[3] = 500
+- platser.disk_C.bilder[6].box_2d[0] = 700
+- platser.disk_C.bilder[6].box_2d[1] = 0
+- platser.disk_C.bilder[6].box_2d[2] = 1000
+- platser.disk_C.bilder[6].box_2d[3] = 500
+- platser.disk_C.storlek_m.hojd = [0.9, 1.0]
+- platser.disk_C.storlek_m.langs_x = [1.5, 2.5]
+- platser.disk_C.storlek_m.langs_y = [0.5, 0.7]
+- platser.kamera_1.blick_grader = 90
+- platser.kamera_1.pos_m[0] = 0.0
+- platser.kamera_1.pos_m[1] = 0.133
+- platser.kamera_1.pos_m[2] = 1.4
+- platser.kamera_2.blick_grader = 90
+- platser.kamera_2.pos_m[0] = 2.267
+- platser.kamera_2.pos_m[1] = -2.34
+- platser.kamera_2.pos_m[2] = 1.4
+- platser.kamera_3.blick_grader = 90
+- platser.kamera_3.pos_m[0] = 2.267
+- platser.kamera_3.pos_m[1] = -0.354
+- platser.kamera_3.pos_m[2] = 1.4
+- platser.kamera_4.blick_grader = 90
+- platser.kamera_4.pos_m[0] = 2.267
+- platser.kamera_4.pos_m[1] = 0.069
+- platser.kamera_4.pos_m[2] = 1.4
+- platser.staplats_A.blick_grader = 270
+- platser.staplats_A.pos_m[0] = 0.0
+- platser.staplats_A.pos_m[1] = 1.366
+- platser.staplats_A.pos_m[2] = 0.0
+- platser.staplats_B.blick_grader = 270
+- platser.staplats_B.pos_m[0] = 0.0
+- platser.staplats_B.pos_m[1] = 1.366
+- platser.staplats_B.pos_m[2] = 0.0
+- platser.staplats_C.blick_grader = 270
+- platser.staplats_C.pos_m[0] = 2.267
+- platser.staplats_C.pos_m[1] = 1.359
+- platser.staplats_C.pos_m[2] = 0.0
+
+## Rollidentiteter att godkänna
+
+- A:  — S1, S2
+- B:  — S3, S4
+- C:  — S5, S6, S7, S8, S9, S10, S11
+- kameraman: Den som filmar. — 
+
+## Relevansnivåer att godkänna
+
+- bar_scenen: 
+- satter_rummet: 
+- stryks: 
+
+Svara med vilka antaganden/intervall, identiteter och relevansnivåer du godkänner eller rättar.

@@ -1,0 +1,576 @@
+﻿"""Snabb kompilering, oförändrade byggbeslut och cache över processgränsen."""
+import copy
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+import numpy as np
+from gemensamt import HIT, ladda, skriv
+from kompilera import kompilera
+import datacache
+import kroppmatt
+import kvalitet
+import mobelintervall
+import mobellyft
+import foremallyft
+import boxpassning
+import skymning
+
+
+def byggdata(plan):
+    p=copy.deepcopy(plan);p.pop('kvalitet',None)
+    p['varningar']=[v for v in p['varningar'] if not v.startswith('Bildtrohet överskrider egna diagnostiska trösklar.')]
+    return p
+
+
+class Snabb(unittest.TestCase):
+    def test_skymning_anvander_3d_segment_till_kroppspunkt(self):
+        from bildkamera import _projicera
+        from kompilera import sikta
+        key=dict(matris=sikta([0.,-3.,1.2],[0.,0.,1.]),lins_mm=36.)
+        M=np.asarray(key['matris'],float)
+        # Samma disk: handen ligger över ovansidan och dess kamerasegment missar
+        # lådan; höften ligger bakom fronten och segmentet går genom lådan.
+        varld=np.array([[0.,0.,1.2],[0.,.5,.8]])
+        lokal=(varld-M[:3,3])@M[:3,:3]
+        mhr=lokal*np.array([1.,-1.,-1.])
+        uv=_projicera(varld,key,np.zeros(6),1000,1000)
+        disk=dict(id='disk',pos_m=[0.,0.,.5],matt_m=[2.,.5,1.],rotation_rad=[0,0,0])
+        traff=skymning.konflikt(uv,mhr,key,1000,1000,[disk])['disk']
+        np.testing.assert_array_equal(traff,[False,True])
+
+    def test_bildbekraftad_mobel_bevaras_vid_granskonflikt(self):
+        plan=dict(objekt=[dict(id='disk',status='mall',deltyp='bord',synlig_ut=[0,1])],kallrutor=[0],
+                  scener=[dict(id='s1',ut=[0,1])],matkamera=dict(scener=[]),
+                  kvalitet=dict(mobel_lyft=[dict(mobel='disk',status='flyttad')]))
+        matt=dict(per_del=[dict(scen='s1',del_id='disk',flaggad=True)],omvand=[])
+        with patch.object(skymning,'mat',return_value=matt): rapport=skymning.los(plan)
+        self.assertEqual([o['id'] for o in plan['objekt']],['disk'])
+        self.assertTrue(rapport['atgarder'][0]['granskonflikt'])
+        self.assertEqual(rapport['atgarder'][0]['atgard'],'bevarad trots skymningskonflikt')
+
+    def test_foremal_foljer_mobelns_valda_hojd_och_mitt(self):
+        del_ = dict(id='disk',typ='bord',massiv=True,pos_m=[10.,20.,0.],matt_m=[2.,1.,1.],yaw_rad=np.pi/2,
+                    material=dict(farg='#333638',ben_farg='#303537'),ankare=[],modell_ref=None,texturprojektion=None)
+        bord=next(iter(mobelintervall._lador(del_).values()))
+        foremal=dict(id='disk:pa:vag',namn='mall:disk:pa:vag',typ='lada',pos_m=[10.2,20.1,1.1],rotation_rad=[0,0,0],
+                     matt_m=[.2,.3,.2],farg='#fff',top_slope=0,fas_m=.01,status='mall',deltyp='bord',modell_ref=None,texturprojektion=None)
+        plan=dict(objekt=[bord,foremal],kallrutor=[0],kvalitet={})
+        plats={'p':dict(rumsmall=dict(passning=dict(yaw_rad=np.pi/2),delar=[del_]),
+                        deklarerat=dict(mobler={'disk':dict(hojd_m=[.8,1.],mitt_x_m=[1.,2.],mitt_y_m=0.)}))}
+        def matt(_, objekt, __):
+            b=next(o for o in objekt if o['id']=='disk')
+            fel=abs(b['matt_m'][2]-.8)+abs(b['pos_m'][1]-20.5)
+            return [dict(scen='s',andel=fel,flaggad=fel>1e-8)]
+        with patch.object(mobelintervall,'_forbered',return_value=None),patch.object(mobelintervall,'_mat',side_effect=matt):
+            rapport=mobelintervall.losa(plan,plats)
+        vag=next(o for o in plan['objekt'] if o['id']=='disk:pa:vag')
+        np.testing.assert_allclose(vag['pos_m'],[10.2,20.6,.9],atol=1e-9)
+        self.assertEqual(vag['matt_m'],[.2,.3,.2])
+        self.assertEqual(rapport[0]['efter']['varden']['hojd_m'],.8)
+        self.assertEqual(rapport[0]['efter']['varden']['mitt_x_m'],2.)
+
+    def test_foremal_lyfts_mot_slutkamera_och_klams_till_stodet(self):
+        from bildkamera import _projicera
+        from kompilera import sikta
+        key=dict(matris=sikta([0.,-3.,3.],[0.,0.,1.]),lins_mm=36.)
+        mal=np.array([[.5,0.,1.]])
+        uv=_projicera(mal,key,np.zeros(6),1000,1000)[0]
+        box=[float(uv[1]-80),float(uv[0]-40),float(uv[1]),float(uv[0]+40)]
+        stod=dict(id='disk',pos_m=[0.,0.,.5],matt_m=[.6,2.,1.],rotation_rad=[0,0,0])
+        vag=dict(id='disk:pa:vag',pos_m=[0.,0.,1.1],matt_m=[.2,.2,.2],rotation_rad=[0,0,0])
+        plan=dict(objekt=[stod,vag],renderkamera=dict(sensor_bredd_mm=36,nycklar=[key]),utdata=dict(bredd=1000,hojd=1000),
+                  scener=[dict(id='s1',ut=[0,1])],kvalitet={},plats=[dict(id='p',deklarerat=dict(foremal={
+                      'vag':dict(pa='disk',objekt_id='disk:pa:vag',bild=dict(tagning='S1',box_2d=box))}))])
+        rapport=foremallyft.los(plan)
+        np.testing.assert_allclose(vag['pos_m'],[.2,0.,1.1],atol=1e-9)
+        self.assertEqual(rapport[0]['status'],'flyttad')
+        self.assertEqual(rapport[0]['ruta'],0)
+        self.assertIn('bottenmitt',rapport[0]['metod'])
+
+    def _mobelplan(self, punkt, toppkant=False, barn=False):
+        from bildkamera import _projicera
+        from kompilera import sikta
+        key = dict(matris=sikta([0., -4., 3.], [0., 0., .8]), lins_mm=36.)
+        uv = _projicera(np.asarray([punkt], float), key, np.zeros(6), 1000, 1000)[0]
+        box = [float(uv[1] if toppkant else uv[1] - 100), float(uv[0] - 80),
+               1000. if toppkant else float(uv[1]), float(uv[0] + 80)]
+        disk = dict(id='disk', pos_m=[2., 2., .5], matt_m=[.6, 1., 1.], rotation_rad=[0, 0, 0])
+        objekt = [disk]
+        if barn: objekt.append(dict(id='disk:pa:vag', pos_m=[2.1, 2.2, 1.1], matt_m=[.2, .2, .2], rotation_rad=[0, 0, 0]))
+        plan = dict(objekt=objekt, renderkamera=dict(sensor_bredd_mm=36, nycklar=[key]), utdata=dict(bredd=1000, hojd=1000),
+                    scener=[dict(id='S1', ut=[0, 1])], kvalitet={}, plats=[dict(id='p', golv_hojd_m=0., deklarerat=dict(mobler={
+                        'disk': dict(bild=dict(tagning='S1', box_2d=box))}))])
+        return plan
+
+    def test_mobel_lyfts_fran_synlig_bottenkant_mot_golvet(self):
+        plan = self._mobelplan([.4, 0., 0.])
+        rapport = mobellyft.los(plan)
+        np.testing.assert_allclose(plan['objekt'][0]['pos_m'], [.4, .5, .5], atol=1e-9)
+        self.assertEqual(plan['objekt'][0]['matt_m'], [.6, 1., 1.])
+        self.assertEqual(plan['objekt'][0]['rotation_rad'], [0, 0, 0])
+        self.assertEqual(rapport[0]['kant'], 'bottenkant')
+        self.assertIn('ymax < 990', rapport[0]['kantorsak'])
+
+    def test_mobel_lyfts_fran_beskuren_topps_bakkant(self):
+        plan = self._mobelplan([-.3, 1., 1.], toppkant=True)
+        rapport = mobellyft.los(plan)
+        np.testing.assert_allclose(plan['objekt'][0]['pos_m'], [-.3, .5, .5], atol=1e-9)
+        self.assertEqual(rapport[0]['kant'], 'ovansidans_bakkant')
+        self.assertIn('ymax >= 990', rapport[0]['kantorsak'])
+
+    def test_mobel_lyft_flyttar_pa_barn_med_samma_delta(self):
+        plan = self._mobelplan([.4, 0., 0.], barn=True)
+        fore_mobel = np.asarray(plan['objekt'][0]['pos_m'], float).copy()
+        fore_barn = np.asarray(plan['objekt'][1]['pos_m'], float).copy()
+        mobellyft.los(plan)
+        np.testing.assert_allclose(np.asarray(plan['objekt'][1]['pos_m']) - fore_barn,
+                                   np.asarray(plan['objekt'][0]['pos_m']) - fore_mobel, atol=1e-9)
+
+    def test_mobel_lyft_klams_fore_framfor_personen(self):
+        plan = self._mobelplan([0., 1.5, 0.])
+        plan['plats'][0]['deklarerat']['mobler']['disk']['framfor'] = 'person'
+        plan['plats'][0]['ankare'] = [dict(id='person', pos_m=[0., 1.5, 0.])]
+        rapport = mobellyft.los(plan)
+        np.testing.assert_allclose(plan['objekt'][0]['pos_m'], [0., .9, .5], atol=1e-9)
+        self.assertTrue(rapport[0]['klamd'])
+        self.assertEqual(rapport[0]['klamningsgrans'], 'personplats')
+        self.assertEqual(rapport[0]['framfor'], 'person')
+        self.assertFalse(rapport[0]['granskonflikt'])
+        self.assertAlmostEqual(rapport[0]['uppnadd_personmarginal_m'], .1)
+
+        trang = self._mobelplan([0., 1., 0.])
+        trang['plats'][0]['deklarerat']['mobler']['disk']['framfor'] = 'person'
+        trang['plats'][0]['ankare'] = [dict(id='person', pos_m=[0., -3.25, 0.])]
+        rapport = mobellyft.los(trang)
+        self.assertTrue(rapport[0]['granskonflikt'])
+        self.assertEqual(rapport[0]['klamningsgrans'], 'personplats')
+        self.assertAlmostEqual(rapport[0]['uppnadd_personmarginal_m'], .1)
+        self.assertLess(rapport[0]['uppnadd_kameramarginal_m'], .3)
+
+    def _flerbildsplan(self, kameror, start=(1., 1.)):
+        disk = dict(id='disk', pos_m=[float(start[0]), float(start[1]), .5], matt_m=[.8, .6, 1.], rotation_rad=[0, 0, .2])
+        plan = dict(objekt=[disk], renderkamera=dict(sensor_bredd_mm=36, nycklar=kameror),
+                    utdata=dict(bredd=1000, hojd=1000),
+                    scener=[dict(id=f'S{i + 1}', ut=[i, i + 1]) for i in range(len(kameror))],
+                    kvalitet={}, plats=[dict(id='p', golv_hojd_m=0., deklarerat=dict(mobler={}))])
+        bilder = []
+        for i, key in enumerate(kameror):
+            kant = boxpassning.projicerade_kanter(plan, disk, [0., 0.], key)
+            bilder.append(dict(tagning=f'S{i + 1}', box_2d=[kant['topp'], kant['vanster'], kant['botten'], kant['hoger']]))
+        return plan, bilder
+
+    def test_mobel_flerbildspassning_forenar_tva_oeniga_enbildslyft(self):
+        from kompilera import sikta
+        kameror = [dict(matris=sikta([-1., -4., 2.5], [0., 0., .5]), lins_mm=36.),
+                   dict(matris=sikta([1.2, -3., 2.2], [0., 0., .5]), lins_mm=42.)]
+        plan, bilder = self._flerbildsplan(kameror)
+        enbild = []
+        for bild in bilder:
+            p = copy.deepcopy(plan); p['plats'][0]['deklarerat']['mobler']['disk'] = dict(bild=bild)
+            mobellyft.los(p); enbild.append(np.asarray(p['objekt'][0]['pos_m'][:2]))
+        self.assertGreater(np.linalg.norm(enbild[0] - enbild[1]), .05)
+        plan['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder)
+        rapport = mobellyft.los(plan)[0]
+        np.testing.assert_allclose(plan['objekt'][0]['pos_m'][:2], [0., 0.], atol=1e-7)
+        self.assertEqual([p['tagning'] for p in rapport['per_tagning']], ['S1', 'S2'])
+        self.assertTrue(all(p['efter_rms_px'] < 1e-6 for p in rapport['per_tagning']))
+
+    def test_mobel_flerbildspassning_minskar_vikten_for_en_uteliggare(self):
+        from kompilera import sikta
+        kameror = [dict(matris=sikta([-1., -4., 2.5], [0., 0., .5]), lins_mm=36.),
+                   dict(matris=sikta([1.2, -3., 2.2], [0., 0., .5]), lins_mm=42.),
+                   dict(matris=sikta([-.3, -3.5, 2.8], [0., 0., .5]), lins_mm=38.),
+                   dict(matris=sikta([.7, -4.2, 2.4], [0., 0., .5]), lins_mm=40.)]
+        plan, bilder = self._flerbildsplan(kameror, start=(.8, .8))
+        bilder[-1]['box_2d'][1] += 300.; bilder[-1]['box_2d'][3] += 300.
+        plan['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder)
+        rapport = mobellyft.los(plan)[0]
+        self.assertLess(np.linalg.norm(plan['objekt'][0]['pos_m'][:2]), .04)
+        bra = [p['efter_rms_px'] for p in rapport['per_tagning'][:-1]]
+        self.assertLess(max(bra), 7.)
+        self.assertGreater(rapport['per_tagning'][-1]['efter_rms_px'], 150.)
+
+    def test_foremal_flerbildspassas_och_klams_till_stodets_topp(self):
+        from kompilera import sikta
+        kameror = [dict(matris=sikta([-1., -4., 2.8], [0., 0., 1.1]), lins_mm=36.),
+                   dict(matris=sikta([1., -3., 2.4], [0., 0., 1.1]), lins_mm=42.)]
+        stod = dict(id='disk', pos_m=[0., 0., .5], matt_m=[1., 1., 1.], rotation_rad=[0, 0, 0])
+        vag = dict(id='disk:pa:vag', pos_m=[0., 0., 1.1], matt_m=[.2, .2, .2], rotation_rad=[0, 0, 0])
+        plan = dict(objekt=[stod, vag], renderkamera=dict(sensor_bredd_mm=36, nycklar=kameror),
+                    utdata=dict(bredd=1000, hojd=1000), scener=[dict(id='S1', ut=[0, 1]), dict(id='S2', ut=[1, 2])],
+                    kvalitet={}, plats=[dict(id='p', deklarerat=dict(foremal={}))])
+        bilder = []
+        for i, key in enumerate(kameror):
+            kant = boxpassning.projicerade_kanter(plan, vag, [.8, 0.], key)
+            bilder.append(dict(tagning=f'S{i + 1}', box_2d=[kant['topp'], kant['vanster'], kant['botten'], kant['hoger']]))
+        plan['plats'][0]['deklarerat']['foremal']['vag'] = dict(pa='disk', objekt_id='disk:pa:vag', bilder=bilder)
+        rapport = foremallyft.los(plan)[0]
+        np.testing.assert_allclose(vag['pos_m'], [.4, 0., 1.1], atol=1e-7)
+        self.assertEqual(rapport['antal_boxar'], 2)
+        self.assertGreater(min(p['efter_rms_px'] for p in rapport['per_tagning']), 1.)
+
+    def _fyra_kameror(self):
+        from kompilera import sikta
+        return [dict(matris=sikta([-1., -4., 2.5], [0., 0., .5]), lins_mm=36.),
+                dict(matris=sikta([1.2, -3., 2.2], [0., 0., .5]), lins_mm=42.),
+                dict(matris=sikta([-.3, -3.5, 2.8], [0., 0., .5]), lins_mm=38.),
+                dict(matris=sikta([.7, -4.2, 2.4], [0., 0., .5]), lins_mm=40.)]
+
+    def test_helt_beskuren_box_hoppas_over_och_avbryter_inte_passningen(self):
+        plan, bilder = self._flerbildsplan(self._fyra_kameror()[:3], start=(.8, .8))
+        bilder[-1]['box_2d'] = [0., 0., 1000., 1000.]                       # inga obeskurna kanter alls
+        plan['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder)
+        rapport = mobellyft.los(plan)[0]
+        self.assertEqual(rapport['status'], 'flyttad')
+        np.testing.assert_allclose(plan['objekt'][0]['pos_m'][:2], [0., 0.], atol=1e-6)
+        sista = rapport['per_tagning'][-1]
+        self.assertEqual(sista['tagning'], 'S3'); self.assertFalse(sista['i_passning'])
+        self.assertIn('obeskurna kanter', sista['hoppad_orsak'])
+        self.assertEqual(rapport['antal_boxar_i_passning'], 2)
+        self.assertEqual([h['tagning'] for h in rapport['hoppade_boxar']], ['S3'])
+        # bara en användbar box kvar: enbildsvägen i stället för ett avbrutet lyft
+        plan2, bilder2 = self._flerbildsplan(self._fyra_kameror()[:2], start=(.8, .8))
+        bilder2[0]['box_2d'] = [0., 0., 1000., 1000.]
+        plan2['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder2)
+        r2 = mobellyft.los(plan2)[0]
+        self.assertEqual(r2['status'], 'flyttad'); self.assertIn('kant', r2)
+        # inga användbara boxar: bevarad med orsak, ingen flytt
+        plan3, bilder3 = self._flerbildsplan(self._fyra_kameror()[:2], start=(.8, .8))
+        for b in bilder3: b['box_2d'] = [0., 0., 1000., 1000.]
+        plan3['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder3)
+        r3 = mobellyft.los(plan3)[0]
+        self.assertEqual(r3['status'], 'bevarad'); self.assertIn('obeskurna kanter', r3['orsak'])
+        np.testing.assert_allclose(plan3['objekt'][0]['pos_m'][:2], [.8, .8])
+
+    def test_startlaget_ar_median_av_enbildslagen_och_avvikande_box_pekas_ut(self):
+        plan, bilder = self._flerbildsplan(self._fyra_kameror(), start=(.8, .8))
+        bilder[-1]['box_2d'][1] += 300.; bilder[-1]['box_2d'][3] += 300.
+        plan['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder)
+        rapport = mobellyft.los(plan)[0]
+        info = rapport['startlage']
+        self.assertEqual([a['tagning'] for a in info['avvikande_boxar']], ['S4'])
+        self.assertGreater(info['avvikande_boxar'][0]['avstand_till_median_m'], boxpassning.AVVIKELSEGRANS_M)
+        self.assertEqual(rapport['uteslutna_boxar'], ['S4'])
+        self.assertFalse(rapport['per_tagning'][-1]['i_passning'])
+        self.assertTrue(all(p['i_passning'] for p in rapport['per_tagning'][:-1]))
+        self.assertLess(np.linalg.norm(plan['objekt'][0]['pos_m'][:2]), 1e-5)     # utan uteliggaren passar de tre exakt
+        # med två boxar går det inte att säga vilken som är fel: ingen pekas ut
+        plan2, bilder2 = self._flerbildsplan(self._fyra_kameror()[:2], start=(.8, .8))
+        bilder2[-1]['box_2d'][1] += 300.; bilder2[-1]['box_2d'][3] += 300.
+        start, info2 = boxpassning.startlage(plan2, bilder2, lambda b: np.asarray(mobellyft._enbildslage(plan2, plan2['plats'][0], {}, plan2['objekt'][0], b)))
+        self.assertEqual(info2['avvikande_boxar'], [])
+
+    def test_ordningen_kamera_mobel_person_ligger_i_passningen(self):
+        plan, bilder = self._flerbildsplan(self._fyra_kameror()[:2], start=(.8, .8))
+        plan['plats'][0]['ankare'] = [dict(id='person', pos_m=[0., .3, 0.])]
+        plan['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder, framfor='person')
+        rapport = mobellyft.los(plan)[0]
+        self.assertEqual(rapport['status'], 'flyttad')
+        self.assertEqual(rapport['ordningsniva'], 0); self.assertFalse(rapport['granskonflikt'])
+        self.assertEqual(rapport['antal_villkor'], 4)
+        self.assertTrue(rapport['villkor_uppfyllda']); self.assertTrue(rapport['lyckad'])
+        for k in rapport['klamningar']:
+            self.assertGreaterEqual(k['uppnadd_personmarginal_m'], .1 - 1e-7)
+            self.assertGreaterEqual(k['uppnadd_kameramarginal_m'], .3 - 1e-7)
+        # sanningsläget (0, 0) bryter personmarginalen, så passningen ska ha dragits bort från det
+        self.assertLess(plan['objekt'][0]['pos_m'][1], -.05)
+
+    def test_kamerans_nedre_grans_lattas_aldrig_under_noll(self):
+        def ordning(persondjup):
+            return dict(data=[dict(tagning='S1', ruta=0, kamera_xy=np.array([0., -4.]), fram=np.array([0., 1.]), halva=.3,
+                                   persondjup=persondjup)], ankare_id='p', ankarkalla='ankare')
+        for persondjup, forvantad in ((2.0, 0), (1.0, 0), (.95, 1), (.70, 2), (.62, 3), (.50, None)):
+            niva, villkor = mobellyft._valj_ordningsniva(ordning(persondjup), np.array([0., 0.]))
+            self.assertEqual(niva, forvantad, persondjup)
+            if niva is not None:
+                p, ok = boxpassning._projektera_halvplan(np.array([0., 0.]), villkor)
+                self.assertTrue(ok)
+                self.assertGreaterEqual(p[1] - (-4.) - .3, -1e-9)            # framkanten aldrig bakom kameran
+        # integrerat: personen mellan kamerorna och möbeln ryms inte på någon nivå, så möbeln behåller sitt läge
+        plan, bilder = self._flerbildsplan(self._fyra_kameror()[:2], start=(.8, .8))
+        plan['plats'][0]['ankare'] = [dict(id='person', pos_m=[-.3, -3.4, 0.])]
+        plan['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder, framfor='person')
+        rapport = mobellyft.los(plan)[0]
+        self.assertEqual(rapport['status'], 'bevarad'); self.assertTrue(rapport['granskonflikt'])
+        self.assertIsNone(rapport['ordningsniva']); self.assertIn('ryms inte', rapport['orsak'])
+        np.testing.assert_allclose(plan['objekt'][0]['pos_m'][:2], [.8, .8])
+
+    def test_dubbletten_av_halvplansprojektionen_ar_borta(self):
+        self.assertIs(mobellyft._projektera_halvplan, boxpassning._projektera_halvplan)
+
+    def test_foremal_ersattningsstod_nar_pa_inte_byggs(self):
+        from kompilera import sikta
+        kameror = [dict(matris=sikta([-1., -4., 2.8], [0., 0., 1.1]), lins_mm=36.),
+                   dict(matris=sikta([1., -3., 2.4], [0., 0., 1.1]), lins_mm=42.)]
+        stod = dict(id='disk', pos_m=[0., 0., .5], matt_m=[1., 1., 1.], rotation_rad=[0, 0, 0])
+        vag = dict(id='disk:pa:papper:pa:vag', pos_m=[0., 0., 1.1], matt_m=[.2, .2, .2], rotation_rad=[0, 0, 0])
+        plan = dict(objekt=[stod, vag], renderkamera=dict(sensor_bredd_mm=36, nycklar=kameror),
+                    utdata=dict(bredd=1000, hojd=1000), scener=[dict(id='S1', ut=[0, 1]), dict(id='S2', ut=[1, 2])],
+                    kvalitet={}, plats=[dict(id='p', deklarerat=dict(foremal={}))])
+        bilder = []
+        for i, key in enumerate(kameror):
+            kant = boxpassning.projicerade_kanter(plan, vag, [.8, 0.], key)
+            bilder.append(dict(tagning=f'S{i + 1}', box_2d=[kant['topp'], kant['vanster'], kant['botten'], kant['hoger']]))
+        plan['plats'][0]['deklarerat']['foremal']['vag'] = dict(pa='papper', objekt_id=vag['id'], bilder=bilder)
+        rapport = foremallyft.los(plan)[0]
+        self.assertEqual(rapport['status'], 'flyttad'); self.assertEqual(rapport['stod'], 'disk')
+        self.assertEqual(rapport['stod_ersatt']['fran'], 'papper'); self.assertEqual(rapport['stod_ersatt']['till'], 'disk')
+        np.testing.assert_allclose(vag['pos_m'], [.4, 0., 1.1], atol=1e-6)
+        # inget byggt stöd alls i kedjan: bevarad med tydlig orsak
+        plan2 = copy.deepcopy(plan); plan2['objekt'] = [dict(vag, id='lost:pa:vag')]
+        plan2['plats'][0]['deklarerat']['foremal']['vag'] = dict(pa='papper', objekt_id='lost:pa:vag', bilder=bilder)
+        r2 = foremallyft.los(plan2)[0]
+        self.assertEqual(r2['status'], 'bevarad'); self.assertIn('ersättningsstöd', r2['orsak'])
+
+    def test_fokalredovisning_ger_status_och_kalla_per_tagning(self):
+        from kompilera import fokalredovisning
+        self.assertEqual(fokalredovisning(1024., 1024, {}), dict(fokal_px=1024., fokal_status='antagen', fokal_kalla='bildens längsta sida'))
+        self.assertEqual(fokalredovisning(2334.7, 1024, {})['fokal_status'], 'matt')
+        self.assertEqual(fokalredovisning(1010., 1024, dict(fokal_status='skattad', fokal_kalla='klippets median')), dict(fokal_px=1010., fokal_status='skattad', fokal_kalla='klippets median'))
+
+    def test_byggobjekt_med_samma_id_har_disjunkta_synlighetsintervall(self):
+        # skymning.py delar ett objekt som utelämnas i vissa scener i flera poster med samma id (disk_A i n06-fler); varje (id, synlig_ut) är unikt
+        plan = HIT / 'ut/b-tilltal-ravara_n06-fler/narvaro/plan.json'
+        if not plan.exists(): self.skipTest('planen n06-fler saknas')
+        objekt = json.loads(plan.read_text(encoding='utf-8'))['objekt']
+        poster = [(o['id'], tuple(o.get('synlig_ut') or ())) for o in objekt]
+        self.assertEqual(len(poster), len(set(poster)))
+        for oid in {i for i, _ in poster}:
+            iv = sorted(v for i, v in poster if i == oid and v)
+            for (a0, a1), (b0, b1) in zip(iv, iv[1:]): self.assertLessEqual(a1, b0, oid)
+
+    def test_full_ar_standard_och_snabb_bevarar_samtliga_byggfalt(self):
+        # Verklig bildtrohet och alla byggbeslut. Kroppsmåttets algoritm har egna prov.
+        with patch('kroppmatt.matt_plan',return_value=[]) as matt:
+            full=kompilera(HIT/'exempel/bar/kalla.json',HIT/'exempel/bar/regi.json')
+            self.assertEqual(matt.call_count,1)
+        with patch('trohet.mat',side_effect=AssertionError('diagnostik i snabbvägen')),patch('kvalitet.komplettera',side_effect=AssertionError('diagnostik i snabbvägen')):
+            fast=kompilera(HIT/'exempel/bar/kalla.json',HIT/'exempel/bar/regi.json',snabb=True)
+        self.assertEqual(byggdata(fast),byggdata(full))
+        self.assertEqual(fast['kvalitet']['diagnostik'],'ej_kord')
+        self.assertTrue(fast['kvalitet']['bildtrohet']['flaggad'])
+        self.assertEqual(fast['kvalitet']['skymning'],full['kvalitet']['skymning'])
+
+    def test_separat_diagnostik_bevarar_byggfalt_och_avvisar_andrat_underlag(self):
+        from diagnostik import diagnostik
+        fast=kompilera(HIT/'exempel/bar/kalla.json',HIT/'exempel/bar/regi.json',snabb=True)
+        before=byggdata(fast)
+        with patch('kroppmatt.matt_plan',return_value=[]):checked=diagnostik(copy.deepcopy(fast))
+        self.assertEqual(byggdata(checked),before)
+        self.assertNotIn('diagnostik',checked['kvalitet'])
+        fast['kvalitet']['byggunderlag']=[]
+        with self.assertRaisesRegex(ValueError,'mätunderlag har ändrats'):diagnostik(fast)
+
+    def test_handledens_matris_ar_exakt_samma_med_och_utan_benstod(self):
+        from test_rumsmall import Rumsmall
+        from propplan import handmatris
+        from trohet import ruta_pose, IX, F
+        pose,Q,T,anchor=Rumsmall().kropp()
+        # ruta_pose bygger Q ur G, kam_R och F; välj motsvarande världskamera.
+        seq=dict(pose=pose[None],cam_t=np.zeros((1,3)),ben_synliga=np.zeros(1,bool))
+        world=dict(upp=np.array([0.,0.,1.]),kam_R=(Q@F)[None],kam_C=T[None])
+        scene=dict(varld='oanvand');pm=dict(stod=anchor)
+        full,q,t=ruta_pose(scene,pm,0,True,(seq,world))
+        hand,qh,th=handmatris(scene,pm,0,(seq,world),led='l_wrist_twist')
+        np.testing.assert_array_equal(full[IX['l_wrist_twist']],hand[IX['l_wrist_twist']])
+        j=IX['l_wrist_twist']
+        np.testing.assert_array_equal(full[j,:3]/100@q.T+t,hand[j,:3]/100@qh.T+th)
+        np.testing.assert_array_equal(q,qh);np.testing.assert_array_equal(t,th)
+        leg,ql,tl=handmatris(scene,pm,0,(seq,world),led='l_foot')
+        np.testing.assert_array_equal(full,leg)
+
+
+class Cache(unittest.TestCase):
+    def test_kroppsmatt_ateranvands_i_en_ny_pythonprocess(self):
+        with tempfile.TemporaryDirectory(dir=HIT/'ut',prefix='persist_') as td:
+            code="""
+import sys
+from pathlib import Path
+sys.path.insert(0,sys.argv[1])
+import datacache,kroppmatt
+import numpy as np
+datacache.CACHE=Path(sys.argv[2])
+p=dict(kallrutor=[0],kallbild_bredd=576,utdata=dict(bredd=576,hojd=1024),matkamera=dict(nycklar=[]))
+def measure(*args):
+    if sys.argv[3]=='las':raise AssertionError('Cachen försvann med processen')
+    return [dict(mask=dict(rutor=7),darr=float('nan'))]
+kroppmatt._matt_plan_utan_cache=measure
+r=kroppmatt.matt_plan(p)
+assert r[0]['mask']['rutor']==7
+"""
+            for mode in ('skriv','las'):
+                r=subprocess.run([sys.executable,'-c',code,str(HIT),td,mode],capture_output=True,text=True,encoding='utf-8')
+                self.assertEqual(r.returncode,0,r.stdout+r.stderr)
+
+    def test_kroppsmatt_ogiltigt_vid_mask_raw_palitlighet_och_kod(self):
+        with tempfile.TemporaryDirectory(dir=HIT/'ut',prefix='kroppcache_') as td,patch.object(datacache,'CACHE',Path(td)/'cache'):
+            folder=Path(td);seq=folder/'sekvens_1.npz';seq.write_bytes(b'pose')
+            p=dict(scener=[dict(id='s1',ut=[0,1],lokal_start=0,varld=str(folder/'varld.npz'),personer=[dict(id='A',ingest_id='1',rorelse=str(seq))])],kallrutor=[0],kallbild_bredd=576,utdata=dict(bredd=576,hojd=1024),matkamera=dict(nycklar=[]))
+            kroppmatt._MATT_CACHE.clear()
+            with patch.object(kroppmatt,'_matt_plan_utan_cache',return_value=[dict(matt=1)]) as run:
+                kroppmatt.matt_plan(p);self.assertEqual(run.call_count,1)
+                kroppmatt._MATT_CACHE.clear();kroppmatt.matt_plan(p);self.assertEqual(run.call_count,1)
+                for i,name in enumerate(('masker.npy','palitlig_1.json','kropp/1/0000.npz'),2):
+                    file=folder/name;file.parent.mkdir(parents=True,exist_ok=True);file.write_bytes(b'nytt underlag')
+                    kroppmatt.matt_plan(p);self.assertEqual(run.call_count,i)
+                with patch.object(datacache,'kodnyckel',return_value='annan kod eller rigg'):
+                    kroppmatt.matt_plan(p);self.assertEqual(run.call_count,5)
+            kroppmatt._MATT_CACHE.clear()
+
+    def test_trasig_cache_ger_omrakning(self):
+        with tempfile.TemporaryDirectory(dir=HIT/'ut',prefix='cache_') as td,patch.object(datacache,'CACHE',Path(td)):
+            key=datacache.nyckel(dict(indata=1));datacache.spara('prov',key,dict(varde=3))
+            self.assertEqual(datacache.hamta('prov',key),dict(varde=3))
+            file=Path(td)/'prov'/(key+'.json');d=ladda(file);d['data']['varde']=999;skriv(file,d)
+            self.assertIsNone(datacache.hamta('prov',key))
+            file.write_text('{avbrutet',encoding='utf-8');self.assertIsNone(datacache.hamta('prov',key))
+
+    def test_planbeslut_cache_ogiltig_vid_geometri_och_matfil(self):
+        with tempfile.TemporaryDirectory(dir=HIT/'ut',prefix='beslut_') as td,patch.object(datacache,'CACHE',Path(td)/'cache'):
+            raw=Path(td)/'varld.npz';raw.write_bytes(b'fore')
+            p=dict(scener=[dict(id='s1',ut=[0,1],varld=str(raw),personer=[])],personer=[],objekt=[],matkamera=dict(nycklar=[]),kallrutor=[0],kallbild_bredd=576,kallbild_hojd=1024,kvalitet={})
+            def decide(plan,places):
+                plan['objekt']=[dict(id='bevarat_bord')]
+                plan['kvalitet'].update(golv_skala={},skymning=dict(atgarder=['provbeslut']))
+            with patch.object(kvalitet,'_planbeslut_utan_cache',side_effect=decide) as run:
+                a=copy.deepcopy(p);kvalitet.planbeslut(a,{})
+                b=copy.deepcopy(p);kvalitet.planbeslut(b,{})
+                self.assertEqual(a,b);self.assertEqual(run.call_count,1)
+                raw.write_bytes(b'efter nytt underlag');kvalitet.planbeslut(copy.deepcopy(p),{});self.assertEqual(run.call_count,2)
+                p['objekt']=[dict(id='nytt_bord')];kvalitet.planbeslut(copy.deepcopy(p),{});self.assertEqual(run.call_count,3)
+
+    def test_kodnyckel_foljer_transitiva_importer(self):
+        # Planbeslutets nyckel ska ändras när en modul ändras som bara importeras indirekt (inne i en funktion).
+        with tempfile.TemporaryDirectory(dir=HIT/'ut',prefix='moduler_') as td:
+            d=Path(td);(d/'a.py').write_text('def f():\n    import b\n',encoding='utf-8')
+            (d/'b.py').write_text('from c import g\n',encoding='utf-8');(d/'c.py').write_text('def g(): return 1\n',encoding='utf-8')
+            (d/'fri.py').write_text('x=1\n',encoding='utf-8')
+            mods=datacache.lokala_moduler([d/'a.py'],[d])
+            self.assertEqual([m.name for m in mods],['a.py','b.py','c.py'])
+            fore=datacache.kodnyckel(mods);(d/'c.py').write_text('def g(): return 2\n',encoding='utf-8')
+            self.assertNotEqual(fore,datacache.kodnyckel(datacache.lokala_moduler([d/'a.py'],[d])))
+        verklig={m.name for m in datacache.lokala_moduler([HIT/'kvalitet.py'],[HIT,HIT.parent/'ingest'])}
+        self.assertTrue({'skymning.py','dolda_fotter.py','rumsmall.py','mobelintervall.py'}<=verklig)
+
+
+class Sidled0012(unittest.TestCase):
+    """Uppdrag 0012: beskurna kanter som olikheter, förval för underbestämd riktning, ett läge per kameragrupp, föremål ur masken."""
+
+    def _plan(self, kameror, disk, extra=()):
+        plan = dict(objekt=[disk, *extra], renderkamera=dict(sensor_bredd_mm=36, nycklar=kameror), utdata=dict(bredd=1000, hojd=1000),
+                    scener=[dict(id=f'S{i + 1}', ut=[i, i + 1]) for i in range(len(kameror))],
+                    kvalitet={}, plats=[dict(id='p', golv_hojd_m=0., deklarerat=dict(mobler={}, foremal={}))])
+        return plan
+
+    def _box(self, plan, objekt, xy, key, grupp=None, tagning='S1'):
+        k = boxpassning.projicerade_kanter(plan, objekt, xy, key)
+        b = [float(np.clip(v, 0., 1000.)) for v in (k['topp'], k['vanster'], k['botten'], k['hoger'])]
+        return dict(tagning=tagning, box_2d=b, **({'grupp': grupp} if grupp else {}))
+
+    def _framifran(self):
+        from kompilera import sikta
+        return [dict(matris=sikta([-.2, -1.6, 1.5], [0., 0., .7]), lins_mm=30.),
+                dict(matris=sikta([.25, -1.4, 1.4], [0., 0., .7]), lins_mm=32.)]
+
+    def test_beskuren_kant_ar_olikhet_och_straffas_bara_innanfor_bilden(self):
+        plan = self._plan([], dict(id='d', pos_m=[0, 0, .5], matt_m=[1, 1, 1]))
+        lika, olika = boxpassning.kantvillkor(plan, [300., 0., 700., 1000.])
+        self.assertEqual(set(lika), {'topp', 'botten'}); self.assertEqual(set(olika), {'vanster', 'hoger'})
+        self.assertEqual(boxpassning.olikhetsrest('vanster', -40., 0.), 0.)
+        self.assertEqual(boxpassning.olikhetsrest('vanster', 25., 0.), 25.)
+        self.assertEqual(boxpassning.olikhetsrest('hoger', 1040., 1000.), 0.)
+        self.assertEqual(boxpassning.olikhetsrest('hoger', 970., 1000.), 30.)
+
+    def test_underbestamd_x_far_forvalet_och_markeras_antagen(self):
+        kameror = self._framifran(); disk = dict(id='disk', pos_m=[.7, .2, .5], matt_m=[4., .6, 1.], rotation_rad=[0, 0, 0])
+        plan = self._plan(kameror, disk)
+        bilder = [self._box(plan, disk, [0., 0.], k, 'S1+S2', f'S{i + 1}') for i, k in enumerate(kameror)]
+        self.assertTrue(all(b['box_2d'][1] == 0. and b['box_2d'][3] == 1000. for b in bilder))     # disken går ut på båda sidor
+        xy, info = boxpassning.passa_grupp(plan, disk, bilder, [.7, .2])
+        self.assertEqual(info['kvalitet'], dict(x='antagen', y='matt'))
+        self.assertAlmostEqual(xy[0], .7, delta=.02); self.assertAlmostEqual(xy[1], 0., delta=.02)
+
+    def test_beskuren_kant_drar_bort_forvalet_nar_kanten_annars_hamnar_i_bild(self):
+        kameror = self._framifran(); disk = dict(id='disk', pos_m=[0, 0, .5], matt_m=[4., .6, 1.], rotation_rad=[0, 0, 0])
+        plan = self._plan(kameror, disk)
+        bilder = [self._box(plan, disk, [0., 0.], k, 'S1+S2', f'S{i + 1}') for i, k in enumerate(kameror)]
+        xy, info = boxpassning.passa_grupp(plan, disk, bilder, [2.2, 0.])           # förvalet lägger vänsterkanten mitt i bilden
+        self.assertEqual(info['kvalitet']['x'], 'antagen')
+        for k in kameror:
+            self.assertLessEqual(boxpassning.projicerade_kanter(plan, disk, xy, k)['vanster'], 5.)
+        self.assertLess(xy[0], 2.0)
+
+    def test_ett_lage_per_kameragrupp_med_kopior_per_synlighetsintervall(self):
+        kam = Snabb._fyra_kameror(self)
+        disk = dict(id='disk', pos_m=[.8, .8, .5], matt_m=[.8, .6, 1.], rotation_rad=[0, 0, .2])
+        vag = dict(id='disk:pa:vag', pos_m=[.9, .8, 1.2], matt_m=[.2, .2, .4], rotation_rad=[0, 0, 0])
+        plan = self._plan(kam, disk, [vag]); sanning = {'S1+S2': [0., 0.], 'S3+S4': [.5, .3]}
+        bilder = [self._box(plan, disk, sanning['S1+S2' if i < 2 else 'S3+S4'], k, 'S1+S2' if i < 2 else 'S3+S4', f'S{i + 1}') for i, k in enumerate(kam)]
+        plan['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder)
+        rapport = mobellyft.los(plan)[0]
+        self.assertEqual(rapport['status'], 'flyttad'); self.assertEqual(rapport['kvalitet'], dict(x='matt', y='matt'))
+        diskar = sorted((o for o in plan['objekt'] if o['id'] == 'disk'), key=lambda o: o['synlig_ut'][0])
+        self.assertEqual([o['synlig_ut'] for o in diskar], [[0, 2], [2, 4]])
+        np.testing.assert_allclose(diskar[0]['pos_m'][:2], sanning['S1+S2'], atol=5e-3)      # förvalet drar svagt (2 mm)
+        np.testing.assert_allclose(diskar[1]['pos_m'][:2], sanning['S3+S4'], atol=5e-3)
+        vagar = sorted((o for o in plan['objekt'] if o['id'] == 'disk:pa:vag'), key=lambda o: o['synlig_ut'][0])
+        np.testing.assert_allclose([v['pos_m'][0] - d['pos_m'][0] for v, d in zip(vagar, diskar)], [.1, .1], atol=1e-9)
+        self.assertEqual(rapport['kameror_i_mobel'], [])
+
+    def test_foremalskopia_utan_egen_ruta_visas_inte(self):
+        """Föremålet har ruta i S3/S4 men inte i S1/S2: kopian för gruppen S1+S2 byggs inte (trohet per tagning)."""
+        kam = Snabb._fyra_kameror(self)
+        disk = dict(id='disk', pos_m=[.8, .8, .5], matt_m=[.8, .6, 1.], rotation_rad=[0, 0, .2])
+        vag = dict(id='disk:pa:vag', pos_m=[.9, .8, 1.2], matt_m=[.2, .2, .4], rotation_rad=[0, 0, 0])
+        plan = self._plan(kam, disk, [vag])
+        bilder = [self._box(plan, disk, [0., 0.], k, 'S1+S2' if i < 2 else 'S3+S4', f'S{i + 1}') for i, k in enumerate(kam)]
+        plan['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder)
+        mobellyft.los(plan)
+        vbilder = [self._box(plan, vag, [.1, 0.], kam[i], None, f'S{i + 1}') for i in (2, 3)]
+        plan['plats'][0]['deklarerat']['foremal']['vag'] = dict(pa='disk', objekt_id='disk:pa:vag', bilder=vbilder, bild=vbilder[0])
+        post = foremallyft.los(plan)[0]
+        self.assertEqual([d['synlig_ut'] for d in post['dolda_kopior']], [[0, 2]])
+        self.assertEqual([o['synlig_ut'] for o in plan['objekt'] if o['id'] == 'disk:pa:vag'], [[2, 4]])
+
+    def test_mobeln_hamnar_inte_utanfor_vaggen(self):
+        kameror = self._framifran(); disk = dict(id='disk', pos_m=[0., 0., .5], matt_m=[4., .6, 1.], rotation_rad=[0, 0, 0])
+        vagg = dict(id='vagg_sida', pos_m=[2.3, 0., 1.35], matt_m=[.12, 6., 2.7], rotation_rad=[0, 0, 0])
+        plan = self._plan(kameror, disk, [vagg])
+        bilder = [self._box(plan, disk, [0., 0.], k, 'S1+S2', f'S{i + 1}') for i, k in enumerate(kameror)]
+        plan['plats'][0]['ankare'] = [dict(id='person', pos_m=[0., .9, 0.])]
+        disk['pos_m'] = [1.5, 0., .5]                                              # förvalet utan framfor: tidigare läge, nära väggen
+        plan['plats'][0]['deklarerat']['mobler']['disk'] = dict(bilder=bilder)
+        mobellyft.los(plan)
+        d = next(o for o in plan['objekt'] if o['id'] == 'disk')
+        self.assertLessEqual(d['pos_m'][0] + 2., 2.3 - .06 - .1 + 1e-6)          # högerkant + marginal innanför väggens insida
+
+    def test_foremal_placeras_ur_maskens_tyngdpunkt_och_bredden_ur_masken(self):
+        from bildkamera import _projicera
+        kameror = self._framifran()
+        disk = dict(id='disk', pos_m=[0., 0., .5], matt_m=[1.5, .6, 1.], rotation_rad=[0, 0, 0])
+        vag = dict(id='disk:pa:vag', pos_m=[-.5, 0., 1.25], matt_m=[.36, .4, .5], rotation_rad=[0, 0, 0])
+        plan = self._plan(kameror, disk, [vag]); sanning = np.array([.3, .05, 1.25]); bredd = .24
+        bilder = []
+        for i, k in enumerate(kameror):
+            sann = dict(vag, pos_m=sanning.tolist(), matt_m=[bredd, .4, .5])
+            b = self._box(plan, sann, sanning[:2], k, None, f'S{i + 1}')
+            uv = _projicera(sanning[None], k, np.zeros(6), 1000, 1000)[0]
+            M = np.asarray(k['matris'], float); djup = float((sanning - M[:3, 3]) @ (M[:3, :3] @ np.array([0., 0., -1.])))
+            fok = float(k['lins_mm']) / 36. * 1000.
+            b.update(tyngdpunkt_2d=[float(uv[1]), float(uv[0])], bredd_2d=bredd * fok / djup)
+            bilder.append(b)
+        plan['plats'][0]['deklarerat']['foremal']['vag'] = dict(pa='disk', objekt_id='disk:pa:vag', bilder=bilder,
+                                                                 bild=dict(bilder[0], storlek_m_dekl=[[.22, .38], [.3, .5], [.38, .62]]))
+        post = foremallyft.los(plan)[0]
+        self.assertEqual(post['status'], 'flyttad')
+        v = next(o for o in plan['objekt'] if o['id'] == 'disk:pa:vag')
+        np.testing.assert_allclose(v['pos_m'], sanning, atol=.01)
+        self.assertAlmostEqual(v['matt_m'][0], bredd, delta=.01)
+        self.assertEqual(post['bredd']['axel'], 0)
+
+
+if __name__=='__main__':unittest.main()

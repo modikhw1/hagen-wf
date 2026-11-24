@@ -1,0 +1,1 @@
+Kör prompten i prompt_med_underlag.md med en stark modell (bilderna listas sist) och spara JSON-svaret som C:\Users\praiseworthy\Desktop\hagen-wf\scen\3d\kontrakt\ut\kand-kennysgelato_n06-hand\liggare_k32_prov.json. Kör sedan kedjan igen.

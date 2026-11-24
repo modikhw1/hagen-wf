@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "semantik/1",
+  "title": "Modellens svar: kallas semantiska lager, bundet till uppmätta spår",
+  "description": "Det Gemini ska svara med. Allt är modellbedömt. Spår (tagning + spar_id) är nycklar i ingests personer.json och måste finnas. 'osaker' är tillåtet i varje uppräkning. Fritext på svenska utom replikernas text (originalspråk).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["klipp", "personer", "ej_personer", "kamerauppstallningar", "par", "plats", "placeringar", "repliker", "skarmtext", "props", "tagningar"],
+  "properties": {
+    "klipp": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sprak", "tal_finns", "sammanfattning", "karna", "konfidens"],
+      "properties": {
+        "sprak": {"type": "string", "description": "Talat språk som ISO 639-1-kod (sv, en, ...), 'okand' om inget tal."},
+        "tal_finns": {"type": "boolean", "description": "Sant om klippet har hörbart tal."},
+        "sammanfattning": {"type": "string", "description": "Vad klippet visar, 1-2 meningar."},
+        "karna": {"type": "string", "description": "Idén i en mening (skämtet, poängen, erbjudandet)."},
+        "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+      }
+    },
+    "personer": {
+      "type": "array",
+      "description": "Personerna i berättelsen, stabila id över hela klippet (P1, P2, ...). Varje person listar vilka uppmätta spår som är hen i varje tagning.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "beskrivning", "roll", "spar", "konfidens"],
+        "properties": {
+          "id": {"type": "string", "description": "P1, P2, ..."},
+          "beskrivning": {"type": "string", "description": "Utseende och kläder så att en människa känner igen personen."},
+          "roll": {"type": "string", "description": "Rollen i berättelsen, ett eller två engelska ord (customer, butcher, waiter, ...)."},
+          "spar": {
+            "type": "array",
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["tagning", "spar_id", "konfidens"],
+              "properties": {
+                "tagning": {"type": "string", "description": "S1, S2, ..."},
+                "spar_id": {"type": "string", "description": "Spårets id i den tagningen, exakt som på bladet (S3:1 -> '1')."},
+                "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+              }
+            }
+          },
+          "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+        }
+      }
+    },
+    "ej_personer": {
+      "type": "array",
+      "description": "Uppmätta spår som inte är en person i berättelsen. Varje spår som inte tillhör en person ska stå här med skäl.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["tagning", "spar_id", "typ", "skal", "konfidens"],
+        "properties": {
+          "tagning": {"type": "string"},
+          "spar_id": {"type": "string"},
+          "typ": {"type": "string", "enum": ["forgrund_arm_hand", "bakgrundsperson", "reflektion", "affisch_eller_skarm", "felaktig_detektion", "annat", "osaker"]},
+          "skal": {"type": "string", "description": "Vad spåret faktiskt visar och varför det inte är en berättelseperson."},
+          "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+        }
+      }
+    },
+    "kamerauppstallningar": {
+      "type": "array",
+      "description": "Tagningar grupperade efter samma kameraställe och vinkel (inte bara samma rum). Varje tagning i högst en grupp.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "tagningar", "beskrivning", "konfidens"],
+        "properties": {
+          "id": {"type": "string", "description": "K1, K2, ..."},
+          "tagningar": {"type": "array", "items": {"type": "string"}},
+          "beskrivning": {"type": "string", "description": "Vad kameran ser, från vilket håll."},
+          "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+        }
+      }
+    },
+    "par": {
+      "type": "array",
+      "description": "Varje par av personer som interagerar: vänder de sig mot varandra, och över vad.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["a", "b", "vander_mot_varandra", "over", "tagningar", "kommentar", "konfidens"],
+        "properties": {
+          "a": {"type": "string", "description": "Person-id."},
+          "b": {"type": "string", "description": "Person-id."},
+          "vander_mot_varandra": {"type": "string", "enum": ["ja", "nej", "delvis", "osaker"]},
+          "over": {"type": "string", "enum": ["samma_bord", "separata_bord", "disk_mellan", "sida_vid_sida", "ingenting_mellan", "osaker"]},
+          "tagningar": {"type": "array", "items": {"type": "string"}, "description": "Tagningar där båda syns eller interaktionen är tydlig."},
+          "kommentar": {"type": "string"},
+          "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+        }
+      }
+    },
+    "plats": {
+      "type": "object", "additionalProperties": false,
+      "required": ["typ", "beskrivning", "rumsmall_forslag", "motivering", "konfidens"],
+      "properties": {
+        "typ": {"type": "string", "enum": ["restaurang_matsal", "bar", "butik_eller_disk", "cafe", "kok", "hem", "kontor", "utomhus", "annat", "osaker"]},
+        "beskrivning": {"type": "string", "description": "Platsen i en mening."},
+        "rumsmall_forslag": {"type": "string", "enum": ["notan_tva_bord", "restaurang_tva", "bar_disk", "fiktiv_lokal", "ingen_passar", "osaker"],
+                             "description": "notan_tva_bord = två separata bord med varsin stol, vända mot varandra över rummet. restaurang_tva = ett gemensamt bord med två stolar. bar_disk = bardisk med ståplatser bakom och hylla. fiktiv_lokal = påhittad generisk lokal. ingen_passar om inget stämmer."},
+        "motivering": {"type": "string"},
+        "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+      }
+    },
+    "placeringar": {
+      "type": "array",
+      "description": "Per person: hållning och vid vilken möbel, i ankarens ordförråd.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["person", "hallning", "ankartyp", "vid_del", "beskrivning", "tagningar", "konfidens"],
+        "properties": {
+          "person": {"type": "string", "description": "Person-id."},
+          "hallning": {"type": "string", "enum": ["sitter", "star", "rorlig", "osaker"]},
+          "ankartyp": {"type": "string", "enum": ["sate", "bordskant", "staplats", "sta_bakom", "annat", "ingen_passar", "osaker"],
+                       "description": "sate = sitter på stol/pall. bordskant = vid ett bords kant. staplats = står på ett ställe i rummet. sta_bakom = står bakom en disk. annat/ingen_passar om inget stämmer."},
+          "vid_del": {"type": "string", "enum": ["bord", "stol", "bardisk", "hylla", "golv_fri_yta", "ingen_passar", "osaker"],
+                      "description": "Den möbel personen sitter eller står vid."},
+          "beskrivning": {"type": "string", "description": "Med egna ord, till exempel 'står bakom glasdisken med färskvaror'."},
+          "tagningar": {"type": "array", "items": {"type": "string"}},
+          "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+        }
+      }
+    },
+    "repliker": {
+      "type": "array",
+      "description": "Allt tal i tidsordning, ordagrant i originalspråket. Hitta inte på tal som inte hörs.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "talare", "tagning", "text", "sprak", "start_s", "slut_s", "talare_i_bild", "konfidens"],
+        "properties": {
+          "id": {"type": "string", "description": "r1, r2, ..."},
+          "talare": {"type": "string", "description": "Person-id (P1, ...) eller 'okand'."},
+          "tagning": {"type": "string", "description": "Tagningen där repliken börjar."},
+          "text": {"type": "string", "description": "Som sagt, med originalets ord."},
+          "sprak": {"type": "string"},
+          "start_s": {"type": "number", "minimum": 0, "description": "Ungefärlig start på källklockan i sekunder."},
+          "slut_s": {"type": "number", "minimum": 0},
+          "talare_i_bild": {"type": "string", "enum": ["ja", "nej", "osaker"]},
+          "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+        }
+      }
+    },
+    "skarmtext": {
+      "type": "array",
+      "description": "Text som syns i bild (undertexter, rubriker, skyltar som bär betydelse).",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["tagning", "text", "konfidens"],
+        "properties": {
+          "tagning": {"type": "string"},
+          "text": {"type": "string"},
+          "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+        }
+      }
+    },
+    "props": {
+      "type": "array",
+      "description": "Föremål som handlingen beror på.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "typ", "etikett", "hallare", "tagningar", "anvands", "konfidens"],
+        "properties": {
+          "id": {"type": "string", "description": "o1, o2, ..."},
+          "typ": {"type": "string", "description": "Engelskt snake_case (card_payment_terminal, meat_cut, ice_cream_cone)."},
+          "etikett": {"type": "string", "description": "Kort fritext."},
+          "hallare": {"type": "string", "description": "Person-id som håller eller använder det, 'ingen' om det står, 'osaker'."},
+          "tagningar": {"type": "array", "items": {"type": "string"}},
+          "anvands": {"type": "string", "description": "Hur handlingen beror på föremålet."},
+          "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+        }
+      }
+    },
+    "tagningar": {
+      "type": "array",
+      "description": "En post per tagning: funktion i berättelsen och vad som händer.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["tagning", "funktion", "vad", "konfidens"],
+        "properties": {
+          "tagning": {"type": "string"},
+          "funktion": {"type": "string", "enum": ["krok", "uppbyggnad", "vandning", "punchline", "visning", "tilltal", "avslut", "ingen", "osaker"]},
+          "vad": {"type": "string", "description": "En mening om vad som händer."},
+          "konfidens": {"type": "string", "enum": ["hog", "medel", "lag", "osaker"]}
+        }
+      }
+    }
+  }
+}

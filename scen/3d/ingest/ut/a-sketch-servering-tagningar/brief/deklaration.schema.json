@@ -1,0 +1,509 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "deklaration-0.8.schema.json",
+  "title": "Scendeklaration 0.8",
+  "description": "Inmatning som ingest/deklaration_till_hand.py accepterar 12 november 2026.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "klipp",
+    "datum",
+    "golv",
+    "kameror",
+    "roller",
+    "platser",
+    "relevans"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "deklaration/0.8",
+        "deklaration/0.7"
+      ]
+    },
+    "klipp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "datum": {
+      "type": "string"
+    },
+    "golv": {
+      "type": "object",
+      "required": [
+        "hojd_m",
+        "status"
+      ],
+      "properties": {
+        "hojd_m": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "agare",
+            "antagen",
+            "deklarerad",
+            "intervall",
+            "last",
+            "modellbedomd",
+            "sedd",
+            "uppmatt"
+          ]
+        },
+        "kalla": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "berattat_rum": {
+      "type": "object"
+    },
+    "avslojat_rum": {
+      "type": "object"
+    },
+    "vaggar": {
+      "type": "object"
+    },
+    "kameror": {
+      "type": "object",
+      "patternProperties": {
+        "^S[0-9]+$": {
+          "type": "object",
+          "properties": {
+            "huvudroll": {
+              "type": "string"
+            },
+            "spar_id": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "person_plats": {
+              "type": "string"
+            },
+            "kamera_vid": {
+              "type": "string"
+            },
+            "hojd_m": {
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ]
+            },
+            "hojd_status": {
+              "type": "string",
+              "enum": [
+                "agare",
+                "antagen",
+                "deklarerad",
+                "intervall",
+                "last",
+                "modellbedomd",
+                "sedd",
+                "uppmatt"
+              ]
+            },
+            "hojd_kalla": {
+              "type": "string"
+            },
+            "xy_m": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                      }
+                    ]
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      ]
+                    },
+                    "y": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "agare",
+                "antagen",
+                "deklarerad",
+                "intervall",
+                "last",
+                "modellbedomd",
+                "sedd",
+                "uppmatt"
+              ]
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "roller": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "tagningar",
+              "lage"
+            ],
+            "properties": {
+              "beskrivning": {
+                "type": "string"
+              },
+              "tagningar": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "lage": {
+                "type": "string",
+                "enum": [
+                  "står",
+                  "sitter"
+                ]
+              },
+              "hofthojd_m": {
+                "type": "number"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "agare",
+                  "antagen",
+                  "deklarerad",
+                  "intervall",
+                  "last",
+                  "modellbedomd",
+                  "sedd",
+                  "uppmatt"
+                ]
+              },
+              "kalla": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          {
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "platser": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "typ"
+        ],
+        "properties": {
+          "typ": {
+            "type": "string",
+            "enum": [
+              "sits",
+              "staplats",
+              "bord"
+            ]
+          },
+          "pos_m": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mitt_m": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ]
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "blick_grader": {
+            "type": "number"
+          },
+          "sitthojd_m": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              }
+            ]
+          },
+          "hofthojd_m": {
+            "type": "number"
+          },
+          "roll": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "agare",
+              "antagen",
+              "deklarerad",
+              "intervall",
+              "last",
+              "modellbedomd",
+              "sedd",
+              "uppmatt"
+            ]
+          },
+          "kalla": {
+            "type": "string"
+          },
+          "las": {
+            "type": "object",
+            "required": [
+              "kamera_vid",
+              "tagning"
+            ],
+            "properties": {
+              "kamera_vid": {
+                "type": "string"
+              },
+              "tagning": {
+                "type": "string"
+              }
+            }
+          },
+          "framfor": {
+            "type": "string"
+          },
+          "hojd_regel": {
+            "type": "string"
+          },
+          "roller": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "massiv": {
+            "type": "boolean"
+          },
+          "storlek_m": {
+            "type": "object",
+            "required": [
+              "langs_x",
+              "langs_y",
+              "hojd"
+            ],
+            "properties": {
+              "langs_x": {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  }
+                ]
+              },
+              "langs_y": {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  }
+                ]
+              },
+              "hojd": {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "narvaro": {
+      "type": "object"
+    },
+    "relevans": {
+      "type": "object",
+      "required": [
+        "bar_scenen",
+        "satter_rummet",
+        "stryks"
+      ],
+      "properties": {
+        "bar_scenen": {
+          "type": "object",
+          "required": [
+            "saker"
+          ],
+          "properties": {
+            "saker": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "satter_rummet": {
+          "type": "object",
+          "required": [
+            "saker"
+          ],
+          "properties": {
+            "saker": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "stryks": {
+          "type": "object",
+          "required": [
+            "saker"
+          ],
+          "properties": {
+            "saker": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

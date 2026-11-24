@@ -1,0 +1,1685 @@
+{
+ "luma/agent/ray/v3.2/video-to-video": {
+  "meta": {
+   "display_name": "Luma Ray 3.2 Video to Video",
+   "status": "active",
+   "description": "Luma Ray 3.2 re-renders an existing video into new cinematic motion guided by a text prompt, preserving the source's look and movement while controlling resolution, duration, and HDR.",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-11-10T03:23:43.845Z"
+  },
+  "krav": [
+   "prompt",
+   "video_url"
+  ],
+  "falt": {
+   "edit_strength": {
+    "description": "How closely the edit preserves the source video. 'adhere_*' stays closest to the source, 'flex_*' is balanced, and 'reimagine_*' diverges most. Leave unset to use Luma's default. Cannot be combined with auto_controls."
+   },
+   "keyframe_indexes": {
+    "description": "Source-video frame positions where each keyframes[i] is anchored. Non-negative, unique, and the same length as keyframes."
+   },
+   "duration": {
+    "type": "string",
+    "enum": [
+     "5s",
+     "10s"
+    ],
+    "default": "5s",
+    "description": "Duration of the edited video."
+   },
+   "start_image_url": {
+    "description": "Optional URL of an image to use as the edited video's first frame — e.g. a restyled version of the source's opening frame to steer the look of the edit. Leave unset to let the model derive the first frame from the source video."
+   },
+   "hdr": {
+    "type": "boolean",
+    "default": false,
+    "description": "Generate an HDR-encoded MP4. Requires HDR access on the account and a resolution of 720p or 1080p."
+   },
+   "auto_controls": {
+    "type": "boolean",
+    "default": false,
+    "description": "Let the model derive the edit conditioning schedule from the source video. Cannot be combined with edit_strength."
+   },
+   "keyframes": {
+    "description": "Multi-keyframe edit guide frames: up to 64 image URLs pinned at the source-frame positions given by keyframe_indexes. Mutually exclusive with start_image_url. Provide keyframes and keyframe_indexes together (same length)."
+   },
+   "controls": {
+    "description": "Per-signal conditioning controls (pose, depth, normals, trajectory, face) for finer control than edit_strength. Cannot be combined with auto_controls."
+   },
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Authorized callers may set false to request relaxed screening."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "Text prompt describing how to edit the source video."
+   },
+   "user": {
+    "description": "Optional opaque identifier for the end user making the request. Used only for abuse attribution; never interpreted by fal."
+   },
+   "exr_export": {
+    "type": "boolean",
+    "default": false,
+    "description": "Also export an EXR file alongside the MP4. Requires hdr=true and HDR access."
+   },
+   "resolution": {
+    "type": "string",
+    "enum": [
+     "540p",
+     "720p",
+     "1080p"
+    ],
+    "default": "540p",
+    "description": "Resolution of the edited video. Higher resolutions cost more."
+   },
+   "video_url": {
+    "type": "string",
+    "description": "URL of the source video to edit."
+   }
+  }
+ },
+ "luma/agent/uni-1/v1/edit": {
+  "meta": {
+   "display_name": "Luma Uni-1 Edit",
+   "status": "active",
+   "description": "Luma Uni-1 Edit reworks a source image from a text instruction, preserving the original composition while applying style changes and following optional reference images to steer the result.",
+   "category": "image-to-image",
+   "deprecated": null,
+   "updated_at": "2026-10-20T22:53:44.339Z"
+  },
+  "krav": [
+   "prompt",
+   "image_url"
+  ],
+  "falt": {
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Authorized callers may set false to request relaxed screening."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "Text prompt describing the edit to apply."
+   },
+   "output_format": {
+    "description": "Encoding format of the edited image."
+   },
+   "style": {
+    "type": "string",
+    "enum": [
+     "auto",
+     "manga"
+    ],
+    "default": "auto",
+    "description": "Visual style of the edited image."
+   },
+   "image_url": {
+    "type": "string",
+    "description": "URL of the source image to edit."
+   },
+   "reference_image_urls": {
+    "description": "Optional list of reference image URLs used to guide the edit."
+   }
+  }
+ },
+ "fal-ai/object-removal/mask": {
+  "meta": {
+   "display_name": "Object Removal",
+   "status": "active",
+   "description": "Removes mask-selected objects and their visual effects, seamlessly reconstructing the scene with contextually appropriate content.",
+   "category": "image-to-image",
+   "deprecated": null,
+   "updated_at": "2026-01-26T21:43:27.015Z"
+  },
+  "krav": [
+   "image_url",
+   "mask_url"
+  ],
+  "falt": {
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Whether to apply input safety moderation. Disabling it requires account authorization."
+   },
+   "mask_expansion": {
+    "type": "integer",
+    "default": 15,
+    "maximum": 50,
+    "minimum": 0,
+    "description": "Amount of pixels to expand the mask by. Range: 0-50"
+   },
+   "model": {
+    "type": "string",
+    "enum": [
+     "low_quality",
+     "medium_quality",
+     "high_quality",
+     "best_quality"
+    ],
+    "default": "best_quality"
+   },
+   "image_url": {
+    "type": "string",
+    "description": "The URL of the image to remove objects from."
+   },
+   "mask_url": {
+    "type": "string",
+    "description": "The URL of the mask image. White pixels (255) indicate areas to remove."
+   }
+  }
+ },
+ "fal-ai/wan-vace-14b/inpainting": {
+  "meta": {
+   "display_name": "Wan VACE 14B",
+   "status": "active",
+   "description": "VACE is a video generation model that uses a source image, mask, and video to create prompted videos with controllable sources.",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-11-04T20:21:58.341Z"
+  },
+  "krav": [
+   "prompt",
+   "video_url"
+  ],
+  "falt": {
+   "shift": {
+    "type": "number",
+    "default": 5,
+    "maximum": 15,
+    "minimum": 1,
+    "description": "Shift parameter for video generation."
+   },
+   "frames_per_second": {
+    "default": 16,
+    "description": "Frames per second of the generated video. Must be between 5 to 30. Ignored if match_input_frames_per_second is true."
+   },
+   "ref_image_urls": {
+    "type": "array",
+    "description": "Urls to source reference image. If provided, the model will use this image as reference."
+   },
+   "enable_prompt_expansion": {
+    "type": "boolean",
+    "default": false,
+    "description": "Whether to enable prompt expansion."
+   },
+   "acceleration": {
+    "default": "regular",
+    "description": "Acceleration to use for inference. Options are 'none' or 'regular'. Accelerated inference will very slightly affect output, but will be significantly faster."
+   },
+   "preprocess": {
+    "type": "boolean",
+    "default": false,
+    "description": "Whether to preprocess the input video."
+   },
+   "mask_image_url": {
+    "description": "URL to the guiding mask file. If provided, the model will use this mask as a reference to create masked video using salient mask tracking. Will be ignored if mask_video_url is provided."
+   },
+   "match_input_frames_per_second": {
+    "type": "boolean",
+    "default": false,
+    "description": "If true, the frames per second of the generated video will match the input video. If false, the frames per second will be determined by the frames_per_second parameter."
+   },
+   "sync_mode": {
+    "type": "boolean",
+    "default": false,
+    "description": "If `True`, the media will be returned as a data URI and the output data won't be available in the request history."
+   },
+   "video_quality": {
+    "type": "string",
+    "enum": [
+     "low",
+     "medium",
+     "high",
+     "maximum"
+    ],
+    "default": "high",
+    "description": "The quality of the generated video."
+   },
+   "num_interpolated_frames": {
+    "type": "integer",
+    "default": 0,
+    "maximum": 5,
+    "minimum": 0,
+    "description": "Number of frames to interpolate between the original frames. A value of 0 means no interpolation."
+   },
+   "num_inference_steps": {
+    "type": "integer",
+    "default": 30,
+    "maximum": 50,
+    "minimum": 2,
+    "description": "Number of inference steps for sampling. Higher values give better quality but take longer."
+   },
+   "video_url": {
+    "type": "string",
+    "description": "URL to the source video file. Required for inpainting."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "The text prompt to guide video generation."
+   },
+   "negative_prompt": {
+    "type": "string",
+    "default": "letterboxing, borders, black bars, bright colors, overexposed, static, blurred details, subtitles, style, artwork, painting, picture, still, overall gray, worst quality, low quality, JPEG compression residue, ugly, incomplete, extra fingers, poorly drawn hands, poorly drawn faces, deformed, disfigured, malformed limbs, fused fingers, still picture, cluttered background, three legs, many people in the background, walking backwards",
+    "description": "Negative prompt for video generation."
+   },
+   "mask_video_url": {
+    "description": "URL to the source mask file. Required for inpainting."
+   },
+   "aspect_ratio": {
+    "type": "string",
+    "enum": [
+     "auto",
+     "16:9",
+     "1:1",
+     "9:16"
+    ],
+    "default": "auto",
+    "description": "Aspect ratio of the generated video."
+   },
+   "temporal_downsample_factor": {
+    "type": "integer",
+    "default": 0,
+    "maximum": 5,
+    "minimum": 0,
+    "description": "Temporal downsample factor for the video. This is an integer value that determines how many frames to skip in the video. A value of 0 means no downsampling. For each downsample factor, one upsample factor will automatically be applied."
+   },
+   "sampler": {
+    "type": "string",
+    "enum": [
+     "unipc",
+     "dpm++",
+     "euler"
+    ],
+    "default": "unipc",
+    "description": "Sampler to use for video generation."
+   },
+   "num_frames": {
+    "type": "integer",
+    "default": 81,
+    "maximum": 241,
+    "minimum": 17,
+    "description": "Number of frames to generate. Must be between 81 to 241 (inclusive)."
+   },
+   "return_frames_zip": {
+    "type": "boolean",
+    "default": false,
+    "description": "If true, also return a ZIP file containing all generated frames."
+   },
+   "guidance_scale": {
+    "type": "number",
+    "default": 5,
+    "maximum": 10,
+    "minimum": 1,
+    "description": "Guidance scale for classifier-free guidance. Higher values encourage the model to generate images closely related to the text prompt."
+   },
+   "video_write_mode": {
+    "type": "string",
+    "enum": [
+     "fast",
+     "balanced",
+     "small"
+    ],
+    "default": "balanced",
+    "description": "The write mode of the generated video."
+   },
+   "last_frame_url": {
+    "description": "URL to the last frame of the video. If provided, the model will use this frame as a reference."
+   },
+   "seed": {
+    "description": "Random seed for reproducibility. If None, a random seed is chosen."
+   },
+   "enable_auto_downsample": {
+    "type": "boolean",
+    "default": false,
+    "description": "If true, the model will automatically temporally downsample the video to an appropriate frame length for the model, then will interpolate it back to the original frame length."
+   },
+   "transparency_mode": {
+    "type": "string",
+    "enum": [
+     "content_aware",
+     "white",
+     "black"
+    ],
+    "default": "content_aware",
+    "description": "The transparency mode to apply to the first and last frames. This controls how the transparent areas of the first and last frames are filled."
+   },
+   "resolution": {
+    "type": "string",
+    "enum": [
+     "auto",
+     "240p",
+     "360p",
+     "480p",
+     "580p",
+     "720p"
+    ],
+    "default": "auto",
+    "description": "Resolution of the generated video."
+   },
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": false,
+    "description": "If set to true, the safety checker will be enabled. Disabling it requires account authorization; unauthorized requests are always checked."
+   },
+   "match_input_num_frames": {
+    "type": "boolean",
+    "default": false,
+    "description": "If true, the number of frames in the generated video will match the number of frames in the input video. If false, the number of frames will be determined by the num_frames parameter."
+   },
+   "first_frame_url": {
+    "description": "URL to the first frame of the video. If provided, the model will use this frame as a reference."
+   },
+   "interpolator_model": {
+    "type": "string",
+    "enum": [
+     "rife",
+     "film"
+    ],
+    "default": "film",
+    "description": "The model to use for frame interpolation. Options are 'rife' or 'film'."
+   },
+   "auto_downsample_min_fps": {
+    "type": "number",
+    "default": 15,
+    "maximum": 60,
+    "minimum": 1,
+    "description": "The minimum frames per second to downsample the video to. This is used to help determine the auto downsample factor to try and find the lowest detail-preserving downsample factor. The default value is appropriate for most videos, if you are using a video with very fast motion, you may need to increase this value. If your video has a very low amount of motion, you could decrease this value to allow for higher downsampling and thus longer sequences."
+   }
+  }
+ },
+ "google/nano-banana-2.1/edit": {
+  "meta": {
+   "display_name": "Nano Banana 2.1 Edit",
+   "status": "active",
+   "description": "Nano Banana 2.1 Edit by Google transforms reference images using text instructions, with output resolutions up to 4K and optional video or PDF context.",
+   "category": "image-to-image",
+   "deprecated": null,
+   "updated_at": "2026-10-20T22:22:33.129Z"
+  },
+  "krav": [
+   "prompt"
+  ],
+  "falt": {
+   "output_format": {
+    "type": "string",
+    "enum": [
+     "jpeg",
+     "png",
+     "webp"
+    ],
+    "default": "png",
+    "description": "The format of the generated image."
+   },
+   "pdf_url": {
+    "description": "Optional PDF document to use as input context. Accepts an http(s)/data URL (downloaded and sent inline, max 15MB)."
+   },
+   "seed": {
+    "description": "The seed for the random number generator."
+   },
+   "num_images": {
+    "type": "integer",
+    "default": 1,
+    "maximum": 4,
+    "minimum": 1,
+    "description": "The number of images to generate."
+   },
+   "system_prompt": {
+    "type": "string",
+    "default": "",
+    "description": "Optional system instruction that steers the model's persona and output style across the request. Leave blank to omit; when provided, it is sent as the system instruction to Gemini (or as a system message on OpenAI-compatible providers)."
+   },
+   "sync_mode": {
+    "type": "boolean",
+    "default": false,
+    "description": "If `True`, the media will be returned as a data URI and the output data won't be available in the request history."
+   },
+   "enable_web_search": {
+    "type": "boolean",
+    "default": false,
+    "description": "Enable web search for the image generation task. This will allow the model to use the latest information from the web to generate the image."
+   },
+   "aspect_ratio": {
+    "default": "auto",
+    "description": "The aspect ratio of the generated image. Supports extreme ratios: 4:1, 1:4, 8:1, 1:8."
+   },
+   "safety_tolerance": {
+    "type": "string",
+    "enum": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6"
+    ],
+    "default": "4",
+    "description": "The safety tolerance level for content moderation. 1 is the most strict (blocks most content), 6 is the least strict."
+   },
+   "limit_generations": {
+    "type": "boolean",
+    "default": true,
+    "description": "Experimental parameter to limit the number of generations from each round of prompting to 1. Set to `True` to to disregard any instructions in the prompt regarding the number of images to generate and ignore any intermediate images generated by the model. This may affect generation quality."
+   },
+   "thinking_level": {
+    "default": "medium",
+    "description": "How much the model reasons before generating. Higher levels can improve complex compositions and use more thinking tokens."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "The prompt for image editing."
+   },
+   "image_urls": {
+    "type": "array",
+    "description": "The URLs of the images to use for image-to-image generation or image editing. Optional when `video_url` or `pdf_url` is provided."
+   },
+   "resolution": {
+    "type": "string",
+    "enum": [
+     "1K",
+     "2K",
+     "4K"
+    ],
+    "default": "1K",
+    "description": "The resolution of the image to generate."
+   },
+   "video_url": {
+    "description": "Optional video to use as input context. Accepts an http(s)/data URL to a video file (downloaded and sent inline, max 15MB) or a YouTube URL (passed through to the model without downloading)."
+   }
+  }
+ },
+ "bytedance/seedream/v5.5/edit": {
+  "meta": {
+   "display_name": "Seedream 5.5 Edit",
+   "status": "active",
+   "description": "Seedream 5.5 edits images from text instructions and up to 10 reference images, with configurable output dimensions and support for transparent PNG backgrounds.",
+   "category": "image-to-image",
+   "deprecated": null,
+   "updated_at": "2026-11-12T14:01:37.199Z"
+  },
+  "krav": [
+   "prompt",
+   "image_urls"
+  ],
+  "falt": {
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "If set to true, the safety checker will be enabled. Disabling it requires account authorization; unauthorized requests are always checked."
+   },
+   "watermark": {
+    "type": "boolean",
+    "default": false,
+    "description": "Whether to add the provider's visible watermark."
+   },
+   "image_urls": {
+    "type": "array",
+    "description": "List of URLs of input reference images. Up to 10 images are supported; if more are sent, only the last 10 are used."
+   },
+   "image_size": {
+    "default": "auto_2K",
+    "description": "The size of the generated image. Total pixels must be between 921600 and 4624220, with aspect ratio between 1/16 and 16."
+   },
+   "output_format": {
+    "type": "string",
+    "enum": [
+     "jpeg",
+     "png"
+    ],
+    "default": "png",
+    "description": "The file format of the generated image."
+   },
+   "num_images": {
+    "type": "integer",
+    "default": 1,
+    "maximum": 6,
+    "minimum": 1,
+    "description": "Number of separate model generations to run with the prompt."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "The text prompt used to edit the image."
+   },
+   "sync_mode": {
+    "type": "boolean",
+    "default": false,
+    "description": "If `True`, the media will be returned as a data URI and the output data won't be available in the request history."
+   },
+   "background": {
+    "type": "string",
+    "enum": [
+     "auto",
+     "opaque",
+     "transparent"
+    ],
+    "default": "auto",
+    "description": "`auto` lets the model choose from the prompt and output format. `transparent` returns an RGBA image and requires `output_format=png`."
+   }
+  }
+ },
+ "fal-ai/qwen-image-edit/inpaint": {
+  "meta": {
+   "display_name": "Qwen Image Edit",
+   "status": "active",
+   "description": "Inpainting Endpoint for the Qwen Edit Image editing model.",
+   "category": "image-to-image",
+   "deprecated": null,
+   "updated_at": "2026-06-24T11:05:37.684Z"
+  },
+  "krav": [
+   "prompt",
+   "image_url",
+   "mask_url"
+  ],
+  "falt": {
+   "negative_prompt": {
+    "type": "string",
+    "default": " ",
+    "description": "The negative prompt for the generation"
+   },
+   "image_size": {
+    "description": "The size of the generated image."
+   },
+   "num_inference_steps": {
+    "type": "integer",
+    "default": 30,
+    "maximum": 50,
+    "minimum": 2,
+    "description": "The number of inference steps to perform."
+   },
+   "strength": {
+    "type": "number",
+    "default": 0.93,
+    "maximum": 1,
+    "minimum": 0.01,
+    "description": "Strength of noising process for inpainting"
+   },
+   "output_format": {
+    "type": "string",
+    "enum": [
+     "jpeg",
+     "png"
+    ],
+    "default": "png",
+    "description": "The format of the generated image."
+   },
+   "mask_url": {
+    "type": "string",
+    "description": "The URL of the mask for inpainting"
+   },
+   "image_url": {
+    "type": "string",
+    "description": "The URL of the image to edit."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "The prompt to generate the image with"
+   },
+   "guidance_scale": {
+    "type": "number",
+    "default": 4,
+    "maximum": 20,
+    "minimum": 0,
+    "description": "\n            The CFG (Classifier Free Guidance) scale is a measure of how close you want\n            the model to stick to your prompt when looking for a related image to show you.\n        "
+   },
+   "num_images": {
+    "type": "integer",
+    "default": 1,
+    "maximum": 4,
+    "minimum": 1,
+    "description": "The number of images to generate."
+   },
+   "sync_mode": {
+    "type": "boolean",
+    "default": false,
+    "description": "If `True`, the media will be returned as a data URI and the output data won't be available in the request history."
+   },
+   "seed": {
+    "description": "\n            The same seed and the same prompt given to the same version of the model\n            will output the same image every time.\n        "
+   },
+   "acceleration": {
+    "type": "string",
+    "enum": [
+     "none",
+     "regular",
+     "high"
+    ],
+    "default": "regular",
+    "description": "Acceleration level for image generation. Options: 'none', 'regular'. Higher acceleration increases speed. 'regular' balances speed and quality."
+   },
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "If set to true, the safety checker will be enabled. Disabling it requires account authorization; unauthorized requests are always checked, and images flagged as unsafe are returned as black images."
+   }
+  }
+ },
+ "kling/v4/video-to-video/edit": {
+  "meta": {
+   "display_name": "Kling 4.0 Video Editing",
+   "status": "active",
+   "description": "Kling 4.0 edits an input video using text instructions and optional image references, producing 3 to 30-second videos at 720p or 1080p.  ",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-10-23T16:50:29.059Z"
+  },
+  "krav": [
+   "prompt",
+   "video_url"
+  ],
+  "falt": {
+   "prompt": {
+    "type": "string",
+    "description": "Edit instruction. Reference the source video as @Video1."
+   },
+   "resolution": {
+    "type": "string",
+    "enum": [
+     "720p",
+     "1080p"
+    ],
+    "default": "1080p",
+    "description": "Output resolution."
+   },
+   "start_image_url": {
+    "description": "Optional image to use as the first frame. Counts toward the image reference limit."
+   },
+   "video_urls": {
+    "description": "Reference videos, referenced as @Video2, @Video3, ... (max 4). The source, reference and element videos must total at most 30s."
+   },
+   "elements": {
+    "description": "Characters/objects, referenced as @Element1, @Element2, ... (max 7). Up to 3 elements may carry a voice_id and up to 3 may be video elements."
+   },
+   "end_image_url": {
+    "description": "Optional image to use as the last frame. Counts toward the image reference limit."
+   },
+   "voice_ids": {
+    "description": "Voices referenced in the prompt as @Voice1, @Voice2, ... (max 3, including voices bound to elements). Create one with https://fal.ai/models/fal-ai/kling-video/create-voice"
+   },
+   "video_url": {
+    "type": "string",
+    "description": "The video to edit (3-30s), referenced as @Video1.\n\nMax file size: 300.0MB, Min width: 700px, Min height: 700px, Max width: 4553px, Max height: 4553px, Min aspect ratio: 0.40, Max aspect ratio: 2.50, Min duration: 3.0s, Max duration: 30.05s, Min FPS: 23.9, Max FPS: 60.05, Timeout: 30.0s"
+   },
+   "image_urls": {
+    "description": "Reference images, referenced as @Image1, @Image2, ..."
+   },
+   "middle_image_urls": {
+    "description": "Optional ordered keyframes between the first and last frames (max 8). Count toward the image reference limit."
+   },
+   "aspect_ratio": {
+    "description": "Aspect ratio of the edited video. 'auto' adapts it to the inputs. Omit to follow the source video."
+   },
+   "duration": {
+    "description": "Output duration in seconds (3-30). Defaults to the source video's length."
+   }
+  }
+ },
+ "fal-ai/wan/v2.7/edit-video": {
+  "meta": {
+   "display_name": "Wan",
+   "status": "active",
+   "description": "Wan 2.7 is the latest generation AI video model, delivering enhanced motion smoothness, superior scene fidelity, and greater visual coherence.",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-08-19T22:23:41.406Z"
+  },
+  "krav": [
+   "prompt",
+   "video_url"
+  ],
+  "falt": {
+   "video_url": {
+    "type": "string",
+    "description": "URL of the input video to edit. Format: MP4, MOV. Duration: 2-10s. Max 100 MB.\n\nMax file size: 100.0MB, Min duration: 2s, Max duration: 10s, Timeout: 30.0s"
+   },
+   "aspect_ratio": {
+    "description": "Aspect ratio of the generated video. If not provided, uses the aspect ratio of the input video."
+   },
+   "resolution": {
+    "type": "string",
+    "enum": [
+     "720p",
+     "1080p"
+    ],
+    "default": "1080p",
+    "description": "Output video resolution tier."
+   },
+   "duration": {
+    "type": "integer",
+    "enum": [
+     0,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10
+    ],
+    "default": 0,
+    "description": "Output video duration in seconds. Default 0 means match input video duration. When set (2-10), truncates from the start."
+   },
+   "reference_image_url": {
+    "description": "Reference image URL for reference-based editing."
+   },
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Enable content moderation for input and output. Disabling it requires account authorization; unauthorized requests are always checked."
+   },
+   "audio_setting": {
+    "type": "string",
+    "enum": [
+     "auto",
+     "origin"
+    ],
+    "default": "auto",
+    "description": "Audio handling. 'auto': model decides whether to regenerate audio. 'origin': preserve original audio from input video."
+   },
+   "seed": {
+    "description": "Random seed for reproducibility (0-2147483647)."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "Editing instruction or style transfer description."
+   }
+  }
+ },
+ "blackforestlabs/flux-3/edit-video": {
+  "meta": {
+   "display_name": "Flux 3 FAST Edit Video",
+   "status": "active",
+   "description": "FLUX.3 Edit Video [FAST] is Black Forest Labs' frontier video model. This endpoint edits an existing video from natural-language instructions, applying targeted changes while preserving the rest of the scene.",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-10-20T22:27:23.539Z"
+  },
+  "krav": [
+   "prompt",
+   "video_url"
+  ],
+  "falt": {
+   "video_url": {
+    "type": "string",
+    "description": "URL of the input video. MP4, under 50 MB and under 15 seconds."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "The text prompt describing how to change the input video. The clip is re-rendered preserving motion, timing, and framing."
+   },
+   "safety_tolerance": {
+    "type": "integer",
+    "default": 2,
+    "maximum": 4,
+    "minimum": 0,
+    "description": "The safety tolerance level for the generated video. 0 is the strictest and 4 is the most permissive."
+   }
+  }
+ },
+ "fal-ai/bytedance/dreamactor/v2": {
+  "meta": {
+   "display_name": "Bytedance Dreamactor V2",
+   "status": "active",
+   "description": "Transfer motion from a video to characters in an image using Dreamactor v2. Great performance for non-human and multiple characters",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-04-21T17:44:30.517Z"
+  },
+  "krav": [
+   "image_url",
+   "video_url"
+  ],
+  "falt": {
+   "trim_first_second": {
+    "type": "boolean",
+    "default": true,
+    "description": "Whether to crop the first second of the output video. The output has a 1-second transition at the beginning; enable this to remove it."
+   },
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Authorized callers may set false to request relaxed screening."
+   },
+   "video_url": {
+    "type": "string",
+    "description": "The URL of the driving template video providing motion, facial expressions, and lip movement reference. Max duration: 30 seconds. Format: mp4, mov or webm. Resolution: between 200x200 and 2048x1440. Supports full face and body driving."
+   },
+   "image_url": {
+    "type": "string",
+    "description": "The URL of the reference image to animate. Supports real people, animation, pets, etc. Format: jpeg, jpg or png. Max size: 4.7 MB. Resolution: between 480x480 and 1920x1080 (larger images will be proportionally reduced)."
+   }
+  }
+ },
+ "fal-ai/kling-video/o3/standard/video-to-video/edit": {
+  "meta": {
+   "display_name": "Kling O3 Edit Video [Standard]",
+   "status": "active",
+   "description": "Edit videos using Kling O3 from Kling Team!",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-10-20T22:09:07.057Z"
+  },
+  "krav": [
+   "prompt",
+   "video_url"
+  ],
+  "falt": {
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Disabling safety checks requires account authorization; unauthorized requests are always checked."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "Text prompt for video generation. Reference video as @Video1."
+   },
+   "image_urls": {
+    "description": "Reference images for style/appearance. Reference in prompt as @Image1, @Image2, etc. Maximum 4 total (elements + reference images) when using video."
+   },
+   "video_url": {
+    "type": "string",
+    "description": "Reference video URL. Only .mp4/.mov formats, 3-15s duration, 720-3840px resolution, max 200MB."
+   },
+   "shot_type": {
+    "type": "string",
+    "default": "customize",
+    "description": "The type of multi-shot video generation."
+   },
+   "elements": {
+    "description": "Elements (characters/objects) to include. Reference in prompt as @Element1, @Element2."
+   },
+   "keep_audio": {
+    "type": "boolean",
+    "default": true,
+    "description": "Whether to keep the original audio from the reference video. "
+   }
+  }
+ },
+ "fal-ai/void-video-inpainting": {
+  "meta": {
+   "display_name": "Void Video Inpainting",
+   "status": "active",
+   "description": "VOID removes objects from videos along with all interactions they induce on the scene",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-04-28T16:39:35.437Z"
+  },
+  "krav": [
+   "video_url",
+   "prompt"
+  ],
+  "falt": {
+   "enable_pass2_refinement": {
+    "type": "boolean",
+    "default": false,
+    "description": "Run VOID Pass 2 warped-noise refinement after Pass 1. This is slower but can improve temporal consistency on longer clips."
+   },
+   "guidance_scale": {
+    "type": "number",
+    "default": 1,
+    "maximum": 20,
+    "minimum": 0,
+    "description": "Classifier-free guidance scale."
+   },
+   "quad_mask_video_url": {
+    "type": "string",
+    "default": "",
+    "description": "URL of a mask video for the removal target. For best results this should be a VOID-style quadmask video with 4 grayscale values: 0=object to remove, 63=overlap, 127=affected region, 255=background to keep. A simple binary mask (0=remove, 255=keep) also works. If omitted, the app will generate a temporary mask video from `mask_prompt` using the SAM-3 video endpoint and convert it to a quadmask automatically."
+   },
+   "negative_prompt": {
+    "type": "string",
+    "default": "The video is not of a high quality, it has a low resolution. Watermark present in each frame. The background is solid. Strange body and strange trajectory. Distortion.",
+    "description": "Negative prompt to guide generation away from undesired outputs."
+   },
+   "strength": {
+    "type": "number",
+    "default": 1,
+    "maximum": 1,
+    "minimum": 0,
+    "description": "Denoising strength. 1.0 means full denoising."
+   },
+   "num_inference_steps": {
+    "type": "integer",
+    "default": 30,
+    "maximum": 50,
+    "minimum": 1,
+    "description": "Number of denoising steps. Higher values improve quality but increase latency."
+   },
+   "seed": {
+    "description": "Random seed for reproducibility."
+   },
+   "video_url": {
+    "type": "string",
+    "description": "URL of the input video containing the object to remove."
+   },
+   "mask_prompt": {
+    "description": "Text description of what should be masked in the input video, such as the object or person to remove. Used to generate a temporary mask video with SAM-3 when `quad_mask_video_url` is not provided."
+   },
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Enable content safety checking on the output."
+   },
+   "num_frames": {
+    "type": "integer",
+    "default": 85,
+    "maximum": 197,
+    "minimum": 1,
+    "description": "Temporal window size for inference. The backend snaps this to the nearest CogVideoX-safe value that works with temporal compression and patching. Valid outputs are 69, 77, 85, ..., 197."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "Text description of the desired background after object removal."
+   }
+  }
+ },
+ "fal-ai/ltx-2.3-quality/inpaint": {
+  "meta": {
+   "display_name": "LTX 2.3 Quality",
+   "status": "active",
+   "description": "Inpaint high-quality video using LTX-2.3  ",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-10-19T14:58:15.439Z"
+  },
+  "krav": [
+   "prompt",
+   "video_url",
+   "mask_video_url"
+  ],
+  "falt": {
+   "prompt": {
+    "type": "string",
+    "description": "The prompt describing what to generate inside the masked area."
+   },
+   "enable_prompt_expansion": {
+    "type": "boolean",
+    "default": true,
+    "description": "Whether to enable prompt expansion."
+   },
+   "video_write_mode": {
+    "type": "string",
+    "enum": [
+     "fast",
+     "balanced",
+     "small"
+    ],
+    "default": "balanced",
+    "description": "The write mode of the generated video."
+   },
+   "frames_per_second": {
+    "type": "number",
+    "default": 24,
+    "maximum": 60,
+    "minimum": 1,
+    "description": "Frames per second of the generated video."
+   },
+   "sync_mode": {
+    "type": "boolean",
+    "default": false,
+    "description": "If True, the media is returned as a data URI inline in the response. Useful for short-lived requests and tests."
+   },
+   "video_quality": {
+    "type": "string",
+    "enum": [
+     "low",
+     "medium",
+     "high",
+     "maximum"
+    ],
+    "default": "high",
+    "description": "The quality preset of the generated video."
+   },
+   "guidance_scale": {
+    "type": "number",
+    "default": 1,
+    "maximum": 20,
+    "minimum": 1,
+    "description": "Classifier-free guidance scale. The default is tuned for fast, high-quality generation."
+   },
+   "video_url": {
+    "type": "string",
+    "description": "The source video to inpaint."
+   },
+   "num_inference_steps": {
+    "type": "integer",
+    "default": 15,
+    "maximum": 30,
+    "minimum": 8,
+    "description": "Number of inference steps. Defaults to 15 and can be increased up to 30."
+   },
+   "mask_video_url": {
+    "type": "string",
+    "description": "The mask video. White regions are regenerated; black regions are preserved from the source video."
+   },
+   "num_frames": {
+    "type": "integer",
+    "default": 121,
+    "maximum": 481,
+    "minimum": 9,
+    "description": "The number of frames to generate."
+   },
+   "generate_audio": {
+    "type": "boolean",
+    "default": true,
+    "description": "Whether to include audio in the returned video. When disabled, the final MP4 is returned without an audio track."
+   },
+   "seed": {
+    "description": "Random seed for reproducibility. If None, a random seed is chosen."
+   },
+   "negative_prompt": {
+    "type": "string",
+    "default": "color distortion, overexposure, static, blurry details, subtitles, style, artwork, painting, frame, still, dim overall tone, worst quality, low quality, JPEG compression artifacts, ugly, mutilated, extra fingers, poorly drawn hands, poorly drawn face, deformed, disfigured, malformed limbs, fused fingers, motionless frame, cluttered background, three legs, crowded background, walking backwards",
+    "description": "The negative prompt to steer generation away from."
+   },
+   "video_strength": {
+    "type": "number",
+    "default": 1,
+    "maximum": 1,
+    "minimum": 0,
+    "description": "Strength of the IC-LoRA video guide for the preserved content. Higher values keep the source video structure more strongly."
+   },
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Whether to enable the safety checker."
+   }
+  }
+ },
+ "openai/gpt-image-2/edit": {
+  "meta": {
+   "display_name": "GPT Image 2 API",
+   "status": "active",
+   "description": "GPT Image 2, OpenAI's latest image model, is capable of making fine-grained, detailed edits to images.",
+   "category": "image-to-image",
+   "deprecated": null,
+   "updated_at": "2026-08-13T21:01:03.124Z"
+  },
+  "krav": [
+   "prompt",
+   "image_urls"
+  ],
+  "falt": {
+   "quality": {
+    "type": "string",
+    "enum": [
+     "auto",
+     "low",
+     "medium",
+     "high"
+    ],
+    "default": "high",
+    "description": "Quality for the generated image. Use 'auto' to let the model pick the best quality for the prompt."
+   },
+   "mask_url": {
+    "description": "Mask image URL. White marks regions to edit and black marks regions to keep."
+   },
+   "output_format": {
+    "type": "string",
+    "enum": [
+     "jpeg",
+     "png",
+     "webp"
+    ],
+    "default": "png",
+    "description": "Output format for the images"
+   },
+   "background": {
+    "type": "string",
+    "enum": [
+     "auto",
+     "transparent",
+     "opaque"
+    ],
+    "default": "auto",
+    "description": "Background for the generated image"
+   },
+   "image_urls": {
+    "type": "array",
+    "description": "The URLs of the images to use as a reference for the generation. A maximum of 16 images are allowed."
+   },
+   "sync_mode": {
+    "type": "boolean",
+    "default": false,
+    "description": "If `True`, the media will be returned as a data URI and the output data won't be available in the request history."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "The prompt for image generation"
+   },
+   "num_images": {
+    "type": "integer",
+    "default": 1,
+    "maximum": 10,
+    "minimum": 1,
+    "description": "Number of images to generate"
+   },
+   "output_compression": {
+    "description": "Compression level from 0 to 100. Only supported when output_format is 'jpeg' or 'webp'."
+   },
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Authorized callers may set false to request relaxed screening."
+   },
+   "image_size": {
+    "default": "auto",
+    "description": "The size of the generated image. Use 'auto' to infer from input images."
+   }
+  }
+ },
+ "fal-ai/nano-banana-pro/edit": {
+  "meta": {
+   "display_name": "Nano Banana Pro",
+   "status": "active",
+   "description": "Nano Banana Pro is Google's new state-of-the-art image generation and editing model",
+   "category": "image-to-image",
+   "deprecated": null,
+   "updated_at": "2026-11-10T03:23:32.951Z"
+  },
+  "krav": [
+   "prompt"
+  ],
+  "falt": {
+   "system_prompt": {
+    "type": "string",
+    "default": "",
+    "description": "Optional system instruction that steers the model's persona and output style across the request. Leave blank to omit; when provided, it is sent as the system instruction to Gemini (or as a system message on OpenAI-compatible providers)."
+   },
+   "history": {
+    "type": "array",
+    "description": "Previous native user/model turns. Replay a returned conversation's messages unchanged, including thought signatures; the current prompt is appended as a new user turn."
+   },
+   "aspect_ratio": {
+    "default": "auto",
+    "description": "The aspect ratio of the generated image, including 1:4, 4:1, 1:8 and 8:1."
+   },
+   "include_thoughts": {
+    "description": "Whether to include thought summaries. Omit to preserve the existing behavior: an explicit thinking_level requests summaries. Set limit_generations=false to return summary text in description. This does not disable thinking or return intermediate thought images."
+   },
+   "max_output_tokens": {
+    "description": "Maximum output tokens for the generation. Omit to retain the provider default. Explicit values use a direct Google or Vertex API."
+   },
+   "sync_mode": {
+    "type": "boolean",
+    "default": false,
+    "description": "If `True`, the media will be returned as a data URI and the output data won't be available in the request history."
+   },
+   "limit_generations": {
+    "type": "boolean",
+    "default": true,
+    "description": "Experimental parameter to limit the number of generations from each round of prompting to 1. Set to `True` to to disregard any instructions in the prompt regarding the number of images to generate."
+   },
+   "seed": {
+    "description": "The seed for the random number generator."
+   },
+   "image_urls": {
+    "type": "array",
+    "description": "The URLs of the images to use for image-to-image generation or image editing."
+   },
+   "context": {
+    "type": "array",
+    "description": "Ordered text, original images, PDF or UTF-8 text documents appended to the current prompt. Uses a native provider. Images count toward the total 14-reference limit."
+   },
+   "resolution": {
+    "type": "string",
+    "enum": [
+     "1K",
+     "2K",
+     "4K"
+    ],
+    "default": "1K",
+    "description": "The resolution of the image to generate."
+   },
+   "return_history": {
+    "type": "boolean",
+    "default": false,
+    "description": "Return reusable native conversations with original image parts and provider thought signatures. Uses a native provider. Each generated conversation is independent; send its messages as history for the next turn."
+   },
+   "thinking_level": {
+    "description": "Thinking effort. Pro Image supports only high; omit to retain its provider default. An explicit level requests summaries unless include_thoughts overrides it. Thinking cannot be disabled."
+   },
+   "safety_tolerance": {
+    "type": "string",
+    "enum": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6"
+    ],
+    "default": "4",
+    "description": "The safety tolerance level for content moderation. 1 is the most strict (blocks most content), 6 is the least strict."
+   },
+   "output_format": {
+    "type": "string",
+    "enum": [
+     "jpeg",
+     "png",
+     "webp"
+    ],
+    "default": "png",
+    "description": "The format of the generated image."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "The prompt for image editing."
+   },
+   "top_p": {
+    "description": "Nucleus sampling probability. Omit to use the provider default of 0.95. Explicit values use a direct Google or Vertex API."
+   },
+   "temperature": {
+    "description": "Sampling temperature. Omit to use the provider default of 1. Explicit values use a direct Google or Vertex API."
+   },
+   "num_images": {
+    "type": "integer",
+    "default": 1,
+    "maximum": 4,
+    "minimum": 1,
+    "description": "The number of images to generate."
+   },
+   "enable_web_search": {
+    "type": "boolean",
+    "default": false,
+    "description": "Enable web search for the image generation task. This will allow the model to use the latest information from the web to generate the image."
+   }
+  }
+ },
+ "fal-ai/flux-kontext-lora/inpaint": {
+  "meta": {
+   "display_name": "Flux Kontext Lora",
+   "status": "active",
+   "description": "Fast inpainting endpoint for the FLUX.1 Kontext [dev] model with LoRA support, enabling rapid and high-quality image inpainting with reference images, while using pre-trained LoRA adaptations for specific styles, brand identities, and product-specific outputs.",
+   "category": "image-to-image",
+   "deprecated": null,
+   "updated_at": "2026-04-21T17:47:01.636Z"
+  },
+  "krav": [
+   "prompt",
+   "image_url",
+   "reference_image_url",
+   "mask_url"
+  ],
+  "falt": {
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "If set to true, the safety checker will be enabled. Disabling it requires account authorization; unauthorized requests are always checked, and images flagged as unsafe are returned as black images."
+   },
+   "output_format": {
+    "type": "string",
+    "enum": [
+     "jpeg",
+     "png"
+    ],
+    "default": "png",
+    "description": "The format of the generated image."
+   },
+   "strength": {
+    "type": "number",
+    "default": 0.88,
+    "maximum": 1,
+    "minimum": 0.01,
+    "description": "The strength of the initial image. Higher strength values are better for this model."
+   },
+   "seed": {
+    "description": "\n            The same seed and the same prompt given to the same version of the model\n            will output the same image every time.\n        "
+   },
+   "guidance_scale": {
+    "type": "number",
+    "default": 2.5,
+    "maximum": 20,
+    "minimum": 0,
+    "description": "\n            The CFG (Classifier Free Guidance) scale is a measure of how close you want\n            the model to stick to your prompt when looking for a related image to show you.\n        "
+   },
+   "mask_url": {
+    "type": "string",
+    "description": "The URL of the mask for inpainting."
+   },
+   "acceleration": {
+    "type": "string",
+    "enum": [
+     "none",
+     "regular",
+     "high"
+    ],
+    "default": "none",
+    "description": "The speed of the generation. The higher the speed, the faster the generation."
+   },
+   "reference_image_url": {
+    "type": "string",
+    "description": "The URL of the reference image for inpainting."
+   },
+   "image_url": {
+    "type": "string",
+    "description": "The URL of the image to be inpainted."
+   },
+   "loras": {
+    "type": "array",
+    "default": [],
+    "description": "\n            The LoRAs to use for the image generation. You can use any number of LoRAs\n            and they will be merged together to generate the final image.\n        "
+   },
+   "prompt": {
+    "type": "string",
+    "description": "The prompt for the image to image task."
+   },
+   "sync_mode": {
+    "type": "boolean",
+    "default": false,
+    "description": "If `True`, the media will be returned as a data URI and the output data won't be available in the request history."
+   },
+   "num_inference_steps": {
+    "type": "integer",
+    "default": 30,
+    "maximum": 50,
+    "minimum": 10,
+    "description": "The number of inference steps to perform."
+   },
+   "num_images": {
+    "type": "integer",
+    "default": 1,
+    "maximum": 4,
+    "minimum": 1,
+    "description": "The number of images to generate."
+   }
+  }
+ },
+ "fal-ai/wan-22-vace-fun-a14b/inpainting": {
+  "meta": {
+   "display_name": "Wan 2.2 VACE Fun A14B",
+   "status": "active",
+   "description": "VACE Fun for Wan 2.2 A14B from Alibaba-PAI",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-11-04T20:21:59.071Z"
+  },
+  "krav": [
+   "prompt",
+   "video_url"
+  ],
+  "falt": {
+   "last_frame_url": {
+    "description": "URL to the last frame of the video. If provided, the model will use this frame as a reference."
+   },
+   "mask_image_url": {
+    "description": "URL to the guiding mask file. If provided, the model will use this mask as a reference to create masked video using salient mask tracking. Will be ignored if mask_video_url is provided."
+   },
+   "match_input_num_frames": {
+    "type": "boolean",
+    "default": false,
+    "description": "If true, the number of frames in the generated video will match the number of frames in the input video. If false, the number of frames will be determined by the num_frames parameter."
+   },
+   "aspect_ratio": {
+    "type": "string",
+    "enum": [
+     "auto",
+     "16:9",
+     "1:1",
+     "9:16"
+    ],
+    "default": "auto",
+    "description": "Aspect ratio of the generated video."
+   },
+   "sampler": {
+    "type": "string",
+    "enum": [
+     "unipc",
+     "dpm++",
+     "euler"
+    ],
+    "default": "unipc",
+    "description": "Sampler to use for video generation."
+   },
+   "enable_auto_downsample": {
+    "type": "boolean",
+    "default": false,
+    "description": "If true, the model will automatically temporally downsample the video to an appropriate frame length for the model, then will interpolate it back to the original frame length."
+   },
+   "negative_prompt": {
+    "type": "string",
+    "default": "letterboxing, borders, black bars, bright colors, overexposed, static, blurred details, subtitles, style, artwork, painting, picture, still, overall gray, worst quality, low quality, JPEG compression residue, ugly, incomplete, extra fingers, poorly drawn hands, poorly drawn faces, deformed, disfigured, malformed limbs, fused fingers, still picture, cluttered background, three legs, many people in the background, walking backwards",
+    "description": "Negative prompt for video generation."
+   },
+   "resolution": {
+    "type": "string",
+    "enum": [
+     "auto",
+     "240p",
+     "360p",
+     "480p",
+     "580p",
+     "720p"
+    ],
+    "default": "auto",
+    "description": "Resolution of the generated video."
+   },
+   "video_write_mode": {
+    "type": "string",
+    "enum": [
+     "fast",
+     "balanced",
+     "small"
+    ],
+    "default": "balanced",
+    "description": "The write mode of the generated video."
+   },
+   "temporal_downsample_factor": {
+    "type": "integer",
+    "default": 0,
+    "maximum": 5,
+    "minimum": 0,
+    "description": "Temporal downsample factor for the video. This is an integer value that determines how many frames to skip in the video. A value of 0 means no downsampling. For each downsample factor, one upsample factor will automatically be applied."
+   },
+   "match_input_frames_per_second": {
+    "type": "boolean",
+    "default": false,
+    "description": "If true, the frames per second of the generated video will match the input video. If false, the frames per second will be determined by the frames_per_second parameter."
+   },
+   "mask_video_url": {
+    "description": "URL to the source mask file. Required for inpainting."
+   },
+   "auto_downsample_min_fps": {
+    "type": "number",
+    "default": 15,
+    "maximum": 60,
+    "minimum": 1,
+    "description": "The minimum frames per second to downsample the video to. This is used to help determine the auto downsample factor to try and find the lowest detail-preserving downsample factor. The default value is appropriate for most videos, if you are using a video with very fast motion, you may need to increase this value. If your video has a very low amount of motion, you could decrease this value to allow for higher downsampling and thus longer sequences."
+   },
+   "num_interpolated_frames": {
+    "type": "integer",
+    "default": 0,
+    "maximum": 5,
+    "minimum": 0,
+    "description": "Number of frames to interpolate between the original frames. A value of 0 means no interpolation."
+   },
+   "seed": {
+    "description": "Random seed for reproducibility. If None, a random seed is chosen."
+   },
+   "ref_image_urls": {
+    "type": "array",
+    "description": "Urls to source reference image. If provided, the model will use this image as reference."
+   },
+   "prompt": {
+    "type": "string",
+    "description": "The text prompt to guide video generation."
+   },
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": false,
+    "description": "If set to true, the safety checker will be enabled. Disabling it requires account authorization; unauthorized requests are always checked."
+   },
+   "num_inference_steps": {
+    "type": "integer",
+    "default": 30,
+    "maximum": 50,
+    "minimum": 2,
+    "description": "Number of inference steps for sampling. Higher values give better quality but take longer."
+   },
+   "video_quality": {
+    "type": "string",
+    "enum": [
+     "low",
+     "medium",
+     "high",
+     "maximum"
+    ],
+    "default": "high",
+    "description": "The quality of the generated video."
+   },
+   "video_url": {
+    "type": "string",
+    "description": "URL to the source video file. Required for inpainting."
+   },
+   "shift": {
+    "type": "number",
+    "default": 5,
+    "maximum": 15,
+    "minimum": 1,
+    "description": "Shift parameter for video generation."
+   },
+   "return_frames_zip": {
+    "type": "boolean",
+    "default": false,
+    "description": "If true, also return a ZIP file containing all generated frames."
+   },
+   "first_frame_url": {
+    "description": "URL to the first frame of the video. If provided, the model will use this frame as a reference."
+   },
+   "transparency_mode": {
+    "type": "string",
+    "enum": [
+     "content_aware",
+     "white",
+     "black"
+    ],
+    "default": "content_aware",
+    "description": "The transparency mode to apply to the first and last frames. This controls how the transparent areas of the first and last frames are filled."
+   },
+   "preprocess": {
+    "type": "boolean",
+    "default": false,
+    "description": "Whether to preprocess the input video."
+   },
+   "acceleration": {
+    "default": "regular",
+    "description": "Acceleration to use for inference. Options are 'none' or 'regular'. Accelerated inference will very slightly affect output, but will be significantly faster."
+   },
+   "frames_per_second": {
+    "default": 16,
+    "description": "Frames per second of the generated video. Must be between 5 to 30. Ignored if match_input_frames_per_second is true."
+   },
+   "enable_prompt_expansion": {
+    "type": "boolean",
+    "default": false,
+    "description": "Whether to enable prompt expansion."
+   },
+   "num_frames": {
+    "type": "integer",
+    "default": 81,
+    "maximum": 241,
+    "minimum": 17,
+    "description": "Number of frames to generate. Must be between 81 to 241 (inclusive)."
+   },
+   "interpolator_model": {
+    "type": "string",
+    "enum": [
+     "rife",
+     "film"
+    ],
+    "default": "film",
+    "description": "The model to use for frame interpolation. Options are 'rife' or 'film'."
+   },
+   "guidance_scale": {
+    "type": "number",
+    "default": 5,
+    "maximum": 10,
+    "minimum": 1,
+    "description": "Guidance scale for classifier-free guidance. Higher values encourage the model to generate images closely related to the text prompt."
+   },
+   "sync_mode": {
+    "type": "boolean",
+    "default": false,
+    "description": "If `True`, the media will be returned as a data URI and the output data won't be available in the request history."
+   }
+  }
+ },
+ "fal-ai/kling-video/v3/standard/motion-control": {
+  "meta": {
+   "display_name": "Kling Video",
+   "status": "active",
+   "description": "Transfer movements from a reference video to any character image. Cost-effective mode for motion transfer, perfect for portraits and simple animations.",
+   "category": "video-to-video",
+   "deprecated": null,
+   "updated_at": "2026-07-17T23:34:22.935Z"
+  },
+  "krav": [
+   "image_url",
+   "video_url",
+   "character_orientation"
+  ],
+  "falt": {
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true,
+    "description": "Disabling safety checks requires account authorization; unauthorized requests are always checked."
+   },
+   "prompt": {},
+   "character_orientation": {
+    "type": "string",
+    "enum": [
+     "image",
+     "video"
+    ],
+    "description": "Controls whether the output character's orientation matches the reference image or video. 'video': orientation matches reference video - better for complex motions (max 30s). 'image': orientation matches reference image - better for following camera movements (max 10s)."
+   },
+   "video_url": {
+    "type": "string",
+    "description": "Reference video URL. The character actions in the generated video will be consistent with this reference video. Should contain a realistic style character with entire body or upper body visible, including head, without obstruction. Duration limit depends on character_orientation: 10s max for 'image', 30s max for 'video'."
+   },
+   "elements": {
+    "description": "Optional element for facial consistency binding. Upload a facial element to enhance identity preservation in the generated video. Only 1 element is supported. Reference in prompt as @Element1. Element binding is only supported when character_orientation is 'video'."
+   },
+   "image_url": {
+    "type": "string",
+    "description": "Reference image URL. The characters, backgrounds, and other elements in the generated video are based on this reference image. Characters should have clear body proportions, avoid occlusion, and occupy more than 5% of the image area."
+   },
+   "keep_original_sound": {
+    "type": "boolean",
+    "default": true,
+    "description": "Whether to keep the original sound from the reference video."
+   }
+  }
+ },
+ "fal-ai/kling-video/o1/video-to-video/edit": {
+  "meta": {
+   "display_name": "Kling O1 Edit Video [Pro]",
+   "status": "active"
+  },
+  "krav": [
+   "prompt",
+   "video_url"
+  ],
+  "falt": {
+   "enable_safety_checker": {
+    "type": "boolean",
+    "default": true
+   },
+   "prompt": {
+    "type": "string"
+   },
+   "image_urls": {},
+   "video_url": {
+    "type": "string"
+   },
+   "elements": {},
+   "keep_audio": {
+    "type": "boolean",
+    "default": false
+   }
+  }
+ }
+}

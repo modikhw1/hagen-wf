@@ -1,0 +1,139 @@
+[
+  {
+    "candidate": "MapAnything Apache",
+    "code_license": "Apache-2.0",
+    "weights_license": "Apache-2.0 (facebook/map-anything-apache ONLY)",
+    "commercial_use": "yes",
+    "code_source": "https://github.com/facebookresearch/map-anything/blob/3d10cf7a3016fc0f9bb13a071ee66c47b10be0d9/LICENSE",
+    "weights_source": "https://huggingface.co/facebook/map-anything-apache/blob/00f9c245bbcb60522d1ed7f9e9d88462c6e3f38a/README.md",
+    "notes": "Default facebook/map-anything weights are CC-BY-NC-4.0 and were not downloaded. Apache variant explicitly documented by both repository and model card; no standalone weight LICENSE file (404). DINOv2 architecture code Apache-2.0."
+  },
+  {
+    "candidate": "DA3 Apache combination: BASE + METRIC-LARGE",
+    "code_license": "Apache-2.0",
+    "weights_license": "Apache-2.0 for both selected checkpoints",
+    "commercial_use": "yes",
+    "code_source": "https://github.com/ByteDance-Seed/Depth-Anything-3/blob/3d835ec1a5802d64a8b8b15f817a1ab54809bfe4/LICENSE",
+    "weights_source": "https://huggingface.co/depth-anything/DA3-BASE/blob/f4a6c9b3c95e41c82048423d3493a81ec3fa810e/README.md",
+    "metric_weights_source": "https://huggingface.co/depth-anything/DA3METRIC-LARGE/blob/4010e39f3634a45bc60553321fb49fb760bd594e/README.md",
+    "notes": "Custom common scale alignment of two public Apache models, using official focal*canonical_depth/300 conversion. NOT the official Nested Giant model. BASE is relative-scale camera/depth; METRIC-LARGE has no camera estimator. LARGE/GIANT/NESTED, including 1.1 refreshes, are CC-BY-NC-4.0 and blocked."
+  },
+  {
+    "candidate": "ViPE (tested configuration: DROID + GeoCalib + MoGe2, existing person masks)",
+    "code_license": "NVIDIA-authored Apache-2.0; selected DROID/LieTorch BSD-3-Clause; GeoCalib Apache-2.0; MoGe2 MIT",
+    "weights_license": "MoGe2 MIT; GeoCalib CC-BY-4.0; DROID repository BSD-3-Clause but a separate explicit grant for the externally hosted checkpoint was not located",
+    "commercial_use": "unclear",
+    "code_source": "https://github.com/nv-tlabs/vipe/blob/ead2e008bc055310121736a49ff306bba50d10dc/LICENSE",
+    "weights_source": "https://github.com/cvg/GeoCalib/blob/main/LICENSE-WEIGHTS",
+    "moge_source": "https://huggingface.co/Ruicheng/moge-2-vitl",
+    "droid_source": "https://github.com/princeton-vl/DROID-SLAM/blob/main/LICENSE",
+    "dependency_source": "https://github.com/nv-tlabs/vipe/blob/ead2e008bc055310121736a49ff306bba50d10dc/THIRD_PARTY_LICENSES.md",
+    "owner_action": "Obtain explicit confirmation of commercial rights for the externally hosted DROID checkpoint before shipping this configuration. Do not substitute default UniDepth, Video Depth Anything Large, Unik3D or MetricTrail weights: those have non-commercial restrictions.",
+    "notes": "This evaluation reuses existing ingest masks instead of running TrackAnything; camera SLAM and MoGe2 are ViPE implementations. Dense geometry is independent MoGe2 at recovered K, NOT official adaptive dense fusion. AdaptiveDepthProcessor always constructs PriorDAModel; its frozen and conditioned DAV2-Base backbones are CC-BY-NC-4.0 even though the PriorDA checkpoint card is Apache-2.0. The official complete dense path is blocked and not downloaded. It also does not test the paper's default UniDepth/VDA pipeline. MetricTrail DINO-DPVO release points to NVIDIA OneWay Noncommercial License, a blocker.",
+    "adaptive_blocker_source": "https://github.com/nv-tlabs/vipe/blob/ead2e008bc055310121736a49ff306bba50d10dc/vipe/pipeline/processors.py",
+    "adaptive_backbone_source": "https://huggingface.co/depth-anything/Depth-Anything-V2-Base/blob/main/README.md",
+    "container": "nvidia/cuda:12.8.1-devel-ubuntu22.04",
+    "container_license_source": "https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license",
+    "container_note": "The public CUDA container prints a use-implies-acceptance notice for NVIDIA Deep Learning Container License. No interactive acceptance or gated checkpoint agreement was submitted; the base-image terms must be reviewed separately for production."
+  },
+  {
+    "candidate": "MegaSaM",
+    "code_license": "Apache-2.0 (own code)",
+    "weights_license": "Own other materials CC-BY-4.0; required UniDepth code/weights CC-BY-NC-4.0",
+    "commercial_use": "no (published complete pipeline)",
+    "status": "blocked_license_not_run",
+    "code_source": "https://github.com/mega-sam/mega-sam/blob/main/LICENSE",
+    "weights_source": "https://github.com/mega-sam/mega-sam/blob/main/README.md#copyright",
+    "blocker_source": "https://github.com/lpiccinelli-eth/UniDepth/blob/main/LICENSE",
+    "pipeline_source": "https://github.com/mega-sam/mega-sam/blob/main/mono_depth_scripts/run_mono-depth_demo.sh",
+    "owner_action": "Separate commercial permission from UniDepth rightsholders; accepting an NC licence cannot authorize a commercial product. Replacing that prior would be a different, unverified pipeline."
+  },
+  {
+    "candidate": "VGGT / VGGT-1B-Commercial",
+    "code_license": "Custom VGGT licence with acceptable-use policy (military use restricted)",
+    "weights_license": "Original VGGT-1B CC-BY-NC-4.0; commercial checkpoint custom VGGT-AUP, manually gated",
+    "commercial_use": "yes conditional on owner's acceptance and granted access; blocked in this evaluation",
+    "status": "blocked_gate_not_run",
+    "code_source": "https://github.com/facebookresearch/vggt/blob/main/LICENSE.txt",
+    "weights_source": "https://huggingface.co/facebook/VGGT-1B-Commercial",
+    "original_weights_source": "https://huggingface.co/facebook/VGGT-1B/blob/main/README.md",
+    "owner_action": "Owner must apply on the commercial checkpoint page, submit first/last name, birth date, country, affiliation and job title (and IP location), accept the VGGT licence/AUP and acknowledge Meta privacy processing. Meta must approve access. This evaluation did not accept, apply or download gated weights."
+  },
+  {
+    "candidate": "VGGT-Omega",
+    "code_license": "FAIR Noncommercial Research License",
+    "weights_license": "FAIR Noncommercial Research License",
+    "commercial_use": "no",
+    "status": "blocked_license_not_run",
+    "code_source": "https://github.com/facebookresearch/vggt-omega/blob/main/LICENSE",
+    "weights_source": "https://github.com/facebookresearch/vggt-omega/blob/main/LICENSE",
+    "owner_action": "Separate written commercial grant, not ordinary licence acceptance."
+  },
+  {
+    "candidate": "Pi3 / Pi3X",
+    "code_license": "BSD-3-Clause",
+    "weights_license": "CC-BY-NC-4.0, explicitly stated by upstream repository",
+    "commercial_use": "no",
+    "status": "blocked_license_not_run",
+    "code_source": "https://github.com/yyfz/Pi3/blob/main/LICENSE",
+    "weights_source": "https://github.com/yyfz/Pi3#-license",
+    "conflicting_source": "https://huggingface.co/yyfz233/Pi3/blob/main/README.md",
+    "notes": "HF metadata says BSD-2-Clause, conflicting with explicit repository weight restriction. Do not treat the metadata tag as commercial authorization.",
+    "owner_action": "Separate written commercial permission and resolution of the contradictory model-card tag."
+  },
+  {
+    "candidate": "DUSt3R / MASt3R / MASt3R-SLAM",
+    "code_license": "CC-BY-NC-SA-4.0",
+    "weights_license": "Non-commercial; MASt3R CHECKPOINTS_NOTICE retains training-dataset restrictions",
+    "commercial_use": "no",
+    "status": "blocked_license_not_run",
+    "code_source": "https://github.com/naver/dust3r/blob/main/LICENSE",
+    "mast3r_code_source": "https://github.com/naver/mast3r/blob/main/LICENSE",
+    "slam_code_source": "https://github.com/rmurai0610/MASt3R-SLAM/blob/main/LICENSE.md",
+    "weights_source": "https://github.com/naver/mast3r/blob/main/CHECKPOINTS_NOTICE",
+    "owner_action": "Separate commercial rights for code, checkpoints and relevant dataset-derived restrictions."
+  },
+  {
+    "candidate": "HSfM",
+    "code_license": "MIT (own code)",
+    "weights_license": "Pipeline uses NC DUSt3R and separately licensed SMPL/MANO/SMPL-X body assets",
+    "commercial_use": "no for published complete pipeline",
+    "status": "blocked_license_not_run",
+    "code_source": "https://github.com/hongsukchoi/HSfM_RELEASE/blob/main/LICENSE",
+    "weights_source": "https://github.com/hongsukchoi/HSfM_RELEASE/blob/main/README.md",
+    "notes": "Joint metric human-scene reconstruction, but demonstrated from sparse multi-view images rather than an arbitrary cut video. Human statistical scale is approximate, not a physical scale observation.",
+    "owner_action": "Commercial rights for DUSt3R and required body assets; not downloaded or accepted here."
+  },
+  {
+    "candidate": "StudioRecon (SIGGRAPH 2026)",
+    "code_license": "Custom non-commercial research/evaluation only",
+    "weights_license": "Separate dependencies; Pi3, SAM3, GEN3C, SMPL etc retain their restrictions",
+    "commercial_use": "no",
+    "status": "blocked_license_not_run",
+    "code_source": "https://github.com/sisyphm/StudioRecon/blob/master/LICENSE.md",
+    "weights_source": "https://github.com/sisyphm/StudioRecon/blob/master/docs/THIRD_PARTY.md",
+    "notes": "Low-overlap human-scene reconstruction uses generated novel views and enhancement. Does not establish faithful measured geometry for this product.",
+    "owner_action": "Separate written commercial permission from StudioRecon authors plus all component licences."
+  },
+  {
+    "candidate": "OVOW / RHINO / TRAM",
+    "code_license": "MIT / Apache-2.0 / MIT for own code",
+    "weights_license": "Complete dependency rights not cleared; OVOW explicitly includes NC components, RHINO requires separate body-model licences, TRAM requires registered SMPL/SMPLify assets",
+    "commercial_use": "no for OVOW default; unclear/blocked for RHINO and TRAM full pipelines",
+    "status": "blocked_dependencies_not_run",
+    "code_source": "https://github.com/yisuanwang/OVOW/blob/main/README.md",
+    "weights_source": "https://github.com/lxxue/RHINO/blob/main/README.md",
+    "tram_source": "https://github.com/yufu-wang/tram/blob/main/README.md",
+    "owner_action": "Resolve each upstream checkpoint/body-asset licence before any product use. A free top-level code licence is insufficient. No body-model registration or gated downloads performed."
+  },
+  {
+    "candidate": "DVLT (new video geometry lead)",
+    "code_license": "Apache-2.0 for majority, VGGT-derived files retain VGGT terms",
+    "weights_license": "NVIDIA OneWay Noncommercial License",
+    "commercial_use": "no",
+    "status": "blocked_license_not_run",
+    "code_source": "https://github.com/nv-tlabs/dvlt/blob/main/README.md",
+    "weights_source": "https://github.com/nv-tlabs/dvlt/blob/main/LICENSES/NVIDIA-LICENSE.txt",
+    "owner_action": "Separate commercial grant from rightsholders; no checkpoint downloaded."
+  }
+]
