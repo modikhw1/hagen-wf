@@ -1,0 +1,171 @@
+# Urval att titta på (2026-11-03 13:08)
+
+219 konton klarade följare (700–30 000), storlek och aktivitet. Bion och namnet har sedan sorterat bort 45 recensenter, kreatörer och officiella konton, och 14 på annat språk än svenska, danska, tyska eller engelska. Säg vilka som ska behållas, så förs de in i `data/profil/beslut.json`.
+
+## Troliga verksamheter (20)
+
+Minst två verksamhetssignaler i bion: adress, telefon, öppettider, bokning/beställning, restaurangord eller egen webbplats.
+
+- [@umami.kebabkunst](https://www.tiktok.com/@umami.kebabkunst) · 13k följare, median 33k, 41 klipp/90 d · de · ”♥️ Döner, Plates & more 🥙 Zelebriere mit uns die Kebabkunst 📍 Hattersheimer Str. 5, Hofheim 📍 Hoh”
+- [@alnagrill](https://www.tiktok.com/@alnagrill) · 1.6k följare, median 20k, 6 klipp/90 d · nb · ”Ekte grillglede og nystekte baguetter. 🔥 Klikk 👇 for å bestille”
+- [@orientalbarbecuehouse](https://www.tiktok.com/@orientalbarbecuehouse) · 23k följare, median 19k, 30 klipp/90 d · da · ”Oriental Barbecue House 🍣🔥 All You Can Eat & Takeaway Slotsgade 20 · Odense C 👇 Bestil her: https”
+- [@tipaarhus](https://www.tiktok.com/@tipaarhus) · 7.8k följare, median 16k, 27 klipp/90 d · da · ”Få inspiration til hvad du kan lave i Aarhus, sammen med opdateringer om byen 🤩”
+- [@yemen_hamburg](https://www.tiktok.com/@yemen_hamburg) · 5.0k följare, median 12k, 10 klipp/90 d · de · ”Das erste jemenitische Restaurant in Hamburg 💯 Steindamm 71, 20099 Hamburg 📍”
+- [@lovengrill](https://www.tiktok.com/@lovengrill) · 12k följare, median 11k, 300 klipp/90 d · en · ”Insta : lovengrill For delivery = 0319-9921117 For events = 0331-6408319 Address: opposite Ameer kha”
+- [@nawin.restaurant](https://www.tiktok.com/@nawin.restaurant) · 5.6k följare, median 8.5k, 22 klipp/90 d · de · ”🇦🇫Küche 📍 Kölner Straße 238,40227 Düsseldorf 🕰️ Mo-Fr & So : 11 Uhr - 22 Uhr Samstags :11 Uhr - ”
+- [@linkorestaurant](https://www.tiktok.com/@linkorestaurant) · 23k följare, median 7.7k, 20 klipp/90 d · en · ”Linko Restaurant. 🥓🍻Observatory Linko Utopia Takeaway. ☪️ Claremont.”
+- [@restaurantkulhuset](https://www.tiktok.com/@restaurantkulhuset) · 7.1k följare, median 7.4k, 20 klipp/90 d · da · ”🔥 Grill-selv & a la carte i Køge 📍 Carlsensvej 8, 4600 Køge 👇 Book bord”
+- [@inspektorcevap](https://www.tiktok.com/@inspektorcevap) · 20k följare, median 5.7k, 21 klipp/90 d · de · ”Holzgrundstraße 30, Kornwestheim Mo-Mi geschlossen Do 16:00-22:00 Uhr Fr & Sa 16:00-23:00 Uhr So 13:”
+- [@hanis.doener.imbiss](https://www.tiktok.com/@hanis.doener.imbiss) · 3.1k följare, median 5.1k, 9 klipp/90 d · de · ”Original Hani's Döner Imbiss Trebicer weg 2 04758 Oschatz bei Expert Wunder Öffnungszeiten: Montag b”
+- [@bonesrestauranter](https://www.tiktok.com/@bonesrestauranter) · 12k följare, median 4.7k, 36 klipp/90 d · en · ”Bone’s Restauranter på TikTok 🦴❤️‍🔥”
+- [@mikoto.berlin](https://www.tiktok.com/@mikoto.berlin) · 3.1k följare, median 3.6k, 13 klipp/90 d · de · ”Sushi & Grill Skalitzerstr. 73, 10997 Berlin”
+- [@neotaste.app](https://www.tiktok.com/@neotaste.app) · 18k följare, median 3.5k, 93 klipp/90 d · de · ”💚 Mehr entdecken. Weniger zahlen. 🍔 Schon über 7.000 Restaurants in 52 Städten”
+- [@schmarrnsinn](https://www.tiktok.com/@schmarrnsinn) · 9.9k följare, median 2.8k, 95 klipp/90 d · de · ”Deutschlands erstes Kaiserschmarrn Café in Frankfurt 📍Friedensstrasse 2, 60311 Frankfurt am Main ww”
+- [@medina_oldenburg](https://www.tiktok.com/@medina_oldenburg) · 1.2k följare, median 2.8k, 4 klipp/90 d · de · ”📍 Münnichstr. 40 · 26133 Oldenburg Mo, Di, Do 12–22 | Mi Ruhetag Fr 12–23 | Sa 11–23 | So 11–22 ☕ F”
+- [@pizzeriagiulio](https://www.tiktok.com/@pizzeriagiulio) · 6.1k följare, median 2.6k, 25 klipp/90 d · de · ”🍕 Beste Pizzeria (F.A.Z. Journal) 📍Inzestraße 3b, 60314”
+- [@mayhoschbb](https://www.tiktok.com/@mayhoschbb) · 2.1k följare, median 2.3k, 6 klipp/90 d · de · ”Krailenshaldenstr. 47/1, 70469 Stuttgart BALD AUCH IN: Büchsenstrasse 24, 70174 Stuttgart 🍔Best Hal”
+- [@otto.magdeburg](https://www.tiktok.com/@otto.magdeburg) · 4.1k följare, median 2.2k, 27 klipp/90 d · de · ”Willkommen auf dem offiziellen TikTok Kanal des Magdeburger-Stadtmarketings.”
+- [@shokuji.mnchen](https://www.tiktok.com/@shokuji.mnchen) · 2.4k följare, median 2.2k, 34 klipp/90 d · de · ”🍣 Shokuji – All You Can Eat 📍 Gollierstraße 4, 80339 München ☎️ 089 66561755 🍙 https://app.resmio”
+
+## Osäkra (140)
+
+- [@3hsburger](https://www.tiktok.com/@3hsburger) · 26k följare, median 143k, 27 klipp/90 d · de · ”حلال%💯 Komm mit auf die Reise 🍔🌎”
+- [@thomas_stenstrom](https://www.tiktok.com/@thomas_stenstrom) · 18k följare, median 59k, 4 klipp/90 d · sv · ”NOLLPUNKT EP UTE NU!”
+- [@noels.imbiss](https://www.tiktok.com/@noels.imbiss) · 23k följare, median 51k, 16 klipp/90 d · de · ”Buchungen und anfragen über Website⬇️⬇️”
+- [@randygmbl](https://www.tiktok.com/@randygmbl) · 21k följare, median 48k, 25 klipp/90 d · de · ”Auf YouTube & Instagram mehr Einblicke für euch 🤎 Kontakt : randy@ohey-mgmt.de”
+- [@thehamburgers.de](https://www.tiktok.com/@thehamburgers.de) · 16k följare, median 41k, 16 klipp/90 d · en · ”Dein Guide für Hamburg ⚓️ Restaurants & Aktivitäten🍴🎡 www.thehamburgers.de”
+- [@danispizzeriaodenplan](https://www.tiktok.com/@danispizzeriaodenplan) · 7.0k följare, median 36k, 4 klipp/90 d · ””
+- [@denrigtigerosalund](https://www.tiktok.com/@denrigtigerosalund) · 22k följare, median 35k, 4 klipp/90 d · da · ”Nørrebrobarn, poptøs & MF for Enhedslisten 🫰🏼 Nå ja og kronisk online”
+- [@grammatiksnuten](https://www.tiktok.com/@grammatiksnuten) · 12k följare, median 33k, 8 klipp/90 d · sv · ”Kom inte här och särskriv.”
+- [@kebabspotting](https://www.tiktok.com/@kebabspotting) · 26k följare, median 30k, 27 klipp/90 d · ””
+- [@thaisushiforyou.se](https://www.tiktok.com/@thaisushiforyou.se) · 2.4k följare, median 29k, 12 klipp/90 d · en · ”Kyrkogatan 21, Lund Einar Hansens Esplanad 31, Malmö Björkavägen 103, Helsingborg 0431-31 14 14”
+- [@adamanmelder](https://www.tiktok.com/@adamanmelder) · 13k följare, median 26k, 26 klipp/90 d · ””
+- [@song.and.pepper](https://www.tiktok.com/@song.and.pepper) · 21k följare, median 25k, 12 klipp/90 d · de · ”SU 수정 Einfache Rezepte mit 🇰🇷 Twist. Inspiriert von meiner Kindheit. Mama von 👧🏻”
+- [@hungrybeardus](https://www.tiktok.com/@hungrybeardus) · 23k följare, median 25k, 5 klipp/90 d · ””
+- [@sthlm.gusto](https://www.tiktok.com/@sthlm.gusto) · 12k följare, median 25k, 42 klipp/90 d · ””
+- [@romanosglasgow](https://www.tiktok.com/@romanosglasgow) · 23k följare, median 23k, 4 klipp/90 d · ””
+- [@itstheranchman](https://www.tiktok.com/@itstheranchman) · 26k följare, median 23k, 4 klipp/90 d · ””
+- [@anderswinnerskjold](https://www.tiktok.com/@anderswinnerskjold) · 14k följare, median 22k, 13 klipp/90 d · da · ”Borgmester i Aarhus (S)”
+- [@momsinthewestmidlands](https://www.tiktok.com/@momsinthewestmidlands) · 22k följare, median 22k, 14 klipp/90 d · ””
+- [@happyfood.stuttgart](https://www.tiktok.com/@happyfood.stuttgart) · 5.5k följare, median 21k, 4 klipp/90 d · de · ”Restaurants🍴| Cafés☕️ | Bars🍸 im wunderschönen Stuttgart 🤍”
+- [@cecilieclemens](https://www.tiktok.com/@cecilieclemens) · 17k följare, median 21k, 36 klipp/90 d · ””
+- [@burgerklubben_kbh](https://www.tiktok.com/@burgerklubben_kbh) · 10k följare, median 20k, 41 klipp/90 d · ””
+- [@sanischicken](https://www.tiktok.com/@sanischicken) · 21k följare, median 20k, 42 klipp/90 d · ””
+- [@mcrlunchquest](https://www.tiktok.com/@mcrlunchquest) · 23k följare, median 17k, 14 klipp/90 d · ””
+- [@kebabry](https://www.tiktok.com/@kebabry) · 18k följare, median 17k, 41 klipp/90 d · de · ”Black Angus - Rib Eye Hausgemachtes Brot, Sauerteigbrot & Yufka Frankfurts Original Roast Roll 🔥 Qu”
+- [@smagaarhus](https://www.tiktok.com/@smagaarhus) · 14k följare, median 17k, 73 klipp/90 d · da · ”Mad og drikke i Aarhus 🍔🥐🥘☕️🍷🍻 Instagram.com/smagaarhus smagaarhus.dk”
+- [@ox_show](https://www.tiktok.com/@ox_show) · 27k följare, median 16k, 16 klipp/90 d · ””
+- [@tripasta.sjl](https://www.tiktok.com/@tripasta.sjl) · 12k följare, median 16k, 14 klipp/90 d · ””
+- [@rockaguy](https://www.tiktok.com/@rockaguy) · 17k följare, median 16k, 41 klipp/90 d · ””
+- [@byhannelund](https://www.tiktok.com/@byhannelund) · 15k följare, median 16k, 11 klipp/90 d · nb · ”⚡️🐚🦦🫧🪩🍸 lever for å romantisere instagram hanneelund”
+- [@matbubbel](https://www.tiktok.com/@matbubbel) · 20k följare, median 15k, 9 klipp/90 d · sv · ”Små goda inlägg. Duka upp & förgyll. For more follow insta @matbubbel”
+- [@livaguldberg](https://www.tiktok.com/@livaguldberg) · 13k följare, median 14k, 5 klipp/90 d · da · ”Instagram: Liva_Guldberg Liva@jhg.dk Kontakt: samarbejde@mickycreatives.com Link til min pakkeliste ”
+- [@soniatestet](https://www.tiktok.com/@soniatestet) · 19k följare, median 14k, 7 klipp/90 d · de · ”Welcome to short memories of my life | teste gerne food and more | Frankfurt”
+- [@wheresthisspot](https://www.tiktok.com/@wheresthisspot) · 29k följare, median 14k, 23 klipp/90 d · ””
+- [@valacentrum](https://www.tiktok.com/@valacentrum) · 17k följare, median 14k, 17 klipp/90 d · sv · ”Sveriges bästa shopping - i Helsingborg”
+- [@burgerbrotherseu](https://www.tiktok.com/@burgerbrotherseu) · 17k följare, median 13k, 9 klipp/90 d · de · ”ALLE SO 🏋️‍♂️ ICH SO 🍔 🍟 100% Halal und Lecker 😋 15x in 🇩🇪”
+- [@svarding](https://www.tiktok.com/@svarding) · 7.8k följare, median 13k, 35 klipp/90 d · sv · ”🍣 Din guide till mat! 🍽️ Recept, matlagning och noga utvalda restauranger, barer & caféer 20k på I”
+- [@schmalzlocken.og](https://www.tiktok.com/@schmalzlocken.og) · 10k följare, median 12k, 33 klipp/90 d · de · ”INSTAGRAM: @Schmalzlocken INNSBRUCK/WIEN 🛎️ office@schmalzlocken.com”
+- [@jimmy_is_hungry](https://www.tiktok.com/@jimmy_is_hungry) · 7.3k följare, median 11k, 44 klipp/90 d · de · ”📍 Folgt mir für leckeres Essen Von Streetfood bis Fine Dining”
+- [@thesouthsidescrannerz](https://www.tiktok.com/@thesouthsidescrannerz) · 17k följare, median 11k, 22 klipp/90 d · ””
+- [@munchhplug](https://www.tiktok.com/@munchhplug) · 21k följare, median 10k, 8 klipp/90 d · ””
+- [@lovemychicka](https://www.tiktok.com/@lovemychicka) · 15k följare, median 10k, 21 klipp/90 d · ””
+- [@brumsfinestpizzas](https://www.tiktok.com/@brumsfinestpizzas) · 9.1k följare, median 9.8k, 37 klipp/90 d · ””
+- [@gong96.3](https://www.tiktok.com/@gong96.3) · 13k följare, median 9.7k, 70 klipp/90 d · de · ”Der meistgehörte Münchner Radiosender (Quelle: Funkanalyse Bayern 2026, Tagesreichweite, 14+) 📍Dein”
+- [@scranwithsophie](https://www.tiktok.com/@scranwithsophie) · 15k följare, median 9.1k, 56 klipp/90 d · ””
+- [@eiscafe.corso](https://www.tiktok.com/@eiscafe.corso) · 2.6k följare, median 8.6k, 23 klipp/90 d · de · ”Corso-Eis ,das glücklich macht !🍦 📍Tituscorso 8 60439 Frankfurt am Main”
+- [@byens.hjerte](https://www.tiktok.com/@byens.hjerte) · 2.0k följare, median 8.4k, 5 klipp/90 d · da · ”Pita🥙 Bowl🥗 Smash Burger🍔 Mandag: Lukket Tirsdag: 15.00–20.30 Onsdag søndag: 11.00-20.30”
+- [@barfoed.group](https://www.tiktok.com/@barfoed.group) · 867 följare, median 8.3k, 8 klipp/90 d · da · ”Barfoed Group udlejer velbeliggende boliger og erhvervsejendomme 🏡”
+- [@olof197](https://www.tiktok.com/@olof197) · 16k följare, median 8.3k, 4 klipp/90 d · ””
+- [@swedemaximus](https://www.tiktok.com/@swedemaximus) · 29k följare, median 8.0k, 28 klipp/90 d · en · ”👇 Click My Links 👇”
+- [@kozicafe](https://www.tiktok.com/@kozicafe) · 11k följare, median 7.8k, 10 klipp/90 d · ””
+- [@theitalianfoodaholic](https://www.tiktok.com/@theitalianfoodaholic) · 28k följare, median 7.7k, 40 klipp/90 d · ””
+- [@ichafria](https://www.tiktok.com/@ichafria) · 7.9k följare, median 7.6k, 22 klipp/90 d · en · ”from casual strolls to curated stories ✨ 📍JKT”
+- [@maaloev_kebab](https://www.tiktok.com/@maaloev_kebab) · 7.0k följare, median 7.4k, 12 klipp/90 d · da · ”Kom og prøv Måløv's bedste kebab😋 Måløv Hovedgade 56📍Centrum af Måløv”
+- [@bossman_experiences](https://www.tiktok.com/@bossman_experiences) · 28k följare, median 7.4k, 59 klipp/90 d · ””
+- [@yayasglasgow](https://www.tiktok.com/@yayasglasgow) · 30k följare, median 7.2k, 21 klipp/90 d · ””
+- [@chickiiburger](https://www.tiktok.com/@chickiiburger) · 5.9k följare, median 7.0k, 13 klipp/90 d · da · ”Eat what makes you happy🍔 📍Vestergade 48 📍Viby Centret Aarhus, Danmark”
+- [@castroscafeteria](https://www.tiktok.com/@castroscafeteria) · 2.5k följare, median 7.0k, 5 klipp/90 d · ””
+- [@hakko.aarhus](https://www.tiktok.com/@hakko.aarhus) · 2.6k följare, median 6.7k, 9 klipp/90 d · en · ”couple opened 3 matcha &sourdough cafés Skovgaardsgade 17 Mejlgade 37 Bassin 7”
+- [@sydneyfoodplug](https://www.tiktok.com/@sydneyfoodplug) · 14k följare, median 6.6k, 61 klipp/90 d · ””
+- [@madzhungrybelly](https://www.tiktok.com/@madzhungrybelly) · 21k följare, median 6.6k, 18 klipp/90 d · ””
+- [@rguldager](https://www.tiktok.com/@rguldager) · 10k följare, median 6.3k, 21 klipp/90 d · da · ”Makeup, krea, hygge, humor, & snacks 🍫 Millennial mom i 30’erne ✌🏼 For ung til at være gammel 👋🏼”
+- [@nightlivede](https://www.tiktok.com/@nightlivede) · 3.6k följare, median 6.3k, 4 klipp/90 d · de · ”Wir zeigen dir wo was geht🥳 📍Dortmund, Bochum, Düsseldorf, Münster”
+- [@slagter.lund](https://www.tiktok.com/@slagter.lund) · 1.5k följare, median 6.1k, 13 klipp/90 d · da · ”Kompromisløs kvalitet siden 1952. Frederiksberg • Charlottenlund • Torvehallerne”
+- [@bjoornamanda](https://www.tiktok.com/@bjoornamanda) · 12k följare, median 5.9k, 5 klipp/90 d · ””
+- [@foodspotffm](https://www.tiktok.com/@foodspotffm) · 11k följare, median 5.8k, 16 klipp/90 d · de · ”𝙵𝚒𝚛𝚜𝚝, 𝚠𝚎 𝚎𝚊𝚝. 𝚃𝚑𝚎𝚗, 𝚠𝚎 𝚍𝚘 𝚎𝚟𝚎𝚛𝚢𝚝𝚑𝚒𝚗𝚐 𝚎𝚕𝚜𝚎.”
+- [@uncles_aarhus_](https://www.tiktok.com/@uncles_aarhus_) · 2.0k följare, median 5.7k, 12 klipp/90 d · da · ”Aarhus C, Vestergade 7 👇🏼STEM PÅ OS TIL SMAGPRISEN👇🏼”
+- [@mr_muenchen](https://www.tiktok.com/@mr_muenchen) · 17k följare, median 5.7k, 80 klipp/90 d · de · ”Folge mir für die besten Tipps, Locations und Events in München! 🥨 #mrmünchen Jetzt Mr. München Mem”
+- [@burgerism](https://www.tiktok.com/@burgerism) · 24k följare, median 5.4k, 23 klipp/90 d · ””
+- [@zezuliverpool](https://www.tiktok.com/@zezuliverpool) · 17k följare, median 5.4k, 56 klipp/90 d · ””
+- [@persheng](https://www.tiktok.com/@persheng) · 6.3k följare, median 5.3k, 12 klipp/90 d · ””
+- [@aalborg_ligeher.nu](https://www.tiktok.com/@aalborg_ligeher.nu) · 1.9k följare, median 5.2k, 10 klipp/90 d · da · ”Nyheder, inspiration og tips om Aalborg 💜 Send os tips på lokalmedier@dnmh.dk”
+- [@goodscransonly](https://www.tiktok.com/@goodscransonly) · 8.1k följare, median 5.2k, 23 klipp/90 d · ””
+- [@zackhipps](https://www.tiktok.com/@zackhipps) · 22k följare, median 5.1k, 55 klipp/90 d · ””
+- [@pizzeriatullen](https://www.tiktok.com/@pizzeriatullen) · 3.7k följare, median 5.0k, 4 klipp/90 d · sv · ””
+- [@iamkoko_1](https://www.tiktok.com/@iamkoko_1) · 4.1k följare, median 5.0k, 7 klipp/90 d · en · ”𝗣𝗦𝗔𝗟𝗠 𝟭𝟯𝟴:𝟴🕊️✝️”
+- [@kings_sushi_](https://www.tiktok.com/@kings_sushi_) · 1.7k följare, median 4.9k, 6 klipp/90 d · da · ”Officiel TikTok-side for King's Sushi! Odense • Svendborg • Nyborg • Kerteminde • Middelfart • Frede”
+- [@sweetdealdk](https://www.tiktok.com/@sweetdealdk) · 1.9k följare, median 4.8k, 6 klipp/90 d · ””
+- [@youmpjonkoping](https://www.tiktok.com/@youmpjonkoping) · 3.7k följare, median 4.7k, 10 klipp/90 d · sv · ”📍Herkulesvägen 1B, Jönköping”
+- [@evelinasrecept](https://www.tiktok.com/@evelinasrecept) · 11k följare, median 4.6k, 21 klipp/90 d · sv · ”Öl, mat & dumheter 🙌 Sveriges Mästerkock 2025 Under 500 - Veckoplanering och tips👇”
+- [@aufdiefaust](https://www.tiktok.com/@aufdiefaust) · 8.5k följare, median 4.5k, 13 klipp/90 d · de · ”Munich Food & Gastro Insights 📷 Life is rich I talk about food while i eat”
+- [@visit_linkoping](https://www.tiktok.com/@visit_linkoping) · 4.9k följare, median 4.5k, 25 klipp/90 d · sv · ”Låt oss tipsa dig om upplevelser i Linköping!💕”
+- [@kafeiin.coffee](https://www.tiktok.com/@kafeiin.coffee) · 1.3k följare, median 4.4k, 9 klipp/90 d · en · ”Coffee • Matcha • Refreshers ✨Regular hours ✨ Mon – Thu: 9am – 10pm Fri – Sat: 9am – 11pm Sun: 10am ”
+- [@sjherde](https://www.tiktok.com/@sjherde) · 8.1k följare, median 4.4k, 18 klipp/90 d · de · ”Magisches FC.St.Pauli 👍 seit mehr als 30 Jahren alles erlebt 😀 Siegen, Feiern, Leiden....> bei YT ”
+- [@holykebab.se](https://www.tiktok.com/@holykebab.se) · 12k följare, median 4.3k, 16 klipp/90 d · ””
+- [@beardedmo_](https://www.tiktok.com/@beardedmo_) · 5.2k följare, median 4.1k, 7 klipp/90 d · ””
+- [@mikeybeenthere](https://www.tiktok.com/@mikeybeenthere) · 7.1k följare, median 4.1k, 18 klipp/90 d · ””
+- [@millennial_menu_](https://www.tiktok.com/@millennial_menu_) · 19k följare, median 4.1k, 10 klipp/90 d · ””
+- [@plateexpectations](https://www.tiktok.com/@plateexpectations) · 18k följare, median 4.0k, 12 klipp/90 d · ””
+- [@sabrinmaa](https://www.tiktok.com/@sabrinmaa) · 2.8k följare, median 3.9k, 4 klipp/90 d · de · ”𝑊𝑏𝑛 | 𝑓𝑜𝑜𝑑 | 𝑡𝑟𝑎𝑣𝑒𝑙 | 𝑠𝑝𝑜𝑟𝑡𝑠 | 𝑠𝑢𝑛𝑠𝑒𝑡𝑠”
+- [@woodysbarliverpool](https://www.tiktok.com/@woodysbarliverpool) · 18k följare, median 3.9k, 5 klipp/90 d · ””
+- [@biggegrill](https://www.tiktok.com/@biggegrill) · 1.3k följare, median 3.9k, 23 klipp/90 d · de · ”Bigge Grill Die geilste Currywurst im Sauerland”
+- [@mitvergnuegen_muenchen](https://www.tiktok.com/@mitvergnuegen_muenchen) · 19k följare, median 3.9k, 104 klipp/90 d · de · ”Wir zeigen euch die schönsten Ecken Münchens. Food, Geheimtipps und Fun 💛”
+- [@maariym](https://www.tiktok.com/@maariym) · 7.9k följare, median 3.8k, 40 klipp/90 d · de · ”Sharing cozy corners & things i love ✨ 📍🇩🇪”
+- [@liverpool_empire](https://www.tiktok.com/@liverpool_empire) · 13k följare, median 3.8k, 17 klipp/90 d · ””
+- [@gurtwings](https://www.tiktok.com/@gurtwings) · 7.8k följare, median 3.7k, 13 klipp/90 d · ””
+- [@leedslist](https://www.tiktok.com/@leedslist) · 21k följare, median 3.7k, 15 klipp/90 d · ””
+- [@crumbsofsydney](https://www.tiktok.com/@crumbsofsydney) · 1.8k följare, median 3.6k, 21 klipp/90 d · ””
+- [@thegrosvenorcafe](https://www.tiktok.com/@thegrosvenorcafe) · 774 följare, median 3.6k, 13 klipp/90 d · ””
+- [@brelbar](https://www.tiktok.com/@brelbar) · 5.4k följare, median 3.5k, 29 klipp/90 d · ””
+- [@rabalderbar.silkeborg](https://www.tiktok.com/@rabalderbar.silkeborg) · 1.0k följare, median 3.4k, 5 klipp/90 d · da · ”Behind the scenes på Rabalder Bar Silkeborg❤️ Min. 18 år”
+- [@lezzetli.uk](https://www.tiktok.com/@lezzetli.uk) · 8.5k följare, median 3.4k, 5 klipp/90 d · ””
+- [@berlinxperience](https://www.tiktok.com/@berlinxperience) · 25k följare, median 3.3k, 66 klipp/90 d · de · ”Your favorite Berlin guide 💜 Follow us on Instagram 👇”
+- [@danishvlogsster](https://www.tiktok.com/@danishvlogsster) · 27k följare, median 3.2k, 49 klipp/90 d · ””
+- [@jpb.barber](https://www.tiktok.com/@jpb.barber) · 1.4k följare, median 3.2k, 4 klipp/90 d · sv · ”Jönköping, Sweden 🇸🇪 BOKA via länken👇 Beställ allt du behöver inom HÅRPRODUKTER via länken 👇 Fyr”
+- [@scottishfoodgirl](https://www.tiktok.com/@scottishfoodgirl) · 5.8k följare, median 3.2k, 7 klipp/90 d · ””
+- [@trdanielle](https://www.tiktok.com/@trdanielle) · 15k följare, median 3.1k, 22 klipp/90 d · ””
+- [@palateforculture](https://www.tiktok.com/@palateforculture) · 23k följare, median 3.1k, 24 klipp/90 d · ””
+- [@callmemaike](https://www.tiktok.com/@callmemaike) · 22k följare, median 3.0k, 20 klipp/90 d · de · ”LEBEN SCHMECKT 🍉 Ich erkunde gern Orte und rede gern mit Menschen 🫂”
+- [@nameless.frankfurt](https://www.tiktok.com/@nameless.frankfurt) · 1.9k följare, median 3.0k, 14 klipp/90 d · en · ”Escape and dive in! IG: nameless.frankfurt 📍 Große Rittergasse 114 / FFM”
+- [@carolain_doh](https://www.tiktok.com/@carolain_doh) · 16k följare, median 3.0k, 20 klipp/90 d · ””
+- [@danharrypr](https://www.tiktok.com/@danharrypr) · 30k följare, median 3.0k, 30 klipp/90 d · en · ”PR, presenter, campaigner, party enthusiast 🪩🏴󠁧󠁢󠁳󠁣󠁴󠁿🏳️‍🌈”
+- [@ltwalto](https://www.tiktok.com/@ltwalto) · 17k följare, median 2.9k, 23 klipp/90 d · ””
+- [@andsliceuk](https://www.tiktok.com/@andsliceuk) · 2.5k följare, median 2.9k, 6 klipp/90 d · ””
+- [@gbarliverpool](https://www.tiktok.com/@gbarliverpool) · 4.9k följare, median 2.9k, 15 klipp/90 d · ””
+- [@cafe.vnddsseldorf](https://www.tiktok.com/@cafe.vnddsseldorf) · 721 följare, median 2.8k, 12 klipp/90 d · ””
+- [@juggebar](https://www.tiktok.com/@juggebar) · 1.4k följare, median 2.8k, 10 klipp/90 d · en · ”Froyoo, juotavaa ja tapahtumia Joharin lippakiskalla⛱️ ig: juggebar”
+- [@londongrillstationuk](https://www.tiktok.com/@londongrillstationuk) · 3.2k följare, median 2.7k, 9 klipp/90 d · en · ”Mediterranean & Somali Fusion🔥 12pm- 1am⏰ 363 Kilburn High Road, NW6 7QB📍”
+- [@bisayanguyamot](https://www.tiktok.com/@bisayanguyamot) · 3.9k följare, median 2.7k, 7 klipp/90 d · ””
+- [@goodtime.lyon](https://www.tiktok.com/@goodtime.lyon) · 30k följare, median 2.7k, 196 klipp/90 d · ””
+- [@pizzapizzaleeds](https://www.tiktok.com/@pizzapizzaleeds) · 12k följare, median 2.6k, 14 klipp/90 d · ””
+- [@banginburgersgla](https://www.tiktok.com/@banginburgersgla) · 8.7k följare, median 2.6k, 23 klipp/90 d · ””
+- [@andreasveinsdotti](https://www.tiktok.com/@andreasveinsdotti) · 6.3k följare, median 2.6k, 47 klipp/90 d · nb · ”Instagram: @andreasveinsdottir”
+- [@rfpatisserie](https://www.tiktok.com/@rfpatisserie) · 4.5k följare, median 2.6k, 31 klipp/90 d · ””
+- [@dawsonherl](https://www.tiktok.com/@dawsonherl) · 7.2k följare, median 2.5k, 4 klipp/90 d · ””
+- [@tacobellocph](https://www.tiktok.com/@tacobellocph) · 5.6k följare, median 2.5k, 4 klipp/90 d · ””
+- [@obvs_studios](https://www.tiktok.com/@obvs_studios) · 5.8k följare, median 2.5k, 13 klipp/90 d · en · ”Community that creates unique experience Next: HALLOWEEN 31.10. 🎃”
+- [@sides.aarhus](https://www.tiktok.com/@sides.aarhus) · 3.9k följare, median 2.5k, 72 klipp/90 d · da · ”🥩 klassisk køkken 📍 Jægergårdsgade 6, Frederiksbjerg 🕒 Åbent til frokost og aften alle dage Book ”
+- [@wingfestuk](https://www.tiktok.com/@wingfestuk) · 10.0k följare, median 2.5k, 17 klipp/90 d · ””
+- [@teyakili](https://www.tiktok.com/@teyakili) · 11k följare, median 2.4k, 5 klipp/90 d · en · ”🍣Vadu suši meistarklases 🥢Dalos ar tips&tricks 👇🏼Pasūtīt bento suši kūku”
+- [@bingbingxd](https://www.tiktok.com/@bingbingxd) · 12k följare, median 2.4k, 57 klipp/90 d · ””
+- [@burgerandbeyond](https://www.tiktok.com/@burgerandbeyond) · 4.3k följare, median 2.4k, 27 klipp/90 d · ””
+- [@_thecrispyroll](https://www.tiktok.com/@_thecrispyroll) · 13k följare, median 2.4k, 29 klipp/90 d · ””
+- [@goodburgerukk](https://www.tiktok.com/@goodburgerukk) · 3.0k följare, median 2.3k, 21 klipp/90 d · ””
+- [@ahlancoffeehouse](https://www.tiktok.com/@ahlancoffeehouse) · 3.9k följare, median 2.3k, 34 klipp/90 d · en · ”ᴀʜʟᴀɴ ᴄᴏꜰꜰᴇᴇ ʜᴏᴜꜱᴇ ☕️ Where Heritage Brews Modern Moments ✨ Specialty Coffee | Artisanal Pastries 🕗”
+- [@smagodense](https://www.tiktok.com/@smagodense) · 2.2k följare, median 2.3k, 16 klipp/90 d · da · ”Vi guider dig gennem Odense's madscene 🍽️”
+- [@louisburger.cph](https://www.tiktok.com/@louisburger.cph) · 28k följare, median 2.2k, 13 klipp/90 d · ””
+- [@herwestmidlands](https://www.tiktok.com/@herwestmidlands) · 6.0k följare, median 2.2k, 22 klipp/90 d · ””
+- [@burgerhytten](https://www.tiktok.com/@burgerhytten) · 3.2k följare, median 2.1k, 4 klipp/90 d · ””
+- [@cafecoffea](https://www.tiktok.com/@cafecoffea) · 1.4k följare, median 2.0k, 9 klipp/90 d · ””
+- [@burgerdudes](https://www.tiktok.com/@burgerdudes) · 4.1k följare, median 2.0k, 36 klipp/90 d · ””

@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Förvärld · Arbetsbord</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/three/three.module.js",
+        "three/": "/three/"
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <span class="brand-name">Förvärld</span>
+      <span class="k7-pill" id="k7Badge" title="K7-spärr aktiv: noll generativ bild/video/röst, noll spegling">K7 OK</span>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <select id="klippSelect" class="tb-select" aria-label="Välj klipp"></select>
+    <select id="kundSelect" class="tb-select" aria-label="Välj kundprofil">
+      <option value="">Ingen kundprofil</option>
+    </select>
+    <button id="laddaBtn" class="btn prim">Ladda in</button>
+
+    <div class="tb-sep"></div>
+
+    <select id="modellSelect" class="tb-select" aria-label="Välj LLM-modell" title="Smart Kontext-LLM">
+      <option value="gemini-3.5-flash">gemini-3.5-flash</option>
+      <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
+      <option value="codex">codex</option>
+    </select>
+    <button id="angraBtn" class="btn" disabled title="Ångra senaste ändringen">Ångra</button>
+    <button id="aterstallBtn" class="btn" disabled title="Återställ till original">Återställ</button>
+
+    <div class="tb-sep"></div>
+
+    <div class="seg-group" id="ljudSeg" role="group" aria-label="Ljudläge">
+      <button type="button" data-lage="original" class="active">Original</button>
+      <button type="button" data-lage="tal">Endast tal</button>
+      <button type="button" data-lage="tyst">Tyst</button>
+    </div>
+
+    <div class="tb-spacer"></div>
+
+    <button id="jamforBtn" class="btn" title="Spela originalvideon sida vid sida i exakt tidssynk">Visa original bredvid</button>
+    <button id="overlagBtn" class="btn" title="Visa 3D-förvärlden halvtransparent över originalvideon">Överlägg</button>
+  </header>
+
+  <main class="workspace">
+    <!-- ==================== VÄNSTER: 9:16 FÖRVÄRLD + TIDSLINJE ==================== -->
+    <section class="stage-col">
+      <div class="stage-toolbar">
+        <div class="stage-meta">
+          <span class="clip-title" id="clipTitle">Välj ett klipp</span>
+          <span class="badge accent" id="shotBadge">–</span>
+          <span class="badge" id="envBadge">Original</span>
+        </div>
+        <div class="stage-controls">
+          <div class="seg-group" id="kameraSeg" role="group" aria-label="Kameraläge">
+            <button type="button" data-cam="las" class="active" title="Exakt 1:1 originalkamera">Kameralås 1:1</button>
+            <button type="button" data-cam="orbit" title="Fri 3D-inspektion (dra/zooma)">Fri Orbit</button>
+          </div>
+          <button id="resetCamBtn" class="btn sm" hidden title="Återställ kamera till 1:1">Återställ kamera</button>
+          <label class="opacity-ctrl" id="opacityWrap" hidden>
+            3D
+            <input id="opacitySlider" type="range" min="15" max="100" value="65">
+          </label>
+          <button id="subToggleBtn" class="btn sm active" title="Visa/dölj Whisper-undertexter">Textning</button>
+          <button id="tilltroToggleBtn" class="btn sm tilltro-btn" title="Visa 1:1 observerat (solid) kontra härlett/skymt (cyan wireframe)">Tilltro</button>
+          <button id="hudToggleBtn" class="btn sm" title="Ren bild utan etiketter">Ren bild</button>
+        </div>
+      </div>
+
+      <div class="stage-viewports" id="stageViewports">
+        <!-- Huvudscen: 9:16 Three.js Förvärld -->
+        <div class="viewport-frame" id="forvarldFrame">
+          <video id="underlayVideo" class="hidden-video" playsinline preload="auto" muted></video>
+          <canvas id="scenCanvas"></canvas>
+          <div class="vp-tag" id="vpTagLeft">Förvärld 3D</div>
+          <div class="vp-tag vp-tag-right" id="vpTagRight">1:1</div>
+          <div class="no3d-banner" id="no3dBanner" hidden>Medielager-läge (klippet saknar 3D-paket)</div>
+          <div class="skarmtext-layer" id="skarmtextLayer"></div>
+          <div class="undertext-bar" id="undertextBar" hidden>
+            <div class="undertext-pill" id="undertextPill"></div>
+          </div>
+          <div class="loading-veil" id="loadingVeil" hidden>Laddar scen…</div>
+        </div>
+
+        <!-- Originalvideo sida vid sida (visas vid 'Visa original bredvid') -->
+        <div class="viewport-frame" id="originalFrame" hidden>
+          <video id="originalVideo" playsinline preload="auto" muted></video>
+          <div class="vp-tag">Originalvideo</div>
+          <div class="vp-tag vp-tag-right" id="origAudioTag">Ljud: Original</div>
+        </div>
+      </div>
+
+      <!-- Dolt ljudspår för "Endast tal" (Demucs/Whisper tal-wav) -->
+      <audio id="talAudio" preload="auto"></audio>
+
+      <!-- Transport & DAW-tidslinje -->
+      <div class="transport-panel">
+        <div class="transport-row">
+          <button id="playBtn" class="play-btn" title="Spela / Pausa (Mellanslag)" aria-label="Spela eller pausa">▶</button>
+          <button id="prevFrameBtn" class="btn sm" title="Föregående ruta (←)">‹1</button>
+          <button id="nextFrameBtn" class="btn sm" title="Nästa ruta (→)">1›</button>
+          <div class="timecode" id="timecodeDisplay">
+            00:00.00 <span class="dim">/ 00:00.00 · R0</span>
+          </div>
+          <div class="tb-spacer"></div>
+          <div class="seg-group" id="speedSeg" role="group" aria-label="Uppspelningshastighet">
+            <button type="button" data-rate="0.5">0.5×</button>
+            <button type="button" data-rate="1" class="active">1×</button>
+            <button type="button" data-rate="1.25">1.25×</button>
+          </div>
+          <button id="loopBtn" class="btn sm" title="Loopa uppspelning">Loopa</button>
+        </div>
+
+        <div class="timeline-track" id="timelineTrack" role="slider" aria-label="Tidslinje" tabindex="0">
+          <div class="tl-shots" id="tlShots"></div>
+          <div class="tl-speech" id="tlSpeech"></div>
+          <div class="tl-playhead" id="tlPlayhead"></div>
+        </div>
+
+        <div class="shot-pills" id="shotPills"></div>
+      </div>
+    </section>
+
+    <!-- ==================== HÖGER: ARBETSPANEL MED FLIKAR ==================== -->
+    <aside class="work-col">
+      <nav class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="regi" role="tab" aria-selected="true">Regi</button>
+        <button class="tab-btn" data-tab="snabb" role="tab" aria-selected="false">Snabbkontroller</button>
+        <button class="tab-btn" data-tab="manus" role="tab" aria-selected="false">Manus (K6)</button>
+        <button class="tab-btn" data-tab="k5" role="tab" aria-selected="false">
+          K5 &amp; Kontext <span class="tab-count" id="k5Count">0</span>
+        </button>
+      </nav>
+
+      <!-- FLIK 1: REGI (Smart Kontext-LLM) -->
+      <section class="tab-pane active" id="tab-regi">
+        <div class="avsikt-box">
+          <div class="avsikt-label">
+            <span>Avsikt med passet</span>
+            <span id="avsiktStatus"></span>
+          </div>
+          <input id="avsiktInput" class="avsikt-input" type="text" placeholder="T.ex. Anpassa till pizzeria med varm känsla utan att tappa tajmingen (Enter sparar)" autocomplete="off">
+        </div>
+
+        <div class="chat-log" id="regiLogg">
+          <div class="empty-note">Skriv vad du vill ändra i scenen, miljö, kamera, skärmtext, ljud eller tempo. Kontext-LLM analyserar tidal waves över hela sekvensen och kontrollerar K5.</div>
+        </div>
+
+        <form class="regi-form" id="regiForm">
+          <input id="regiInput" type="text" placeholder="Ge regi till scenen… t.ex. 'Flytta detta till ett kök med espressomaskin'" autocomplete="off">
+          <button type="submit" class="btn prim" id="regiSendBtn">Skicka</button>
+        </form>
+      </section>
+
+      <!-- FLIK 2: SNABBKONTROLLER (<50 ms utan LLM) -->
+      <section class="tab-pane" id="tab-snabb">
+        <div class="pane-scroll">
+          <div class="card">
+            <div class="card-title">
+              <span>Miljötema</span>
+              <span class="badge" id="snabbMs">–</span>
+            </div>
+            <div class="env-grid" id="envGrid"></div>
+          </div>
+
+          <div class="card" id="kroppsOrakelCard">
+            <div class="card-title">
+              <span>Kroppsorakel &amp; Kinematik</span>
+              <span class="badge accent" id="orakelShotBadge">–</span>
+            </div>
+            <div class="inline-form">
+              <label class="ctrl-label" for="orakelPersonSelect">Person</label>
+              <select id="orakelPersonSelect" aria-label="Aktiv person"></select>
+              <button type="button" class="btn sm" id="orakelResetSlidersBtn" title="Nollställ reglage">Nollställ</button>
+            </div>
+            <div class="orakel-sliders">
+              <label class="slider-row" for="orakelSlapphet">
+                <span>Slapphet</span>
+                <input id="orakelSlapphet" type="range" min="-0.4" max="0.4" step="0.02" value="0">
+                <span class="slider-val" id="orakelSlapphetVal">0.00</span>
+              </label>
+              <label class="slider-row" for="orakelLutning">
+                <span>Rygglutning</span>
+                <input id="orakelLutning" type="range" min="-12" max="12" step="1" value="0">
+                <span class="slider-val" id="orakelLutningVal">0°</span>
+              </label>
+              <label class="slider-row" for="orakelGest">
+                <span>Gestskala</span>
+                <input id="orakelGest" type="range" min="0.4" max="1.6" step="0.05" value="1">
+                <span class="slider-val" id="orakelGestVal">1.00×</span>
+              </label>
+            </div>
+            <div class="quick-btn-row">
+              <button type="button" class="btn sm" id="orakelProvaBtn">Prova (Orakel)</button>
+              <button type="button" class="btn sm prim" id="orakelAppliceraBtn">Applicera</button>
+              <button type="button" class="btn sm cyan-btn" id="orakelHandIkBtn" title="Förhandsgranskas via kroppsoraklet och applicerar 1-sidig IK utan spegling (K7)">Vänster hand IK (+15 cm)</button>
+            </div>
+            <div class="orakel-result" id="orakelResultat" hidden></div>
+          </div>
+
+          <div class="card" id="matshotCard">
+            <div class="card-title">
+              <span>Matshot &amp; Rytm</span>
+              <span class="badge" id="matshotBadge">–</span>
+            </div>
+            <form class="matshot-form" id="matshotForm">
+              <div class="matshot-grid">
+                <label class="field-col">
+                  <span class="ctrl-label">Tagning</span>
+                  <select id="matshotTagningSelect" aria-label="Välj matshot-tagning"></select>
+                </label>
+                <label class="field-col">
+                  <span class="ctrl-label">Rätt</span>
+                  <input type="text" id="matshotRattInput" placeholder="T.ex. Tryffelpasta, Gelato…">
+                </label>
+                <label class="field-col">
+                  <span class="ctrl-label">Stil</span>
+                  <select id="matshotStilSelect" aria-label="Matshot-stil">
+                    <option value="tallrik">Tallrik</option>
+                    <option value="skal">Skål</option>
+                    <option value="bricka">Bricka</option>
+                  </select>
+                </label>
+                <label class="field-col">
+                  <span class="ctrl-label">Kamerarörelse</span>
+                  <select id="matshotKameraSelect" aria-label="Kamerarörelse">
+                    <option value="behall">Behåll</option>
+                    <option value="inakning">Inåkning</option>
+                    <option value="pan_hoger">Panorera</option>
+                    <option value="ovre_ned">Ovanifrån ned</option>
+                    <option value="slowmo_in">Slowmo in</option>
+                  </select>
+                </label>
+              </div>
+              <div class="quick-btn-row">
+                <button type="submit" class="btn sm prim" id="matshotUpdateBtn">Uppdatera matshot</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><span>Ljud &amp; musik</span></div>
+            <div class="quick-btn-row" id="snabbLjudRow">
+              <button type="button" class="btn sm" data-lage="original">Original (tal + musik)</button>
+              <button type="button" class="btn sm" data-lage="tal">Endast tal (musik av)</button>
+              <button type="button" class="btn sm" data-lage="tyst">Tyst</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span>Skärmtext · direktredigering</span>
+              <span class="badge" id="skarmtextCount">0</span>
+            </div>
+            <div id="skarmtextEditorList"></div>
+            <form class="inline-form" id="addTextForm">
+              <input type="text" id="addTextInput" placeholder="Ny skärmtext…" required>
+              <select id="addTextPos" aria-label="Position">
+                <option value="ovre">Överst</option>
+                <option value="mitt" selected>Mitten</option>
+                <option value="nedre">Nederst</option>
+              </select>
+              <input type="number" id="addTextFran" step="0.1" min="0" value="0" title="Från (s)">
+              <input type="number" id="addTextTill" step="0.1" min="0.1" value="2.5" title="Till (s)">
+              <button type="submit" class="btn sm prim">+ Lägg till</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><span>Tagning · snabbjustering</span></div>
+            <div class="inline-form">
+              <select id="snabbTagningSelect" aria-label="Välj tagning"></select>
+              <button type="button" class="btn sm" id="zoomInBtn">Zoom +15%</button>
+              <button type="button" class="btn sm" id="zoomOutBtn">Zoom -12%</button>
+              <button type="button" class="btn sm" id="stabiliseraBtn">Stabilisera</button>
+            </div>
+            <div class="quick-btn-row">
+              <button type="button" class="btn sm" id="tempoSlowBtn">Tempo 0.85×</button>
+              <button type="button" class="btn sm" id="tempoNormBtn">Tempo 1.0×</button>
+              <button type="button" class="btn sm" id="tempoFastBtn">Tempo 1.25×</button>
+              <button type="button" class="btn sm" id="pausBtn">+0.6 s paus</button>
+              <button type="button" class="btn sm danger" id="strykBtn">Stryk / Återställ</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><span>Lägg till 3D-objekt / prop</span></div>
+            <form class="inline-form" id="addObjForm">
+              <select id="addObjTyp" aria-label="Objekttyp">
+                <option value="kaffemaskin">Kaffemaskin</option>
+                <option value="spis">Spis</option>
+                <option value="disk">Disk</option>
+                <option value="bank">Bänk</option>
+                <option value="skylt">Skylt</option>
+                <option value="hylla">Hylla</option>
+                <option value="parasoll">Parasoll</option>
+                <option value="lampa">Lampa</option>
+              </select>
+              <input type="text" id="addObjLabel" placeholder="Valfri etikett (t.ex. Dagens pasta)">
+              <button type="submit" class="btn sm prim">+ Placera</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- FLIK 3: MANUS (K6) -->
+      <section class="tab-pane" id="tab-manus">
+        <div class="manus-toolbar">
+          <div class="seg-group" id="manusVySeg">
+            <button type="button" data-vy="kort" class="active">Scenkort</button>
+            <button type="button" data-vy="md">Markdown</button>
+          </div>
+          <div class="quick-btn-row">
+            <button type="button" class="btn sm" id="copyManusBtn">Kopiera .md</button>
+            <button type="button" class="btn sm prim" id="dlManusBtn">Ladda ner .md</button>
+          </div>
+        </div>
+        <div class="pane-scroll" id="manusContent"></div>
+      </section>
+
+      <!-- FLIK 4: K5 & KONTEXT -->
+      <section class="tab-pane" id="tab-k5">
+        <div class="pane-scroll" id="k5Content"></div>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

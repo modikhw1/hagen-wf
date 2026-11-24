@@ -1,0 +1,879 @@
+<title>CM-flödet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: en arbetsyta som en DAW. Lådan (vänster) → Bänken (mitten) → Feeden (botten, arrangemang). Kundens vy glider in från höger. */
+:root{
+  --bg:#F5F2ED; --surface:#FFFFFF; --surface-2:#EEE9E1; --ink:#2E1F14; --muted:#7A6B5E; --line:#E3DBD0;
+  --accent:#3D5AFE; --accent-soft:#E4E8FF; --on-accent:#FFFFFF; --hot:#FF5C39; --hot-soft:#FFE6DF;
+  --ok:#24875A; --ok-soft:#DCF2E6; --warn:#A86F00; --warn-soft:#FFF1CF;
+  --r-hook:#FFD6C7; --r-setup:#D8E3FF; --r-twist:#FFEBA6; --r-payoff:#CFEFDB; --r-ny:#E9DBFF;
+  --l1:#FF8A65; --l2:#5C7CFF; --l3:#E6B422; --l4:#3FB57F; --l5:#B07CFF;
+  --shadow:0 1px 0 rgba(46,31,20,.06),0 6px 18px -8px rgba(46,31,20,.18);
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --radius:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#16110D; --surface:#211A15; --surface-2:#2B231D; --ink:#F3ECE4; --muted:#A99A8C; --line:#3A3029;
+  --accent:#8193FF; --accent-soft:#262C52; --on-accent:#0F1230; --hot:#FF7B5C; --hot-soft:#4A2419;
+  --ok:#5FD39C; --ok-soft:#173A29; --warn:#F2C14E; --warn-soft:#3D3112;
+  --r-hook:#5C3023; --r-setup:#263352; --r-twist:#4E4320; --r-payoff:#1E4532; --r-ny:#3B2C55;
+  --shadow:0 1px 0 rgba(0,0,0,.4),0 8px 22px -10px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#16110D; --surface:#211A15; --surface-2:#2B231D; --ink:#F3ECE4; --muted:#A99A8C; --line:#3A3029;
+  --accent:#8193FF; --accent-soft:#262C52; --on-accent:#0F1230; --hot:#FF7B5C; --hot-soft:#4A2419;
+  --ok:#5FD39C; --ok-soft:#173A29; --warn:#F2C14E; --warn-soft:#3D3112;
+  --r-hook:#5C3023; --r-setup:#263352; --r-twist:#4E4320; --r-payoff:#1E4532; --r-ny:#3B2C55;
+  --shadow:0 1px 0 rgba(0,0,0,.4),0 8px 22px -10px rgba(0,0,0,.7); color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.4}
+*{box-sizing:border-box}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.mono{font-family:var(--f-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;margin:0;text-wrap:balance}
+
+#app{height:100%;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:14px;height:52px;flex:none;border-bottom:1px solid var(--line);background:var(--surface);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:-.01em}
+.brand span{color:var(--muted);font-weight:500}
+.cust{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 5px;border-radius:999px;border:1px solid var(--line)}
+.cust:hover{background:var(--surface-2)}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--hot);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px}
+.tabs{display:flex;gap:2px;background:var(--surface-2);border-radius:999px;padding:3px;margin-left:auto}
+.tabs a{padding:5px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:500}
+.tabs a[aria-current="page"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;font-weight:600;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:500;white-space:nowrap}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.chip:hover{border-color:var(--ink)}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+
+/* ---------- Studio grid ---------- */
+.studio{flex:1;min-height:0;display:grid;grid-template-columns:270px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
+.crate{grid-row:1;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--surface)}
+.bench{grid-row:1;min-height:0;overflow:auto;padding:18px 22px}
+.feed{grid-column:1/-1;border-top:1px solid var(--line);background:var(--surface);padding:12px 0 14px}
+
+/* Crate */
+.crate-head{padding:14px 14px 10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+.paste{display:flex;gap:6px}
+.paste input{flex:1;min-width:0;border:1px dashed var(--muted);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.paste input:focus{border-style:solid;border-color:var(--accent);outline:none}
+.crate-list{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.ccard{border:1px solid var(--line);border-radius:var(--radius);padding:9px;display:grid;grid-template-columns:44px 1fr;gap:10px;background:var(--surface);cursor:grab;transition:border-color .15s,transform .15s}
+.ccard:hover{border-color:var(--ink)}
+.ccard.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ccard.dragging{opacity:.4}
+.thumb{width:44px;height:72px;border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.thumb i{flex:1;display:block}
+.ccard h4{margin:0;font-size:13px;font-weight:600;line-height:1.25}
+.ccard .meta{color:var(--muted);font-size:12px;margin-top:2px}
+.ccard .row{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap}
+.reading .thumb,.reading h4,.reading .meta{background:linear-gradient(90deg,var(--surface-2) 25%,var(--line) 50%,var(--surface-2) 75%);background-size:300% 100%;animation:shim 1.1s linear infinite;color:transparent;border-radius:4px}
+.reading .thumb i{background:transparent!important}
+@keyframes shim{to{background-position:-150% 0}}
+.status{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px}
+.status.ok{background:var(--ok-soft);color:var(--ok)}
+.status.feed{background:var(--accent-soft);color:var(--accent)}
+.status.read{background:var(--surface-2);color:var(--muted)}
+
+/* Bench */
+.bench-top{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.player{width:200px;flex:none}
+.frame{aspect-ratio:9/16;max-width:100%;border-radius:14px;position:relative;overflow:hidden;border:1px solid var(--line);transition:background .35s}
+.frame .role{position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.7);color:#2E1F14;padding:2px 7px;border-radius:999px}
+.frame .sketch{position:absolute;inset:22% 18% 34%;display:grid;place-items:center}
+.frame .sketch svg{width:100%;height:100%;stroke:currentColor;opacity:.55}
+.frame .caption{position:absolute;left:10px;right:10px;bottom:34px;text-align:center;font-weight:700;font-size:13px;line-height:1.2;background:rgba(0,0,0,.72);color:#fff;padding:5px 7px;border-radius:6px}
+.frame .label{position:absolute;left:10px;right:10px;top:36px;font-size:12px;line-height:1.3;font-weight:500}
+.frame .bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(0,0,0,.12)}
+.frame .bar i{display:block;height:100%;background:var(--ink);width:0}
+.frame.swap{animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.985);opacity:.7}}
+.pctl{display:flex;align-items:center;gap:8px;margin-top:8px}
+.play{width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center}
+
+.bench-main{flex:1;min-width:280px;display:flex;flex-direction:column;gap:16px}
+.clip-title{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.clip-title h2{font-size:26px;letter-spacing:-.02em}
+.idea{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.idea-line{display:flex;align-items:center;gap:10px}
+.idea-line input{flex:1;min-width:0;border:0;border-bottom:1px solid var(--line);padding:6px 0;font-family:var(--f-display);font-size:18px;font-weight:500;background:transparent}
+.idea-line input:focus{outline:none;border-bottom-color:var(--accent)}
+.purp{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.dist{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:12px;color:var(--muted)}
+.meter{display:flex;gap:3px}
+.meter button{width:14px;height:14px;border-radius:3px;background:var(--surface-2);border:1px solid var(--line)}
+.meter button.on{background:var(--ink);border-color:var(--ink)}
+.dist em{font-style:normal;color:var(--ink);font-weight:600}
+
+.versions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.vtab{padding:6px 12px;border-radius:8px;border:1px solid var(--line);font-weight:600;display:flex;gap:6px;align-items:center;background:var(--surface)}
+.vtab.on{border-color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.vtab.ghost{border-style:dashed;color:var(--muted);font-weight:500}
+.vtab .star{color:var(--hot)}
+.vnote{font-size:12px;color:var(--muted);margin-left:4px}
+
+.cutboard{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px}
+.scene{flex:none;min-height:104px;border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:4px;position:relative;cursor:grab;border:2px solid transparent;transition:transform .15s,border-color .15s}
+.scene:hover{transform:translateY(-2px)}
+.scene.sel{border-color:var(--ink)}
+.scene.now{box-shadow:0 0 0 2px var(--accent)}
+.scene.over{border-style:dashed;border-color:var(--accent)}
+.scene.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.scene .r{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;opacity:.75}
+.scene .t{font-size:12.5px;font-weight:600;line-height:1.25;color:var(--ink)}
+.scene .foot{margin-top:auto;display:flex;align-items:center;gap:5px}
+.mode{font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:999px;background:rgba(255,255,255,.65);color:#2E1F14}
+.lock{margin-left:auto;font-size:12px;width:20px;height:20px;border-radius:5px;display:grid;place-items:center}
+.lock:hover{background:rgba(0,0,0,.08)}
+.addscene{flex:none;width:64px;border:1.5px dashed var(--line);border-radius:10px;color:var(--muted);font-size:20px}
+.addscene:hover{border-color:var(--ink);color:var(--ink)}
+.pending-dot{position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:var(--hot);border:2px solid var(--bg)}
+
+.takes{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.takes-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.take-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.take{flex:none;width:190px;border:1px solid var(--line);border-radius:10px;padding:9px;display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--bg)}
+.take:hover{border-color:var(--ink)}
+.take.on{border-color:var(--ink);background:var(--surface);box-shadow:var(--shadow)}
+.take.prop{border-style:dashed;border-color:var(--hot);background:var(--hot-soft);animation:pop .3s ease}
+.take .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.take .l{font-weight:600;font-size:13px;line-height:1.25}
+.take .s{font-size:12px;color:var(--muted)}
+.take .acts{display:flex;gap:6px;margin-top:2px}
+.lockwhy{display:flex;gap:6px;align-items:center;background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:6px 8px;font-size:12px}
+.lockwhy input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:4px 7px}
+.dur{display:flex;align-items:center;gap:4px;margin-left:auto}
+.dur button{width:22px;height:22px;border-radius:6px;border:1px solid var(--line)}
+
+.instr{display:flex;gap:8px;align-items:center;border:1.5px solid var(--ink);border-radius:12px;padding:6px 6px 6px 12px;background:var(--surface)}
+.instr input{flex:1;min-width:0;border:0;background:transparent;padding:6px 0}
+.instr input:focus{outline:none}
+.thinking{display:inline-flex;gap:3px}
+.thinking i{width:5px;height:5px;border-radius:50%;background:var(--hot);animation:blink 1s infinite}
+.thinking i:nth-child(2){animation-delay:.15s}.thinking i:nth-child(3){animation-delay:.3s}
+@keyframes blink{50%{opacity:.2}}
+.empty-bench{height:100%;display:grid;place-items:center;text-align:center;color:var(--muted)}
+
+/* Feed */
+.feed-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));margin-bottom:8px}
+.feed-head h3{font-size:16px}
+.mix{display:flex;height:10px;border-radius:999px;overflow:hidden;width:180px;background:var(--surface-2)}
+.mix i{display:block;height:100%;transition:width .3s}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.lane-wrap{overflow-x:auto;padding:0 max(16px,env(safe-area-inset-right,0px)) 4px max(16px,env(safe-area-inset-left,0px))}
+.lane{display:grid;grid-auto-flow:column;grid-auto-columns:138px;gap:8px;position:relative;padding-top:22px;width:max-content}
+.span{position:absolute;top:0;height:18px;border-radius:6px;font-size:11px;font-weight:600;padding:1px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:left .3s,width .3s}
+.slot{height:150px;border-radius:10px;border:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;padding:7px;gap:5px;position:relative;transition:border-color .15s,background .15s}
+.slot.empty{border-style:dashed;align-items:center;justify-content:center;color:var(--muted);font-size:12px;text-align:center}
+.slot.over{border-color:var(--accent);background:var(--accent-soft)}
+.slot.past{opacity:.55}
+.slot.landed{animation:land .45s cubic-bezier(.2,1.4,.4,1)}
+@keyframes land{from{transform:translateY(-10px) scale(.96)}}
+.slot .pos{display:flex;align-items:center;gap:6px}
+.slot .pos b{font-family:var(--f-mono);font-size:11px}
+.slot .pos .menu-btn{margin-left:auto;width:22px;height:22px;border-radius:6px;color:var(--muted)}
+.slot .pos .menu-btn:hover{background:var(--surface-2);color:var(--ink)}
+.slot .mini{display:flex;height:38px;border-radius:5px;overflow:hidden}
+.slot .mini i{flex:1}
+.slot h5{margin:0;font-size:12.5px;line-height:1.2;font-weight:600;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.slot .tags{margin-top:auto;display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:10.5px;padding:1px 6px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-weight:600}
+.tag.fb{background:var(--hot-soft);color:var(--hot)}
+.tag.ch{background:var(--accent-soft);color:var(--accent)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.slot.nu{border-color:var(--ink);border-width:1.5px}
+.slot.bort{background:repeating-linear-gradient(135deg,var(--bg) 0 8px,var(--surface-2) 8px 9px)}
+
+/* Overlays */
+.menu{position:fixed;z-index:50;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:5px;min-width:200px}
+.menu button{display:flex;width:100%;text-align:left;padding:7px 10px;border-radius:6px;gap:8px;align-items:center}
+.menu button:hover{background:var(--surface-2)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.menu .hint{padding:4px 10px;font-size:11px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,140%);z-index:60;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px 10px 14px;display:flex;gap:12px;align-items:center;max-width:min(560px,calc(100% - 32px));transition:transform .3s cubic-bezier(.2,1.2,.4,1)}
+.toast.show{transform:translate(-50%,0)}
+.toast button{color:var(--bg);font-weight:700;text-decoration:underline;white-space:nowrap}
+.toast small{display:block;opacity:.75;margin-top:2px}
+
+.drawer,.phone-wrap{position:fixed;top:52px;bottom:0;right:0;z-index:40;background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(105%);transition:transform .3s cubic-bezier(.2,1,.3,1);overflow:auto;padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer{width:min(380px,100%);padding:18px max(18px,env(safe-area-inset-right,0px)) 18px 18px}
+.drawer.open,.phone-wrap.open{transform:none}
+.drawer section{border-top:1px solid var(--line);padding:12px 0;display:flex;flex-direction:column;gap:6px}
+.drawer textarea{width:100%;min-height:80px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--bg);resize:vertical}
+.kv{display:flex;gap:6px;flex-wrap:wrap}
+
+.phone-wrap{width:min(400px,100%);display:flex;justify-content:center;padding:18px 16px;background:var(--surface-2)}
+.phone{width:330px;max-width:100%;background:var(--bg);border-radius:30px;border:8px solid var(--ink);padding:16px 14px;display:flex;flex-direction:column;gap:12px;height:max-content}
+.phone h3{font-size:20px}
+.pc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.choice{border:1px solid var(--line);border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:5px;text-align:left;font-size:11.5px;background:var(--bg)}
+.choice.rec{border-color:var(--hot);box-shadow:0 0 0 2px var(--hot-soft)}
+.choice.picked{border-color:var(--ink);background:var(--surface)}
+.choice .mini{display:flex;height:46px;border-radius:5px;overflow:hidden}
+.choice .mini i{flex:1}
+.choice b{font-size:12px}
+
+/* Karta */
+.karta{flex:1;overflow:auto}
+.karta-in{max-width:980px;margin:0 auto;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
+.karta h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.025em;line-height:1.05}
+.karta p{max-width:66ch;margin:0}
+.lead{font-size:16px;color:var(--muted)}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.flow div{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface);display:flex;flex-direction:column;gap:6px;min-width:0}
+.flow b{font-family:var(--f-display);font-size:18px}
+.flow small{color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.col{border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.col.c1{background:var(--ink);color:var(--bg)}
+.col.c1 .why{color:var(--bg);opacity:.72}
+.col.c2{background:var(--surface);border:1px solid var(--line)}
+.col.c3{border:1.5px dashed var(--line)}
+.col h3{font-size:18px}
+.col ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.col li b{display:block;font-weight:600}
+.why{font-size:12.5px;color:var(--muted)}
+.open-q{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.open-q div{border-left:3px solid var(--hot);padding:4px 0 4px 12px}
+
+@media (max-width:860px){
+  #app{height:auto;min-height:100%}
+  .studio{display:flex;flex-direction:column}
+  .crate{border-right:0;border-bottom:1px solid var(--line)}
+  .crate-list{flex-direction:row;overflow-x:auto;max-height:none}
+  .ccard{width:240px;flex:none}
+  .bench{overflow:visible;padding:16px}
+  .player{width:160px}
+  .flow,.cols,.open-q{grid-template-columns:minmax(0,1fr)}
+  .tabs a{padding:5px 9px}
+  .brand span{display:none}
+}
+@media (max-width:520px){ .bench-top{flex-direction:column} .player{width:150px} .cust .nm{display:none} }
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="app">
+  <header class="top">
+    <div class="brand">LeTrend <span>studio · wireframe</span></div>
+    <button class="cust" data-act="drawer" aria-label="Visa kundens profil"><span class="avatar">F</span><span class="nm"><b>Fratelli</b> <span class="mono" style="color:var(--muted)">2/v</span></span></button>
+    <nav class="tabs" aria-label="Vy">
+      <a href="#studio" id="t-studio">Studio</a>
+      <a href="#karta" id="t-karta">Kartan</a>
+    </nav>
+    <button class="btn sm" data-act="phone" id="phoneBtn">Kundens vy</button>
+  </header>
+
+  <main class="studio" id="studio">
+    <aside class="crate">
+      <div class="crate-head">
+        <div style="display:flex;align-items:baseline;justify-content:space-between"><h3 style="font-size:16px">Lådan</h3><span class="eyebrow" id="crateCount"></span></div>
+        <form class="paste" id="pasteForm">
+          <input id="pasteIn" placeholder="Klistra in en eller flera TikTok-länkar" aria-label="TikTok-länkar">
+          <button class="btn primary sm" type="submit">Lägg in</button>
+        </form>
+        <button class="btn ghost sm" data-act="sample" style="align-self:flex-start">Klistra tre exempel</button>
+      </div>
+      <div class="crate-list" id="crate"></div>
+    </aside>
+    <section class="bench" id="bench" data-drop="bench"></section>
+    <section class="feed" id="feed"></section>
+  </main>
+
+  <main class="karta" id="karta" hidden>
+    <div class="karta-in">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span class="eyebrow">Varför wireframen ser ut så här</span>
+        <h1>Fyra ytor, en rörelse.<br>Reglerna bor i ytorna, inte i stegen.</h1>
+        <p class="lead">Wikin beskriver drygt fyrtio begrepp för CM:s arbete. Var och en är rimlig. Byggda som egna paneler blir de en checklista. Här är de omviktade: några få bär hela flödet, resten härleds i bakgrunden eller väntar.</p>
+      </div>
+      <div class="flow">
+        <div><span class="eyebrow">Ingest</span><b>Lådan</b><small>Klistra in en eller tio länkar. Kortet finns direkt, analysen fyller i. Härifrån: rakt i feeden, godkänn som det är, eller öppna på bänken.</small></div>
+        <div><span class="eyebrow">Anpassa</span><b>Bänken</b><small>En idé på en rad. Klippet som scenkort. Varje scen har tagningar: originalet, dina, producentens förslag. Du väljer, modellen föreslår.</small></div>
+        <div><span class="eyebrow">Arrangera</span><b>Feeden</b><small>Nu plus åtta platser framåt. Serier syns som spann, mixen som en remsa. Konsekvenser kommer som en rad text med ångra, aldrig som ett stopp.</small></div>
+        <div><span class="eyebrow">Svar</span><b>Kunden</b><small>Ser 1, 2, 3 där 2 är rekommenderad. Väljer, hoppar över eller vill ha något tidigare. Svaret landar som en markering på feeden.</small></div>
+      </div>
+
+      <div class="cols">
+        <div class="col c1">
+          <span class="eyebrow" style="color:inherit;opacity:.7">Ryggrad · styr formen</span>
+          <h3>Sex regler som formar ytorna</h3>
+          <ul>
+            <li><b>Kundens version är en instans</b><span class="why">Biblioteket rörs aldrig. Det gör det ofarligt att leka, och därför finns tagningar och versioner.</span></li>
+            <li><b>Syftet före avståndet</b><span class="why">En rad idé och ett syfte. Allt annat härleds därifrån.</span></li>
+            <li><b>Producenten föreslår, tillämpar aldrig</b><span class="why">Förslag blir streckade tagningar. Ett klick för att ta, ett för att slänga.</span></li>
+            <li><b>Spela live, rendera inte</b><span class="why">Spelaren spelar scenerna i ordning. Ingen exportknapp, inget väntande.</span></li>
+            <li><b>Tänk klipp till klipp</b><span class="why">Feeden är arrangemanget. Serier, upprepning och mix syns där du flyttar.</span></li>
+            <li><b>Kunden filmar själv</b><span class="why">Det vi levererar är tydliga scener och skisser, inte färdig video.</span></li>
+          </ul>
+        </div>
+        <div class="col c2">
+          <span class="eyebrow">Inbakat · härleds, syns vid behov</span>
+          <h3>Blir egenskaper, inte paneler</h3>
+          <ul>
+            <li><b>Trohet, arbetsläge, scenläge</b><span class="why">Härleds ur syftet och dina val. Syns som en mätare och små etiketter som går att rätta.</span></li>
+            <li><b>Räls och formatsanningar</b><span class="why">Ett lås på scenen. Ett försök att flytta en låst scen skakar och ber om en anledning.</span></li>
+            <li><b>Kundkort, kanalbok, lins, regibok</b><span class="why">En låda bakom kundens namn. Producenten läser den, du slår upp den.</span></li>
+            <li><b>Samma format inom fyra veckor</b><span class="why">En gul etikett på platsen. Upplysning, inte förbud.</span></li>
+            <li><b>Trendsyntes, tre riktningar</b><span class="why">Blir tagningar på bänken i stället för egna lägen.</span></li>
+            <li><b>Harnessens lager</b><span class="why">Osynliga. Kvalitet du märker i förslagen.</span></li>
+          </ul>
+        </div>
+        <div class="col c3">
+          <span class="eyebrow">Parkerat · offras för enkelhet</span>
+          <h3>Behövs inte i flödet nu</h3>
+          <ul>
+            <li><b>Formell mall</b><span class="why">Fritext i instruktionsraden räcker. Mallen är ett eget läge att lära sig.</span></li>
+            <li><b>Parvis rankning och lexikongodkännande</b><span class="why">Smakarbete, inte klipparbete. Hör hemma i en egen stund, inte mitt i en anpassning.</span></li>
+            <li><b>Följsamhetspanel</b><span class="why">Blir en etikett på publicerade platser i feeden, när den finns.</span></li>
+            <li><b>Kedjeplan för tio klipp</b><span class="why">Feeden har redan nio platser. Planen kan fylla tomma platser med streckade förslag senare.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <h3 style="font-size:20px">Öppna frågor att pröva i wireframen</h3>
+        <div class="open-q">
+          <div><b>Är versionerna 1, 2, 3 samma klipp eller tre klipp?</b><p class="why">Här är de tre mixar av samma scener. Det håller dem jämförbara för kunden, men gör en riktigt annan idé svårare.</p></div>
+          <div><b>Ska idéraden vara obligatorisk?</b><p class="why">Regeln säger att CM alltid skriver regiidén. Här går det att lägga i feeden utan den, och platsen visar att den saknas.</p></div>
+          <div><b>Var går gränsen för kundens makt?</b><p class="why">Välja bort och flytta fram är med. Att ändra en scen är det inte. Räcker det för att kunden ska känna sig delaktig?</p></div>
+          <div><b>Lådan eller biblioteket?</b><p class="why">Lådan är per kund nu. När biblioteket kommer blir den en vy av det, filtrerad på vad som inte är placerat.</p></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="drawer" id="drawer" aria-label="Kundprofil"></aside>
+  <aside class="phone-wrap" id="phone" aria-label="Kundens vy"></aside>
+  <div class="menu" id="menu" hidden></div>
+  <div class="toast" id="toast" role="status"><div id="toastMsg"></div><button data-act="undo" id="undoBtn">Ångra</button></div>
+</div>
+
+<script>
+const ROLE = {hook:'Hook', setup:'Uppbyggnad', twist:'Vändning', payoff:'Payoff', ny:'Ny scen'};
+const RC = r => `var(--r-${r})`;
+const LENS = {'Karaktär och lore':'--l1','Trendöversättning':'--l2','Bakom disken':'--l3','Kund och community':'--l4','Erbjudande':'--l5'};
+const PURPOSE = [
+  {id:'rakt', label:'Rakt av', d:1},
+  {id:'poang', label:'Roligare poäng', d:3},
+  {id:'visa', label:'Visa er grej', d:3},
+  {id:'vand', label:'Vänd på det', d:4},
+];
+const DIST = ['', 'Nästan identisk', 'Nära originalet', 'Mitt emellan', 'Långt från', 'Bara stommen kvar'];
+const SKETCH = {
+  hook:'<svg viewBox="0 0 60 60" fill="none" stroke-width="2.5"><circle cx="30" cy="16" r="8"/><path d="M30 24v18M30 30l-12 6M30 30l12-8M30 42l-9 14M30 42l9 14"/><path d="M48 12l6-4M50 18h7"/></svg>',
+  setup:'<svg viewBox="0 0 60 60" fill="none" stroke-width="2.5"><circle cx="20" cy="16" r="7"/><path d="M20 23v18M20 29l-8 7M20 29l8 7M20 41l-6 14M20 41l6 14"/><rect x="34" y="28" width="22" height="14" rx="2"/></svg>',
+  twist:'<svg viewBox="0 0 60 60" fill="none" stroke-width="2.5"><circle cx="18" cy="18" r="7"/><circle cx="42" cy="18" r="7"/><path d="M18 25v16M42 25v16M18 31l10-4M42 31l-10-4"/><path d="M26 6q4-4 8 0"/></svg>',
+  payoff:'<svg viewBox="0 0 60 60" fill="none" stroke-width="2.5"><circle cx="30" cy="16" r="8"/><path d="M30 24v18M30 30l-13-10M30 30l13-10M30 42l-9 14M30 42l9 14"/><path d="M8 50h44"/></svg>',
+  ny:'<svg viewBox="0 0 60 60" fill="none" stroke-width="2.5" stroke-dasharray="4 4"><rect x="10" y="10" width="40" height="40" rx="6"/><path d="M30 22v16M22 30h16"/></svg>'
+};
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let uid = 100; const nid = p => p + (++uid);
+
+function mk(id, title, src, format, lens, series, spec, extra = {}) {
+  const scenes = spec.map(([role, label, text, dur, locked, why]) => ({
+    id: nid('s'), role, dur, locked: !!locked, lockWhy: why || '',
+    takes: [{kind:'Behåll', label, text}]
+  }));
+  const v = {order: scenes.map(s => s.id), pick: {}};
+  return Object.assign({id, title, src, format, lens, series, scenes, versions:{1:null, 2:v, 3:null}, activeV:2,
+    purpose:null, dist:null, distFixed:false, idea:'', status:'ready', approved:false, inCrate:true}, extra);
+}
+
+const S = {
+  clips: {},
+  feed: [],              // 9 platser: {clip, fb}
+  past: [{title:'Degen som inte ville', format:'POV-reaktion', lens:'Trendöversättning'}, {title:'Nonnas regler #2', format:'Serie: regler', lens:'Karaktär och lore'}],
+};
+function addClip(c){ S.clips[c.id] = c; return c; }
+
+addClip(mk('c1','Kunden som beställer ananas','@pizzajonny · 2,1 mn','POV-reaktion','Trendöversättning',null,[
+  ['hook','Kassan: "En hawaii, tack."','EN HAWAII TACK',1.5,true,'Repliken är trendens igenkänning'],
+  ['setup','Kocken fryser mitt i degkastet','när kunden säger hawaii',2],
+  ['twist','Hela köket vänder sig långsamt om','…',2.5],
+  ['payoff','Ananasen åker i soporna till trendljudet','vi gör inte så här',2,true,'Ljudet bär poängen']
+]));
+addClip(mk('c2','Chefen testar nya anställda','@trattoria.lena · 640 k','Test-format','Bakom disken',null,[
+  ['hook','"Dag ett. Tre frågor."','DAG 1: TESTET',1.5,true,'Formatets löfte'],
+  ['setup','Fråga ett: vad heter degen?','vad heter degen?',2],
+  ['twist','Nyanställd svarar med fel namn med full säkerhet','"Kevin"',2],
+  ['payoff','Chefen nickar: "Anställd."','anställd.',1.5]
+]));
+addClip(mk('c3','Gissa priset på kvällens special','@foodbyamir · 380 k','Gissa-format','Kund och community',null,[
+  ['hook','Tallriken landar i bild','gissa priset',1.5],
+  ['setup','Tre stamgäster gissar','',3],
+  ['payoff','Priset avslöjas, alla stönar','149 kr',2]
+], {inCrate:false}));
+const c3 = S.clips.c3; c3.versions[1] = {order:[...c3.versions[2].order], pick:{}}; c3.versions[3] = {order:[...c3.versions[2].order].reverse(), pick:{}};
+addClip(mk('n3','Nonnas regler #3: aldrig ketchup','egen serie','Serie: regler','Karaktär och lore','Nonnas regler',[
+  ['hook','Nonna pekar mot kameran','REGEL 3',1],['setup','Någon sträcker sig efter ketchupen','',2],['payoff','Nonna konfiskerar flaskan','aldrig.',2]
+], {inCrate:false, approved:true, idea:'Nonna är lagen.'}));
+addClip(mk('n4','Nonnas regler #4: ingen gaffel','egen serie','Serie: regler','Karaktär och lore','Nonnas regler',[
+  ['hook','Nonna pekar mot kameran','REGEL 4',1],['setup','Gäst tar fram kniv och gaffel','',2],['payoff','Nonna viker pizzan åt honom','så äter man',2]
+], {inCrate:false, approved:true, idea:'Nonna är lagen.'}));
+addClip(mk('t1','1000 pizzor på 60 sekunder','@ugnen.sthlm · 1,2 mn','Timelapse','Bakom disken',null,[
+  ['hook','Tom disk 16:00','16:00',1],['setup','Timelapse av rusningen','',4],['payoff','Marco somnar på mjölsäcken','23:00',1.5]
+], {inCrate:false, approved:true, idea:'Visa tempot utan att säga något.'}));
+
+S.feed = [
+  {clip:'n3', fb:null}, {clip:'t1', fb:null}, {clip:'n4', fb:null}, {clip:null, fb:null},
+  {clip:'c3', fb:'valde 3'}, {clip:null, fb:null}, {clip:null, fb:null}, {clip:null, fb:null}, {clip:null, fb:null}
+];
+
+const UI = {sel:'c1', scene:null, playing:false, t:0, unlocking:null, thinking:false, drawer:false, phone:false, landed:-1, undo:null, regibok:'Jag gillar när poängen kommer utan ord. Undvik voiceover.'};
+
+const POOL = [
+  ['Kökets ASMR i slow motion','@cheflove · 900 k','ASMR','Bakom disken',[['hook','Kniv mot basilika, närbild','',1.5,true,'Ljudet är formatet'],['setup','Mozzarella rivs isär','',2],['payoff','Pizzan skärs, knaster','',2]]],
+  ['"Rätt eller fel?" med degkast','@pizzaschool · 410 k','Rätt eller fel','Kund och community',[['hook','"Rätt eller fel?"','RÄTT ELLER FEL',1],['setup','Tre sätt att kasta degen','',3],['twist','Den som ser fel ut är rätt','',2],['payoff','Kommentera ditt svar','',1]]],
+  ['När mamma ringer under rusningen','@nonnaenergy · 1,8 mn','POV-reaktion','Karaktär och lore',[['hook','Telefonen vibrerar på disken','MAMMA RINGER',1,true,'Igenkänningen'],['setup','Kocken svarar med axeln','',2],['twist','Hela köket tystnar och lyssnar','',2],['payoff','"Ja mamma, jag äter."','',1.5]]],
+];
+let poolI = 0;
+
+const clip = () => S.clips[UI.sel];
+const ver = c => c.versions[c.activeV];
+const sceneById = (c, id) => c.scenes.find(s => s.id === id);
+const take = (c, v, s) => s.takes[v.pick[s.id] ?? 0];
+const feedIndex = id => S.feed.findIndex(f => f.clip === id);
+function mode(c, v, s){
+  if (s.role === 'ny') return 'Ny';
+  const t = take(c, v, s); return t.kind;
+}
+const strip = c => { const v = ver(c); return v.order.map(id => { const s = sceneById(c,id); return `<i style="background:${RC(s.role)};flex:${s.dur}"></i>`; }).join(''); };
+
+/* ---------- Toast + undo ---------- */
+let toastTimer;
+function snapshot(){ return JSON.stringify({clips:S.clips, feed:S.feed}); }
+function toast(msg, sub, undoSnap){
+  UI.undo = undoSnap || null;
+  document.getElementById('toastMsg').innerHTML = esc(msg) + (sub ? `<small>${esc(sub)}</small>` : '');
+  document.getElementById('undoBtn').hidden = !undoSnap;
+  const t = document.getElementById('toast'); t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 4800);
+}
+
+/* ---------- Crate ---------- */
+function renderCrate(){
+  const list = Object.values(S.clips).filter(c => c.inCrate);
+  document.getElementById('crateCount').textContent = list.length + ' klipp';
+  document.getElementById('crate').innerHTML = list.map(c => {
+    if (c.status === 'reading') return `<div class="ccard reading"><div class="thumb"><i></i></div><div><h4>${esc(c.title)}</h4><div class="meta">läser klippet…</div><div class="row"><span class="status read">analyserar scener</span></div></div></div>`;
+    const fi = feedIndex(c.id);
+    const st = fi >= 0 ? `<span class="status feed">${fi === 0 ? 'Nu' : '+' + fi}</span>` : c.approved ? '<span class="status ok">godkänd</span>' : '';
+    return `<div class="ccard ${UI.sel === c.id ? 'sel' : ''}" draggable="true" data-drag="clip:${c.id}" data-act="open" data-id="${c.id}">
+      <div class="thumb">${strip(c)}</div>
+      <div style="min-width:0"><h4>${esc(c.title)}</h4><div class="meta">${esc(c.src)}</div>
+        <div class="row">${st}
+          ${fi < 0 ? `<button class="chip" data-act="tofeed" data-id="${c.id}">Rakt i feeden</button>` : ''}
+          ${!c.approved ? `<button class="chip" data-act="approve" data-id="${c.id}">Godkänn som den är</button>` : ''}
+        </div></div></div>`;
+  }).join('') || '<p class="meta" style="color:var(--muted);padding:8px">Lådan är tom. Klistra in länkar ovanför.</p>';
+}
+
+/* ---------- Bench ---------- */
+function totalDur(c){ const v = ver(c); return v.order.reduce((a,id) => a + sceneById(c,id).dur, 0); }
+function sceneAt(c, t){ const v = ver(c); let acc = 0; for (const id of v.order){ const s = sceneById(c,id); if (t < acc + s.dur) return {s, start:acc}; acc += s.dur; } const last = sceneById(c, v.order[v.order.length-1]); return {s:last, start:acc-last.dur}; }
+
+function renderBench(){
+  const el = document.getElementById('bench');
+  const c = clip();
+  if (!c || c.status === 'reading'){ el.innerHTML = `<div class="empty-bench"><div><h2 style="font-size:22px">Bänken är tom</h2><p>Klicka på ett klipp i lådan eller dra hit det.</p></div></div>`; return; }
+  const v = ver(c);
+  const fi = feedIndex(c.id);
+  const selS = UI.scene && sceneById(c, UI.scene);
+  const derived = c.purpose ? PURPOSE.find(p => p.id === c.purpose) : null;
+  const dist = c.dist ?? derived?.d ?? 0;
+  const vt = n => {
+    const has = c.versions[n];
+    const lab = n === 2 ? `2 <span class="star">★</span>` : n;
+    if (!has) return `<button class="vtab ghost" data-act="addv" data-n="${n}">+ ${n}</button>`;
+    return `<button class="vtab ${c.activeV === n ? 'on' : ''}" data-act="setv" data-n="${n}">${lab}</button>`;
+  };
+  const nV = [1,2,3].filter(n => c.versions[n]).length;
+
+  el.innerHTML = `
+  <div class="bench-top">
+    <div class="player">
+      <div class="frame" id="frame"><span class="role" id="fRole"></span><div class="label" id="fLabel"></div><div class="sketch" id="fSketch"></div><div class="caption" id="fCap"></div><div class="bar"><i id="fBar"></i></div></div>
+      <div class="pctl"><button class="play" data-act="play" aria-label="${UI.playing ? 'Pausa' : 'Spela'}">${UI.playing ? '❚❚' : '▶'}</button>
+        <span class="mono" id="fTime"></span><span class="mono" style="color:var(--muted);margin-left:auto">live, ingen rendering</span></div>
+    </div>
+    <div class="bench-main">
+      <div>
+        <div class="clip-title"><h2>${esc(c.title)}</h2></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center">
+          <span class="chip"><span class="dot" style="background:var(${LENS[c.lens]})"></span>${esc(c.lens)}</span>
+          <span class="chip">${esc(c.format)}</span><span class="meta mono" style="color:var(--muted)">${esc(c.src)}</span>
+          <span style="margin-left:auto;display:flex;gap:6px">
+            ${fi >= 0 ? `<span class="status feed" style="align-self:center">Ligger på ${fi === 0 ? 'Nu' : '+' + fi}</span>` : `<button class="btn primary sm" data-act="tofeed" data-id="${c.id}">Lägg i feeden</button>`}
+          </span>
+        </div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-line"><span class="eyebrow">Idén</span><input id="ideaIn" value="${esc(c.idea)}" placeholder="En mening om hur det blir Fratellis, t.ex. Nonna är den som slänger ananasen" aria-label="Idén i en mening"></div>
+        <div class="purp">
+          ${PURPOSE.map(p => `<button class="chip ${c.purpose === p.id ? 'on' : ''}" data-act="purpose" data-p="${p.id}">${p.label}</button>`).join('')}
+          <div class="dist" title="Avståndet härleds ur syftet. Klicka för att rätta.">
+            <span>Avstånd</span>
+            <div class="meter">${[1,2,3,4,5].map(i => `<button data-act="dist" data-d="${i}" class="${i <= dist ? 'on' : ''}" aria-label="Avstånd ${i}"></button>`).join('')}</div>
+            <span>${dist ? `<em>${DIST[dist]}</em> · ${c.distFixed ? 'rättat av dig' : derived ? 'härlett ur ' + derived.label.toLowerCase() : ''}` : 'välj ett syfte'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="versions">
+        <span class="eyebrow" style="margin-right:4px">Till kunden</span>${vt(1)}${vt(2)}${vt(3)}
+        <span class="vnote">${nV === 1 ? 'En version. Lägg till 1 eller 3 för att ge kunden ett val.' : `Kunden ser ${nV} alternativ. 2 visas som er rekommendation.`}</span>
+      </div>
+
+      <div>
+        <div class="cutboard" id="cutboard">
+          ${v.order.map((id, i) => { const s = sceneById(c,id); const t = take(c,v,s); const pend = s.takes.some(x => x.pending);
+            return `<div class="scene ${UI.scene === id ? 'sel' : ''}" id="sc-${id}" style="background:${RC(s.role)};width:${70 + s.dur*34}px" draggable="true" data-drag="scene:${id}" data-drop="scene:${id}" data-act="scene" data-id="${id}">
+              ${pend ? '<span class="pending-dot" title="Förslag väntar"></span>' : ''}
+              <span class="r">${i+1} · ${ROLE[s.role]}</span><span class="t">${esc(t.label)}</span>
+              <div class="foot"><span class="mode">${mode(c,v,s)}</span><span class="mono" style="color:var(--ink);opacity:.7">${s.dur.toFixed(1)}s</span>
+              <button class="lock" data-act="lock" data-id="${id}" aria-label="${s.locked ? 'Låst' : 'Olåst'}" title="${s.locked ? 'Låst: ' + esc(s.lockWhy) : 'Lås scenen'}">${s.locked ? '🔒' : '·'}</button></div></div>`; }).join('')}
+          <button class="addscene" data-act="addscene" aria-label="Lägg till scen">+</button>
+        </div>
+      </div>
+
+      ${selS ? renderTakes(c, v, selS) : `<div class="takes" style="color:var(--muted)">Välj en scen för att se dess tagningar. Dra korten för att byta ordning.</div>`}
+
+      <form class="instr" id="instrForm">
+        <span class="chip">${selS ? 'gäller ' + ROLE[selS.role].toLowerCase() : 'gäller hela klippet'}</span>
+        <input id="instrIn" placeholder="${selS ? 'Säg vad scenen ska bli, t.ex. gör det i Fratellis kök' : 'Säg vad du vill, t.ex. låt Nonna ta Marcos plats'}" aria-label="Instruktion till producenten" ${UI.thinking ? 'disabled' : ''}>
+        ${UI.thinking ? '<span class="thinking" aria-label="Producenten tänker"><i></i><i></i><i></i></span>' : '<button class="btn primary sm" type="submit">Föreslå</button>'}
+      </form>
+    </div>
+  </div>`;
+  paintFrame();
+}
+
+function renderTakes(c, v, s){
+  const cur = v.pick[s.id] ?? 0;
+  return `<div class="takes">
+    <div class="takes-head"><b>${ROLE[s.role]}</b><span class="meta" style="color:var(--muted)">${s.takes.length} tagning${s.takes.length > 1 ? 'ar' : ''}</span>
+      <div class="dur"><span class="mono">längd</span><button data-act="dur" data-d="-0.5" aria-label="Kortare">−</button><span class="mono">${s.dur.toFixed(1)}s</span><button data-act="dur" data-d="0.5" aria-label="Längre">+</button></div>
+      ${s.role !== 'ny' ? '' : `<button class="btn ghost sm" data-act="delscene">Ta bort scen</button>`}
+    </div>
+    ${UI.unlocking === s.id ? `<form class="lockwhy" id="unlockForm">Låst: ${esc(s.lockWhy)}. Varför bryter du det? <input id="unlockIn" placeholder="t.ex. Fratelli har inget kassaljud" aria-label="Anledning att låsa upp"><button class="btn sm" type="submit">Lås upp</button></form>` : s.locked ? `<div class="lockwhy">🔒 ${esc(s.lockWhy)}. Ordning och rytm står kvar. Tagningar går att byta.</div>` : ''}
+    <div class="take-row">
+      ${s.takes.map((t, i) => `<button class="take ${i === cur && !t.pending ? 'on' : ''} ${t.pending ? 'prop' : ''}" data-act="${t.pending ? 'noop' : 'pick'}" data-i="${i}">
+        <span class="k">${t.pending ? 'Förslag · ' : ''}${t.kind}</span><span class="l">${esc(t.label)}</span>${t.text ? `<span class="s">skärmtext: ${esc(t.text)}</span>` : ''}
+        ${t.pending ? `<span class="acts"><span class="btn sm primary" data-act="accept" data-i="${i}">Ta den</span><span class="btn sm" data-act="reject" data-i="${i}">Släng</span></span>` : ''}
+      </button>`).join('')}
+      <button class="take" data-act="owntake" style="border-style:dashed;justify-content:center;align-items:center;color:var(--muted)"><span class="l">+ Egen tagning</span><span class="s">skriv om scenen själv</span></button>
+    </div></div>`;
+}
+
+function paintFrame(){
+  const c = clip(); if (!c || c.status === 'reading') return;
+  const total = totalDur(c); if (UI.t > total) UI.t = 0;
+  const {s} = sceneAt(c, UI.t); const v = ver(c); const t = take(c, v, s);
+  const f = document.getElementById('frame'); if (!f) return;
+  if (f.dataset.sid !== s.id + t.label){ f.dataset.sid = s.id + t.label; f.classList.remove('swap'); void f.offsetWidth; f.classList.add('swap');
+    f.style.background = RC(s.role);
+    document.getElementById('fRole').textContent = ROLE[s.role];
+    document.getElementById('fLabel').textContent = t.label;
+    document.getElementById('fSketch').innerHTML = SKETCH[s.role];
+    const cap = document.getElementById('fCap'); cap.textContent = t.text; cap.hidden = !t.text;
+    document.querySelectorAll('.scene.now').forEach(e => e.classList.remove('now'));
+    document.getElementById('sc-' + s.id)?.classList.add('now');
+  }
+  document.getElementById('fBar').style.width = (UI.t / total * 100) + '%';
+  document.getElementById('fTime').textContent = `${UI.t.toFixed(1)} / ${total.toFixed(1)} s`;
+}
+setInterval(() => { if (!UI.playing) return; UI.t += 0.1; const c = clip(); if (c && UI.t >= totalDur(c)) UI.t = 0; paintFrame(); }, 100);
+
+/* ---------- Feed ---------- */
+function formatClash(i){
+  const c = S.clips[S.feed[i].clip]; if (!c || c.series) return null;
+  for (let j = i - 1; j >= Math.max(0, i - 7); j--){ const o = S.clips[S.feed[j].clip]; if (o && o.format === c.format) return j; }
+  if (i < 8) for (const p of S.past) if (p.format === c.format) return 'past';
+  return null;
+}
+function seriesSpans(){
+  const out = {};
+  S.feed.forEach((f, i) => { const c = S.clips[f.clip]; if (c?.series){ (out[c.series] ||= []).push(i); } });
+  return Object.entries(out).map(([name, idx]) => ({name, from:Math.min(...idx), to:Math.max(...idx), n:idx.length}));
+}
+function mixCounts(){
+  const m = {}; S.feed.forEach(f => { const c = S.clips[f.clip]; if (c) m[c.lens] = (m[c.lens] || 0) + 1; }); return m;
+}
+const posLabel = i => i === 0 ? 'Nu' : '+' + i;
+
+function renderFeed(){
+  const m = mixCounts(); const tot = Object.values(m).reduce((a,b) => a+b, 0) || 1;
+  const filled = S.feed.filter(f => f.clip).length;
+  const W = 138, G = 8, PAST = S.past.length;
+  const spans = seriesSpans();
+  const html = `
+  <div class="feed-head">
+    <h3>Feeden</h3><span class="meta" style="color:var(--muted)">${filled} av 9 platser · ca ${Math.ceil(9/2)} veckor framåt</span>
+    <div class="mix" title="Mixen över kommande platser">${Object.entries(m).map(([l,n]) => `<i style="width:${n/tot*100}%;background:var(${LENS[l]})"></i>`).join('')}</div>
+    <div class="legend">${Object.entries(m).map(([l,n]) => `<span><span class="dot" style="background:var(${LENS[l]})"></span>${esc(l)} ${n}</span>`).join('')}</div>
+    <span class="meta" style="margin-left:auto;color:var(--muted)">Dra för att flytta · högerklick för mer</span>
+  </div>
+  <div class="lane-wrap"><div class="lane">
+    ${spans.map(sp => { const left = (PAST + sp.from) * (W + G); const w = (sp.to - sp.from + 1) * (W + G) - G; const gaps = sp.to - sp.from + 1 - sp.n;
+      return `<div class="span" style="left:${left}px;width:${w}px;background:var(--l1);color:#2E1F14">${esc(sp.name)}${gaps ? ` · ${gaps} glapp` : ''}</div>`; }).join('')}
+    ${S.past.map(p => `<div class="slot past"><div class="pos"><b>publicerad</b></div><h5>${esc(p.title)}</h5><div class="tags"><span class="tag">${esc(p.format)}</span></div></div>`).join('')}
+    ${S.feed.map((f, i) => {
+      const c = S.clips[f.clip];
+      if (!c) return `<div class="slot empty" data-drop="slot:${i}" data-ctx="slot:${i}"><div class="pos" style="position:absolute;top:7px;left:7px"><b>${posLabel(i)}</b></div>Dra hit ett klipp</div>`;
+      const nV = [1,2,3].filter(n => c.versions[n]).length;
+      const clash = formatClash(i);
+      return `<div class="slot ${i === 0 ? 'nu' : ''} ${f.fb === 'bortvald' ? 'bort' : ''} ${UI.landed === i ? 'landed' : ''}" draggable="true" data-drag="slot:${i}" data-drop="slot:${i}" data-ctx="slot:${i}" data-act="openslot" data-i="${i}">
+        <div class="pos"><b>${posLabel(i)}</b><span class="dot" style="background:var(${LENS[c.lens]})"></span><button class="menu-btn" data-act="ctx" data-i="${i}" aria-label="Fler val">⋯</button></div>
+        <div class="mini">${strip(c)}</div>
+        <h5>${esc(c.title)}</h5>
+        <div class="tags">
+          ${nV > 1 ? `<span class="tag ch">${nV} val</span>` : ''}
+          ${f.fb ? `<span class="tag fb">kund: ${esc(f.fb)}</span>` : ''}
+          ${clash !== null ? `<span class="tag warn" title="Samma format inom fyra veckor">samma format som ${clash === 'past' ? 'nyss' : posLabel(clash)}</span>` : ''}
+          ${!c.idea ? '<span class="tag">idé saknas</span>' : ''}
+        </div></div>`; }).join('')}
+  </div></div>`;
+  document.getElementById('feed').innerHTML = html;
+  UI.landed = -1;
+}
+
+/* ---------- Feed operations ---------- */
+function describe(before){
+  const msgs = [];
+  const spB = JSON.parse(before).feed; // not used deeply; compare live
+  seriesSpans().forEach(sp => { const gaps = sp.to - sp.from + 1 - sp.n; if (gaps) msgs.push(`${sp.name} har nu ${gaps} plats${gaps > 1 ? 'er' : ''} emellan avsnitten.`); });
+  const clashes = S.feed.map((f,i) => [i, formatClash(i)]).filter(([,c]) => c !== null && c !== 'past');
+  if (clashes.length){ const [i, j] = clashes[0]; msgs.push(`${S.clips[S.feed[i].clip].format} på både ${posLabel(j)} och ${posLabel(i)}. Okej om det är meningen.`); }
+  if (!msgs.length){ const m = mixCounts(); const top = Object.entries(m).sort((a,b) => b[1]-a[1])[0]; if (top) msgs.push(`Mixen: ${top[1]} av ${Object.values(m).reduce((a,b)=>a+b,0)} är ${top[0].toLowerCase()}.`); }
+  return msgs.join(' ');
+}
+function placeAt(i, clipId){
+  const j = feedIndex(clipId); let carry = {clip:clipId, fb:null};
+  if (j >= 0){ carry = S.feed[j]; S.feed[j] = {clip:null, fb:null}; }
+  if (!S.feed[i].clip){ S.feed[i] = carry; UI.landed = i; return; }
+  let k = S.feed.findIndex((f, x) => x > i && !f.clip);
+  if (k >= 0){ for (let x = k; x > i; x--) S.feed[x] = S.feed[x-1]; S.feed[i] = carry; UI.landed = i; return; }
+  k = -1; for (let x = i - 1; x >= 0; x--) if (!S.feed[x].clip){ k = x; break; }
+  if (k >= 0){ for (let x = k; x < i; x++) S.feed[x] = S.feed[x+1]; S.feed[i] = carry; UI.landed = i; return; }
+  const out = S.feed[8]; for (let x = 8; x > i; x--) S.feed[x] = S.feed[x-1]; S.feed[i] = carry; UI.landed = i;
+  if (out.clip) S.clips[out.clip].inCrate = true;
+}
+function moveFeed(clipId, i, verb = 'Flyttade'){
+  const snap = snapshot();
+  placeAt(i, clipId);
+  renderAll();
+  toast(`${verb} ${S.clips[clipId].title} till ${posLabel(feedIndex(clipId))}.`, describe(snap), snap);
+}
+function firstFree(){ const k = S.feed.findIndex((f, i) => i > 0 && !f.clip); return k < 0 ? 8 : k; }
+
+/* ---------- Drawer / phone ---------- */
+function renderDrawer(){
+  document.getElementById('drawer').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span class="avatar" style="width:36px;height:36px;font-size:16px">F</span><div><h2 style="font-size:22px">Fratelli</h2><span class="meta" style="color:var(--muted)">Pizzeria, Södermalm · 2 klipp/vecka</span></div><button class="btn ghost sm" data-act="drawer" style="margin-left:auto">Stäng</button></div>
+    <p class="why" style="margin:0 0 6px">Det här läser producenten innan varje förslag. Du slår upp det, du fyller inte i det i flödet.</p>
+    <section><span class="eyebrow">Vilka är med</span><div class="kv"><span class="chip">Marco, ägare, spelar sig själv</span><span class="chip">Nonna Lina, med men pratar inte</span><span class="chip">Sami, pizzabagare</span></div></section>
+    <section><span class="eyebrow">Ton</span><div>Varm, självironisk, lite italiensk överdrift.</div></section>
+    <section><span class="eyebrow">Gör aldrig</span><div class="kv"><span class="chip">Skämta om andra pizzerior</span><span class="chip">Svordomar</span></div></section>
+    <section><span class="eyebrow">Lins</span><div class="kv">${Object.keys(LENS).map(l => `<span class="chip ${l === 'Karaktär och lore' ? 'on' : ''}">${l}</span>`).join('')}</div></section>
+    <section><span class="eyebrow">Kanalen hittills</span><div>Serie: <b>Nonnas regler</b> (#1–#2 publicerade)</div><div>Running gag: ananas är förbjudet</div><div class="why">Senaste formaten: POV-reaktion (för 1 v), Serie: regler (för 4 d)</div></section>
+    <section><span class="eyebrow">Min regibok</span><textarea id="regibok" aria-label="Min regibok">${esc(UI.regibok)}</textarea><span class="why">Gäller alla dina kunder.</span></section>`;
+}
+function renderPhone(){
+  const items = S.feed.map((f, i) => ({f, i, c:S.clips[f.clip]})).filter(x => x.c && x.i > 0).slice(0, 5);
+  document.getElementById('phone').innerHTML = `<div class="phone">
+    <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">Fratelli · din plan</span><button class="btn ghost sm" data-act="phone">Stäng</button></div>
+    <h3>Det här filmar ni härnäst</h3>
+    ${items.map(({f, i, c}) => { const vs = [1,2,3].filter(n => c.versions[n]);
+      const picked = f.fb?.startsWith('valde') ? +f.fb.slice(-1) : null;
+      return `<div class="pc" data-ctx="cust:${i}">
+        <div style="display:flex;justify-content:space-between"><b>${esc(c.title)}</b><span class="mono">${posLabel(i)}</span></div>
+        ${f.fb === 'bortvald' ? '<span class="why">Du hoppade över den här.</span>' : vs.length > 1 ? `<span class="why">Välj den du vill göra. Vi tror mest på 2.</span>
+          <div class="choices">${vs.map(n => { const v = c.versions[n]; return `<button class="choice ${n === 2 ? 'rec' : ''} ${picked === n ? 'picked' : ''}" data-act="cpick" data-i="${i}" data-n="${n}">
+            <div class="mini">${v.order.map(id => { const s = sceneById(c,id); return `<i style="background:${RC(s.role)};flex:${s.dur}"></i>`; }).join('')}</div>
+            <b>${n}${n === 2 ? ' ★' : ''}</b>${picked === n ? '<span>Vald</span>' : ''}</button>`; }).join('')}</div>`
+          : `<div class="mini" style="display:flex;height:40px;border-radius:6px;overflow:hidden">${strip(c)}</div><span class="why">${esc(c.idea || 'Scenerna kommer med skisser.')}</span>`}
+        <div style="display:flex;gap:6px">${f.fb !== 'bortvald' ? `<button class="btn sm" data-act="cskip" data-i="${i}">Hoppa över</button>` : ''}${i > 1 ? `<button class="btn sm" data-act="cearlier" data-i="${i}">Ta den tidigare</button>` : ''}</div>
+      </div>`; }).join('')}
+    <p class="why" style="margin:0;text-align:center">Kunden kan välja och flytta. Scenerna ändrar bara CM.</p></div>`;
+}
+
+function renderAll(){ renderCrate(); renderBench(); renderFeed(); if (UI.phone) renderPhone(); }
+
+/* ---------- Producer (placeholder) ---------- */
+function propose(text){
+  const c = clip(); const v = ver(c); if (!c) return;
+  const targets = UI.scene ? [sceneById(c, UI.scene)] : v.order.map(id => sceneById(c,id)).filter(s => !s.locked && s.role !== 'hook').slice(0, 2);
+  const skipped = UI.scene ? [] : v.order.map(id => sceneById(c,id)).filter(s => s.locked);
+  UI.thinking = true; renderBench();
+  setTimeout(() => {
+    UI.thinking = false;
+    const dist = c.dist ?? PURPOSE.find(p => p.id === c.purpose)?.d ?? 2;
+    targets.forEach(s => {
+      const base = s.takes[0].label;
+      const lab = text.length > 4 ? text.charAt(0).toUpperCase() + text.slice(1) : base + ', i Fratellis kök';
+      s.takes.push({kind: dist >= 4 ? 'Ersätt' : 'Omtolka', label: dist >= 4 ? lab : `${base.replace(/\.$/,'')} – ${lab.toLowerCase()}`, text: s.takes[0].text, pending:true});
+    });
+    if (!UI.scene && targets[0]) UI.scene = targets[0].id;
+    renderBench(); renderCrate();
+    toast(`Producenten föreslog ${targets.length} tagning${targets.length > 1 ? 'ar' : ''}.`, skipped.length ? `Rörde inte ${skipped.map(s => ROLE[s.role].toLowerCase()).join(' och ')}, de är låsta.` : 'Inget ändras förrän du tar en.');
+  }, 900);
+}
+
+/* ---------- Events ---------- */
+document.addEventListener('click', e => {
+  const menu = document.getElementById('menu');
+  if (!e.target.closest('#menu')) menu.hidden = true;
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  const act = a.dataset.act, c = clip();
+  const v = c && ver(c);
+  switch (act){
+    case 'open': UI.sel = a.dataset.id; UI.scene = null; UI.t = 0; UI.unlocking = null; renderAll(); break;
+    case 'openslot': { const f = S.feed[+a.dataset.i]; if (f.clip){ UI.sel = f.clip; UI.scene = null; UI.t = 0; renderAll(); } break; }
+    case 'tofeed': e.stopPropagation(); moveFeed(a.dataset.id, firstFree(), 'La'); break;
+    case 'approve': { e.stopPropagation(); const snap = snapshot(); S.clips[a.dataset.id].approved = true; renderAll(); toast('Godkänd som den är.', 'Den ligger kvar i lådan tills du placerar den.', snap); break; }
+    case 'sample': ['https://vm.tiktok.com/ZMh1', 'https://vm.tiktok.com/ZMh2', 'https://vm.tiktok.com/ZMh3'].forEach(ingest); break;
+    case 'play': UI.playing = !UI.playing; renderBench(); break;
+    case 'purpose': c.purpose = a.dataset.p; c.dist = null; c.distFixed = false; renderBench(); break;
+    case 'dist': c.dist = +a.dataset.d; c.distFixed = true; renderBench(); break;
+    case 'setv': c.activeV = +a.dataset.n; UI.t = 0; renderAll(); break;
+    case 'addv': { const n = +a.dataset.n; const src = ver(c); c.versions[n] = {order:[...src.order], pick:{...src.pick}}; c.activeV = n; renderAll();
+      toast(`Version ${n} skapad som kopia.`, 'Byt tagningar eller ordning så att den skiljer sig.'); break; }
+    case 'scene': UI.scene = UI.scene === a.dataset.id ? null : a.dataset.id; UI.unlocking = null; { const c2 = clip(); let acc = 0; for (const id of ver(c2).order){ if (id === a.dataset.id) break; acc += sceneById(c2,id).dur; } UI.t = acc; } renderBench(); break;
+    case 'lock': { e.stopPropagation(); const s = sceneById(c, a.dataset.id); UI.scene = s.id;
+      if (s.locked){ UI.unlocking = s.id; renderBench(); document.getElementById('unlockIn')?.focus(); }
+      else { s.locked = true; s.lockWhy = 'Låst av dig'; renderBench(); } break; }
+    case 'pick': v.pick[UI.scene] = +a.dataset.i; renderAll(); break;
+    case 'accept': { e.stopPropagation(); const s = sceneById(c, UI.scene); const t = s.takes[+a.dataset.i]; t.pending = false; v.pick[s.id] = +a.dataset.i; renderAll(); break; }
+    case 'reject': { e.stopPropagation(); const s = sceneById(c, UI.scene); s.takes.splice(+a.dataset.i, 1); renderAll(); break; }
+    case 'owntake': { const s = sceneById(c, UI.scene); s.takes.push({kind:'Omtolka', label:'Din version av ' + ROLE[s.role].toLowerCase(), text:''}); v.pick[s.id] = s.takes.length - 1; renderAll(); break; }
+    case 'dur': { const s = sceneById(c, UI.scene); s.dur = Math.max(0.5, Math.min(8, s.dur + +a.dataset.d)); renderAll(); break; }
+    case 'addscene': { const s = {id:nid('s'), role:'ny', dur:2, locked:false, lockWhy:'', takes:[{kind:'Ny', label:'Ny scen, beskriv den', text:''}]}; c.scenes.push(s); v.order.push(s.id); UI.scene = s.id; renderAll(); break; }
+    case 'delscene': { v.order = v.order.filter(id => id !== UI.scene); UI.scene = null; renderAll(); break; }
+    case 'drawer': UI.drawer = !UI.drawer; if (UI.drawer){ renderDrawer(); UI.phone = false; } document.getElementById('drawer').classList.toggle('open', UI.drawer); document.getElementById('phone').classList.toggle('open', UI.phone); break;
+    case 'phone': UI.phone = !UI.phone; if (UI.phone){ renderPhone(); UI.drawer = false; } document.getElementById('phone').classList.toggle('open', UI.phone); document.getElementById('drawer').classList.toggle('open', UI.drawer); break;
+    case 'cpick': { const i = +a.dataset.i, n = +a.dataset.n; const snap = snapshot(); S.feed[i].fb = 'valde ' + n; S.clips[S.feed[i].clip].activeV = n; renderAll(); toast(`Fratelli valde ${n} för ${posLabel(i)}.`, n === 2 ? 'Samma som er rekommendation.' : 'Inte er rekommendation. Den syns på platsen i feeden.', snap); break; }
+    case 'cskip': { const i = +a.dataset.i; const snap = snapshot(); S.feed[i].fb = 'bortvald'; renderAll(); toast(`Fratelli hoppade över ${posLabel(i)}.`, 'Platsen står kvar så att du kan byta innehåll.', snap); break; }
+    case 'cearlier': { const i = +a.dataset.i; const id = S.feed[i].clip; S.feed[i].fb = 'vill ha tidigare'; moveFeed(id, i - 1, 'Fratelli flyttade'); break; }
+    case 'ctx': e.stopPropagation(); openMenu(+a.dataset.i, a.getBoundingClientRect().left, a.getBoundingClientRect().bottom + 4); break;
+    case 'm': runMenu(a.dataset.cmd, +a.dataset.i); menu.hidden = true; break;
+    case 'undo': if (UI.undo){ const o = JSON.parse(UI.undo); S.clips = o.clips; S.feed = o.feed; UI.undo = null; renderAll(); document.getElementById('toast').classList.remove('show'); } break;
+  }
+});
+
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  if (e.target.id === 'pasteForm'){ const v = document.getElementById('pasteIn').value.trim(); if (!v) return; v.split(/\s+/).forEach(ingest); document.getElementById('pasteIn').value = ''; }
+  if (e.target.id === 'instrForm'){ const v = document.getElementById('instrIn').value.trim(); propose(v); }
+  if (e.target.id === 'unlockForm'){ const r = document.getElementById('unlockIn').value.trim(); if (!r){ document.getElementById('unlockIn').focus(); return; }
+    const s = sceneById(clip(), UI.unlocking); s.locked = false; s.lockWhy = ''; UI.unlocking = null; renderBench(); toast(`${ROLE[s.role]} upplåst.`, `Anledning sparad: ${r}`); }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'ideaIn'){ clip().idea = e.target.value; renderFeed(); }
+  if (e.target.id === 'regibok') UI.regibok = e.target.value;
+});
+
+function ingest(url){
+  const p = POOL[poolI++ % POOL.length];
+  const c = addClip(mk(nid('c'), p[0], p[1], p[2], p[3], null, p[4]));
+  c.status = 'reading'; renderCrate();
+  setTimeout(() => { c.status = 'ready'; if (!clip() || clip().status === 'reading') UI.sel = c.id; renderAll(); }, 1300 + Math.random() * 900);
+}
+
+/* Context menu */
+function openMenu(i, x, y){
+  const f = S.feed[i], c = S.clips[f.clip], m = document.getElementById('menu');
+  const sel = clip();
+  const vs = c ? [1,2,3].filter(n => c.versions[n]) : [];
+  const b = (cmd, label) => `<button data-act="m" data-cmd="${cmd}" data-i="${i}">${label}</button>`;
+  m.innerHTML = c ? [
+    b('open','Öppna på bänken'), i > 0 ? b('earlier','Flytta en plats tidigare') : '', i < 8 ? b('later','Flytta en plats senare') : '', b('clear','Tillbaka till lådan'),
+    '<hr><div class="hint">Simulera kundens svar</div>', b('fb-bort','Kunden väljer bort'), ...vs.map(n => b('fb-' + n, `Kunden väljer ${n}`)), f.fb ? b('fb-none','Rensa kundens svar') : ''
+  ].join('') : (sel && feedIndex(sel.id) < 0 ? b('put', `Lägg ${esc(sel.title)} här`) : '<div class="hint">Dra ett klipp från lådan hit</div>');
+  m.hidden = false;
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.min(x, innerWidth - r.width - 12) + 'px';
+  m.style.top = Math.min(y, innerHeight - r.height - 12) + 'px';
+}
+function runMenu(cmd, i){
+  const f = S.feed[i];
+  if (cmd === 'open'){ UI.sel = f.clip; UI.scene = null; renderAll(); return; }
+  if (cmd === 'earlier') return moveFeed(f.clip, i - 1);
+  if (cmd === 'later') return moveFeed(f.clip, i + 1);
+  if (cmd === 'put') return moveFeed(UI.sel, i, 'La');
+  const snap = snapshot();
+  if (cmd === 'clear'){ const t = S.clips[f.clip].title; S.clips[f.clip].inCrate = true; S.feed[i] = {clip:null, fb:null}; renderAll(); toast(`${t} tillbaka i lådan.`, describe(snap), snap); return; }
+  if (cmd.startsWith('fb-')){ const k = cmd.slice(3); f.fb = k === 'none' ? null : k === 'bort' ? 'bortvald' : 'valde ' + k; if (/^\d$/.test(k)) S.clips[f.clip].activeV = +k; renderAll(); toast(k === 'none' ? 'Kundens svar rensat.' : `Kundsvar på ${posLabel(i)}: ${f.fb}.`, '', snap); }
+}
+document.addEventListener('contextmenu', e => {
+  const t = e.target.closest('[data-ctx]'); if (!t) return;
+  const [kind, i] = t.dataset.ctx.split(':'); if (kind !== 'slot') return;
+  e.preventDefault(); openMenu(+i, e.clientX, e.clientY);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape'){ document.getElementById('menu').hidden = true; UI.unlocking = null; } });
+
+/* Drag and drop */
+let dragSrc = null;
+document.addEventListener('dragstart', e => {
+  const d = e.target.closest?.('[data-drag]'); if (!d) return;
+  dragSrc = d.dataset.drag; e.dataTransfer.setData('text/plain', dragSrc); e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => d.classList.add('dragging'), 0);
+});
+document.addEventListener('dragend', e => { document.querySelectorAll('.dragging,.over').forEach(x => x.classList.remove('dragging','over')); dragSrc = null; });
+document.addEventListener('dragover', e => {
+  const t = e.target.closest('[data-drop]'); if (!t || !dragSrc) return;
+  const [sk] = dragSrc.split(':'); const [tk] = t.dataset.drop.split(':');
+  const ok = (sk === 'scene' && tk === 'scene') || ((sk === 'clip' || sk === 'slot') && tk === 'slot') || ((sk === 'clip' || sk === 'slot') && tk === 'bench');
+  if (!ok) return;
+  e.preventDefault();
+  document.querySelectorAll('.over').forEach(x => x !== t && x.classList.remove('over'));
+  if (tk !== 'bench') t.classList.add('over');
+});
+document.addEventListener('drop', e => {
+  const t = e.target.closest('[data-drop]'); if (!t || !dragSrc) return;
+  e.preventDefault();
+  const [sk, sv] = dragSrc.split(':'); const [tk, tv] = t.dataset.drop.split(':');
+  if (sk === 'scene' && tk === 'scene' && sv !== tv){
+    const c = clip(); const v = ver(c); const a = sceneById(c, sv), b = sceneById(c, tv);
+    if (a.locked || b.locked){
+      const lockedS = a.locked ? a : b; const el = document.getElementById('sc-' + lockedS.id); el?.classList.add('shake'); setTimeout(() => el?.classList.remove('shake'), 400);
+      toast(`${ROLE[lockedS.role]} är låst: ${lockedS.lockWhy}.`, 'Klicka på låset och skriv varför du bryter det.'); return;
+    }
+    const from = v.order.indexOf(sv), to = v.order.indexOf(tv);
+    v.order.splice(from, 1); v.order.splice(to, 0, sv); renderAll(); return;
+  }
+  if (tk === 'slot'){ const id = sk === 'clip' ? sv : S.feed[+sv].clip; if (id) moveFeed(id, +tv); return; }
+  if (tk === 'bench'){ const id = sk === 'clip' ? sv : S.feed[+sv].clip; if (id){ UI.sel = id; UI.scene = null; renderAll(); } }
+});
+
+/* Routing */
+function route(){
+  const k = location.hash === '#karta' ? 'karta' : 'studio';
+  document.getElementById('studio').hidden = k !== 'studio';
+  document.getElementById('karta').hidden = k !== 'karta';
+  document.getElementById('t-studio').toggleAttribute('aria-current', k === 'studio'); document.getElementById('t-karta').toggleAttribute('aria-current', k === 'karta');
+  if (k === 'studio') document.getElementById('t-studio').setAttribute('aria-current','page'); else document.getElementById('t-karta').setAttribute('aria-current','page');
+  document.getElementById('phoneBtn').hidden = k !== 'studio';
+}
+addEventListener('hashchange', route);
+route(); renderAll();
+</script>

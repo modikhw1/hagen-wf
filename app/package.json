@@ -1,0 +1,39 @@
+{
+  "name": "hagen-wf",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "analysera": "node analys/kor.mjs",
+    "test:analys": "node --test analys/tolka.test.mjs",
+    "test:kalibrering": "node --test kalibrering/modell.test.mjs kalibrering/placering.test.mjs",
+    "brygga": "node brygga/kor.mjs",
+    "uttrycksrum": "node uttryck/kor.mjs",
+    "typer": "node typer/kor.mjs",
+    "rekon": "node rekon/kor.mjs",
+    "test:rekon": "node --test rekon/rorelse.test.mjs rekon/lyft.test.mjs rekon/jamfor.test.mjs",
+    "hamta": "node bank/hamta.mjs",
+    "importera": "node bank/importera.mjs",
+    "urval": "node bank/urval.mjs",
+    "profiler": "node bank/profiler.mjs",
+    "forurval": "node bank/forurval.mjs",
+    "sallning": "node bank/sallning.mjs"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@mediapipe/tasks-vision": "^1.2.0",
+    "@techstark/opencv-js": "^5.0.0-release.1",
+    "motion": "^12.43.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
+    "playwright-core": "^1.64.1",
+    "vite": "^6.4.5"
+  }
+}

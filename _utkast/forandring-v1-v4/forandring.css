@@ -1,0 +1,82 @@
+/* Videoförändring. Samma papper och bläck som kundrummet. Blått = det som rör sig (kameran). */
+.vf { min-height: 100%; display: flex; flex-direction: column; }
+
+.vf-top { display: flex; align-items: center; gap: 22px; padding: 14px 24px; flex-wrap: wrap; }
+.vf-title { display: flex; align-items: baseline; gap: 12px; }
+.vf-title b { font-size: 20px; letter-spacing: -0.02em; }
+.vf-vert { font-weight: 700; color: var(--cm); background: var(--cm-soft); padding: 2px 10px; border-radius: 999px; font-size: 13px; }
+.vf-clip { display: flex; align-items: center; gap: 8px; color: var(--g3); }
+.vf-av { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--g1); color: var(--ink); font-size: 12px; }
+.vf-locks { display: flex; gap: 6px; margin-left: auto; }
+.vf-lock { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--g3); border: 1px solid var(--g2); border-radius: 999px; padding: 2px 9px 2px 7px; background: var(--paper); }
+
+.vf-main { flex: 1; display: flex; justify-content: center; align-items: flex-start; gap: 44px; padding: 34px 24px 80px; }
+.vf-board { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+
+/* ---------- rutorna ---------- */
+.vf-row { display: flex; }
+.vf-col { display: flex; flex-direction: column; gap: 8px; }
+.vf-framewrap { position: relative; }
+.vf-frame {
+  position: relative; overflow: hidden; perspective: 700px;
+  border: 2px solid var(--ink); border-radius: 12px 5px 11px 6px / 6px 11px 5px 12px;
+  background: var(--paper); transition: border-color .2s, box-shadow .2s;
+}
+.vf-col.now .vf-frame { border-color: var(--cm); box-shadow: 0 0 0 3px var(--cm-soft); }
+.vf-cam { position: absolute; inset: 0; transform-style: preserve-3d; }
+.vf-world-svg { display: block; overflow: visible; }
+.vf-num { position: absolute; top: -20px; left: 4px; font-size: 12px; font-weight: 700; color: var(--g3); }
+.vf-col.now .vf-num { color: var(--cm); }
+.vf-text { font-size: 12px; color: var(--g3); padding: 0 4px; }
+.vf-move { position: absolute; left: 8px; bottom: 8px; width: 26px; height: 26px; padding: 3px; color: var(--cm); background: var(--paper); border-radius: 7px; box-shadow: 0 0 0 1.5px var(--cm-soft); }
+.vf-gap { position: absolute; top: 0; bottom: 0; display: grid; place-items: center; }
+.vf-trans { width: 22px; height: 22px; color: var(--ink); }
+.vf-trans:not(.t-rak) { color: var(--cm); }
+
+/* ---------- världen ---------- */
+.vf-wall { fill: var(--paper); }
+.vf-floor { fill: var(--g1); }
+.vf-tile { stroke: var(--g2); stroke-width: 1; fill: none; }
+.vf-line { stroke: var(--g3); stroke-width: 1.6; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.vf-line.thin { stroke-width: 1; }
+.vf-fill { fill: var(--paper); }
+.vf-dark { fill: var(--g2); }
+.vf-dough { fill: #f3ead8; }
+.vf-pizza { fill: #f6d9c4; }
+.vf-body { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.vf-body.vf-fill { fill: var(--paper); }
+.vf-body.thin { stroke-width: 1.4; }
+.vf-slice { fill: #f6d9c4; stroke-width: 1.6; }
+
+/* ---------- kurvan ---------- */
+.vf-curve { display: block; overflow: visible; }
+.vf-curve-rail { stroke: var(--g1); stroke-width: 1; }
+.vf-curve-ghost { fill: none; stroke: var(--g2); stroke-width: 2; stroke-dasharray: 3 5; stroke-linecap: round; }
+.vf-curve-ghostdot { fill: var(--paper); stroke: var(--g2); stroke-width: 1.5; }
+.vf-curve-line { fill: none; stroke: var(--cm); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.vf-curve-dot { fill: var(--paper); stroke: var(--cm); stroke-width: 2.5; }
+
+/* ---------- reglaget ---------- */
+.vf-slider { display: flex; align-items: center; gap: 16px; }
+.vf-end { flex: none; width: 118px; font-size: 12px; color: var(--g3); line-height: 1.2; }
+.vf-end:first-child { text-align: right; }
+.vf-track { position: relative; flex: 1; height: 54px; padding-top: 18px; }
+.vf-track input { width: 100%; margin: 0; accent-color: var(--cm); cursor: pointer; height: 18px; }
+.vf-orig { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; color: var(--g3); white-space: nowrap; }
+.vf-orig::after { content: ''; position: absolute; left: 50%; top: 15px; width: 0; height: 8px; border-left: 2px dashed var(--g3); }
+.vf-ticks { position: relative; height: 20px; margin: 2px 8px 0; }
+.vf-ticks button { position: absolute; transform: translateX(-50%); width: 22px; height: 20px; font-size: 12px; color: var(--g3); font-weight: 700; border-radius: 6px; }
+.vf-ticks button.o { text-decoration: underline dashed; text-underline-offset: 3px; }
+.vf-ticks button.on { background: var(--cm); color: #fff; text-decoration: none; }
+
+/* ---------- telefonen ---------- */
+.vf-player { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: none; }
+.vf-phone { border: 2px solid var(--ink); border-radius: 26px; padding: 6px; background: var(--paper); }
+.vf-screen { position: relative; overflow: hidden; border-radius: 20px; background: var(--paper); }
+.vf-screen .vf-frame { border: 0; border-radius: 0; }
+.vf-layer { position: absolute; inset: 0; }
+.vf-progress { position: absolute; top: 8px; left: 10px; right: 10px; display: flex; gap: 4px; z-index: 3; }
+.vf-progress i { flex: 1; height: 3px; border-radius: 3px; background: rgba(31, 31, 31, .15); overflow: hidden; }
+.vf-progress b { display: block; height: 100%; background: var(--ink); }
+.vf-play { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--ink); background: var(--paper); transition: transform .15s; }
+.vf-play:hover { transform: translateY(-1px); }

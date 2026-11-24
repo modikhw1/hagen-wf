@@ -1,0 +1,14 @@
+.bd { --ink: #1d1d1f; --g3: #6e6e73; --paper: #fbfaf7; --cm: #3a5bd9; font: 14px/1.4 system-ui, sans-serif; color: var(--ink); background: var(--paper); min-height: 100vh; padding: 20px 24px; }
+.bd header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 16px; }
+.bd h1 { font-size: 18px; margin: 0 0 6px; }
+.bd-stat { color: var(--g3); }
+.bd-scen { color: var(--g3); margin: 6px 0 12px; }
+.bd-par { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.bd figure { margin: 0; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.bd canvas { display: block; border-radius: 14px; background: #111; }
+.bd button { padding: 8px 16px; border-radius: 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; font: inherit; }
+.bd figure button { border-color: var(--cm); color: var(--cm); font-weight: 600; }
+.bd-mitt { display: flex; flex-direction: column; gap: 10px; }
+.bd button.dim, .bd .dim { color: var(--g3); }
+.bd-varfor { margin-top: 14px; max-width: 620px; font-size: 13px; }
+.bd-fel { color: #c4472f; }
