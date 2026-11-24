@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regibordet</title>
+<style>
+  :root { --bg:#f4f3ef; --yta:#fff; --text:#1c1c1a; --svag:#6d6c66; --linje:#dcdad2; --accent:#1f5fa8; --varn:#b4442c; --ok:#2f7a4a; --kund:#c9730a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.45 system-ui, "Segoe UI", sans-serif; }
+  header { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 20px; background:var(--yta); border-bottom:1px solid var(--linje); }
+  header h1 { font-size:17px; margin:0 8px 0 0; font-weight:650; }
+  select, button, input { font:inherit; }
+  select, input[type=search], input[list] { padding:6px 8px; border:1px solid var(--linje); border-radius:6px; background:#fff; }
+  #q { width:22ch; } #typ { max-width:26ch; } #traff { max-width:46ch; flex:1 1 30ch; } #kund { width:20ch; }
+  button { padding:6px 12px; border:1px solid var(--linje); border-radius:6px; background:#fff; cursor:pointer; }
+  button:hover:not(:disabled) { border-color:var(--accent); }
+  button.prim { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button:disabled { opacity:.4; cursor:default; }
+  .matt { margin-left:auto; color:var(--svag); font-size:13px; white-space:nowrap; }
+  main { display:grid; grid-template-columns:minmax(300px, 360px) 1fr; gap:18px; padding:18px 20px; align-items:start; }
+  @media (max-width:980px) { main { grid-template-columns:1fr; } }
+  .panel { background:var(--yta); border:1px solid var(--linje); border-radius:10px; padding:14px; }
+  h2 { font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--svag); margin:0 0 10px; font-weight:600; }
+  .not { color:var(--svag); font-size:13px; }
+  #logg { display:flex; flex-direction:column; gap:10px; max-height:46vh; overflow:auto; margin-bottom:12px; }
+  .cm { align-self:flex-end; background:#e8eef7; padding:7px 11px; border-radius:12px 12px 2px 12px; max-width:92%; }
+  .sv { background:#f6f5f1; padding:8px 11px; border-radius:12px 12px 12px 2px; border-left:3px solid var(--linje); }
+  .sv.utfort { border-left-color:var(--ok); } .sv.stoppat, .sv.osaker { border-left-color:var(--varn); }
+  .sv .drag { font-size:12px; color:var(--svag); margin-bottom:3px; }
+  .sv ul { margin:5px 0 0; padding-left:18px; color:#5a4a1d; font-size:14px; }
+  .sv .val { display:flex; flex-direction:column; gap:6px; margin-top:8px; } .sv .val button { text-align:left; }
+  form { display:flex; gap:8px; } form input { flex:1; padding:9px 11px; border:1px solid var(--linje); border-radius:8px; }
+  #huvud { margin:0 0 12px; } #huvud b { font-weight:650; }
+  .rad { display:flex; gap:12px; overflow-x:auto; padding-bottom:6px; }
+  .takt { flex:0 0 198px; background:var(--yta); border:1px solid var(--linje); border-radius:10px; overflow:hidden; }
+  .takt.ryggrad { border-color:#8a8778; box-shadow:inset 0 3px 0 #8a8778; }
+  .bild { position:relative; width:198px; height:352px; background:#3a3a3c; } .bild canvas { width:100%; height:100%; display:block; }
+  .skylt { position:absolute; top:36px; left:50%; transform:translateX(-50%); background:#fff; padding:2px 8px; font-weight:700; white-space:nowrap; }
+  .takt .t { padding:8px 10px 10px; } .takt .f { font-size:12px; color:var(--accent); } .takt .v { font-size:13px; margin-top:3px; }
+  .takt .m { font-size:12px; color:#8a5a12; margin-top:5px; }
+  .takt .k { display:flex; gap:6px; margin-top:8px; } .takt .k button { font-size:12px; padding:2px 8px; }
+  .fore { opacity:.55; } .fore .takt { flex-basis:96px; } .fore .bild { width:96px; height:171px; } .fore .t { display:none; }
+  h3 { font-size:13px; color:var(--svag); margin:14px 0 8px; font-weight:600; }
+  .under { display:grid; grid-template-columns:repeat(auto-fit, minmax(330px, 1fr)); gap:18px; margin-top:18px; }
+  .finger { display:grid; grid-template-columns:150px 26px 1fr 26px 52px; gap:6px; align-items:center; margin:5px 0; font-size:13px; }
+  .finger button { padding:0; width:26px; height:24px; line-height:1; }
+  .spar { position:relative; height:22px; }
+  .spar .linje { position:absolute; left:0; right:0; top:10px; height:2px; background:var(--linje); }
+  .spar .band { position:absolute; top:6px; height:10px; background:#d5e2f3; border-radius:3px; }
+  .spar .med { position:absolute; top:4px; width:2px; height:14px; background:#7f9cc4; }
+  .spar .orig { position:absolute; top:5px; width:12px; height:12px; margin-left:-6px; border:2px solid #555; border-radius:50%; background:#fff; }
+  .spar .nu { position:absolute; top:4px; width:14px; height:14px; margin-left:-7px; border-radius:50%; background:var(--text); }
+  .spar .kund { position:absolute; top:-2px; margin-left:-6px; width:0; height:0; border:6px solid transparent; border-top:9px solid var(--kund); }
+  .finger .varde { text-align:right; color:var(--svag); font-variant-numeric:tabular-nums; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--svag); margin-top:8px; }
+  .legend i { display:inline-block; vertical-align:middle; margin-right:4px; }
+  .plan { display:flex; gap:8px; align-items:flex-start; margin:7px 0; } .plan div { flex:1; } .plan small { color:var(--svag); display:block; }
+  .mall { line-height:2.1; } .mall input { padding:2px 6px; border:1px solid var(--linje); border-radius:5px; min-width:8ch; background:#fbfaf6; }
+  .mall input.bytt { border-color:var(--ok); background:#eef7f0; } .mall input.inaktuell { border-color:var(--varn); background:#fbeeea; }
+  .platsrad { display:flex; gap:8px; align-items:center; margin:5px 0; font-size:13px; } .platsrad span { width:13ch; color:var(--svag); }
+  #drag { display:flex; flex-wrap:wrap; gap:6px; } #drag button { font-size:13px; padding:4px 9px; text-align:left; }
+  .tom { color:var(--svag); padding:40px; text-align:center; }
+  .avsikt { width:100%; padding:7px 10px; border:1px solid var(--linje); border-radius:8px; margin-bottom:10px; background:#fbfaf6; }
+  .avsikt.satt { border-color:var(--ok); }
+  .sv.vantar { border-left-color:var(--accent); color:var(--svag); }
+  .sv .lart { margin-top:6px; font-size:13px; color:var(--ok); }
+  .lard { display:flex; gap:8px; align-items:flex-start; margin:6px 0; color:var(--text); } .lard div { flex:1; } .lard small { color:var(--svag); display:block; }
+  .lard button { font-size:12px; padding:2px 8px; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Regibordet</h1>
+  <input id="q" type="search" placeholder="Sök i banken" aria-label="Sök klipp">
+  <select id="typ" aria-label="Typ"><option value="">alla typer</option></select>
+  <select id="traff" aria-label="Klipp"></select>
+  <input id="kund" list="konton" placeholder="kund (konto)" aria-label="Kund"><datalist id="konton"></datalist>
+  <button class="prim" id="start">Ladda in</button>
+  <button id="angra" disabled>Ångra</button>
+  <span class="matt" id="matt"></span>
+</header>
+<main>
+  <section class="panel">
+    <h2>Regi</h2>
+    <input id="avsikt" class="avsikt" placeholder="Avsikt med passet, fri text (Enter sparar)" autocomplete="off" aria-label="Avsikt med passet">
+    <div id="logg"></div>
+    <form id="form"><input id="text" placeholder="Skriv vad du vill ändra" autocomplete="off"><button class="prim">Skicka</button></form>
+    <h3>Mot kunden</h3>
+    <div id="kundlinje" class="not"></div>
+    <div id="plan"></div>
+    <h3>Takter och kontrast</h3>
+    <div id="drag"></div>
+    <h3>Kroppen direkt</h3>
+    <div class="not">Välj en tagning och skriv hur kroppen ska bete sig. Går utan att ladda in ett klipp. Forskning: rörelsemodellen är AMASS-tränad.</div>
+    <select id="tagning" aria-label="Tagning" style="width:100%;margin:6px 0"></select>
+    <form id="kform"><input id="ktext" placeholder="Till exempel: han är stolt och håller den högre" autocomplete="off"><button class="prim">Kör</button></form>
+    <h3>Lärda drag</h3>
+    <div id="larda" class="not"></div>
+  </section>
+  <section>
+    <p id="huvud"></p>
+    <div class="rad" id="nu"><div class="tom">Sök ett klipp, välj kund och ladda in.</div></div>
+    <h3 id="foreRubrik" hidden>Före senaste ändringen</h3>
+    <div class="rad fore" id="fore"></div>
+    <div class="under">
+      <div class="panel"><h2>Handen: klippet mot andra av samma typ</h2><div id="hand"></div>
+        <div class="legend"><span><i style="width:22px;height:8px;background:#d5e2f3;border-radius:3px"></i>typen, 10–90 %</span>
+          <span><i style="width:10px;height:10px;border:2px solid #555;border-radius:50%"></i>originalet</span>
+          <span><i style="width:11px;height:11px;border-radius:50%;background:#1c1c1a"></i>nu</span>
+          <span><i style="border:5px solid transparent;border-top:8px solid #c9730a"></i>kunden brukar</span></div></div>
+      <div class="panel"><h2>Mallen: det som byts mot kundens</h2><div id="mall" class="mall"></div><div id="platser"></div>
+        <p class="not">Rött fält gällde den gamla produkten. Grönt är ändrat. Skriv och tryck Enter.</p></div>
+    </div>
+  </section>
+</main>
+<script type="module">
+import * as THREE from '/three.module.js';
+
+const FARG = { gast_a:[.90,.45,.15], gast_b:[.20,.45,.85], personal:[.20,.65,.35], mobel:[.55,.50,.45], golv:[.82,.80,.76],
+               sak:[.95,.85,.30], vagg:[.70,.72,.75], hud:[.85,.70,.60], mork:[.15,.15,.17] };
+const KAM = { vid:[[0,-4.3,1.55],[0,.2,.95],30], sned:[[2.5,-3.3,1.75],[-.05,-.15,1.0],32], rak:[[0,-2.6,1.45],[0,.4,1.15],32],
+              ko:[[1.9,-4.6,1.75],[-.55,-.6,1.0],34], bordet:[[0,-2.9,1.5],[0,.3,.95],32], ute:[[0,-3.6,1.5],[0,.3,1.0],30] };
+const W = 396, H = 704;
+const ren = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
+ren.setSize(W, H, false); ren.shadowMap.enabled = true;
+const mat = {};
+const m = n => mat[n] ??= new THREE.MeshLambertMaterial({ color:new THREE.Color(...FARG[n]) });
+
+// Geometrin följer blockout.py. Scenen är z-upp som i Blender.
+function lada(g, pos, st, farg) { const o = new THREE.Mesh(new THREE.BoxGeometry(...st), m(farg)); o.position.set(...pos); o.castShadow = o.receiveShadow = true; g.add(o); }
+function cyl(g, a, b, r, farg) {
+  const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), d = B.clone().sub(A);
+  const o = new THREE.Mesh(new THREE.CylinderGeometry(r, r, d.length(), 12), m(farg));
+  o.position.copy(A.clone().add(B).multiplyScalar(.5)); o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), d.normalize()); o.castShadow = true; g.add(o);
+}
+function klot(g, pos, r, farg) { const o = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 10), m(farg)); o.position.set(...pos); o.castShadow = true; g.add(o); }
+function sak(g, typ, [x,y,z], s = 1) {
+  if (typ === 'terminal') lada(g, [x,y,z+.02], [.09,.16,.04], 'mork');
+  else if (typ === 'bricka') lada(g, [x,y,z+.03], [.45*s,.32*s,.06], 'sak');
+  else if (typ === 'lada') lada(g, [x,y,z+.05*s], [.18*s,.18*s,.10*s], 'sak');
+  else if (typ === 'lada_stor') lada(g, [x,y,z+.11], [.36,.30,.22], 'sak');
+  else if (typ === 'sked') lada(g, [x,y,z], [.03,.10,.02], 'sak');
+  else if (typ === 'spade') lada(g, [x,y,z+.06], [.16,.05,.22], 'sak');
+  else if (typ === 'trag') lada(g, [x,y,z+.04], [.42,.32,.08], 'sak');
+}
+function docka(scen, p) {
+  const g = new THREE.Group(), f = p.roll, sit = p.pose === 'sitter', hoft = sit ? .47 : .92, axel = hoft + .52;
+  for (const s of [-1, 1]) {
+    if (sit) { cyl(g, [s*.10,0,hoft], [s*.10,.42,hoft], .07, f); cyl(g, [s*.10,.42,hoft], [s*.10,.42,.03], .06, f); }
+    else cyl(g, [s*.10,0,hoft], [s*.10,0,.03], .07, f);
+  }
+  cyl(g, [0,0,hoft], [0,0,axel], .16, f); klot(g, [0,0,axel+.20], .12, 'hud'); lada(g, [0,.13,axel+.19], [.04,.06,.04], 'mork');
+  let hand = null;
+  for (const s of [-1, 1]) {
+    const ax = [s*.20, 0, axel-.04];
+    if (s === 1 && p.arm === 'fram') { hand = [s*.18,.55,axel-.12]; cyl(g, ax, hand, .05, f); }
+    else if (s === 1 && p.arm === 'mun') { const arb = [s*.26,.22,axel-.26]; hand = [s*.06,.20,axel+.10]; cyl(g, ax, arb, .05, f); cyl(g, arb, hand, .045, f); }
+    else cyl(g, ax, [s*.24,.03,hoft + (sit ? .12 : -.05)], .05, f);
+  }
+  if (p.haller) {
+    let h = hand ?? [.24,.12,hoft+.10];
+    if (p.haller === 'lada_stor' && !hand) { cyl(g, [.20,0,axel-.04], [.16,.30,hoft+.18], .05, f); cyl(g, [-.20,0,axel-.04], [-.16,.30,hoft+.18], .05, f); h = [0,.36,hoft+.08]; }
+    sak(g, p.haller, [h[0], h[1]+.06, h[2]], p.haller_skala ?? 1);
+  }
+  if (sit) lada(g, [0,-.02,.22], [.42,.42,.44], 'mobel');
+  g.position.set(p.pos[0], p.pos[1], 0); g.rotation.z = (p.vand ?? 0) * Math.PI / 180; scen.add(g);
+}
+function rita(spec, canvas) {
+  const sc = new THREE.Scene(); sc.background = new THREE.Color(.23,.23,.24);
+  sc.add(new THREE.HemisphereLight(0xffffff, 0x666666, 1.25));
+  const sol = new THREE.DirectionalLight(0xffffff, 1.5); sol.position.set(2.5,-4,6); sol.castShadow = true;
+  sol.shadow.mapSize.set(1024,1024); Object.assign(sol.shadow.camera, { left:-4, right:4, top:4, bottom:-4 }); sc.add(sol);
+  lada(sc, [0,0,-.025], [7,7,.05], 'golv'); lada(sc, [0,2.4,1.4], [7,.1,2.8], 'vagg');
+  for (const s of spec.saker ?? []) {
+    if (s.typ === 'disk') lada(sc, [0,.05,.465], [2.6,.6,.93], 'mobel');
+    else if (s.typ === 'dorr') { lada(sc, [-1.6,1.2,1.4], [2.2,.15,2.8], 'vagg'); lada(sc, [1.6,1.2,1.4], [2.2,.15,2.8], 'vagg'); lada(sc, [0,1.2,2.5], [1.0,.15,.6], 'vagg'); lada(sc, [0,1.25,1.1], [1.0,.05,2.2], 'mork'); }
+    else if (s.typ === 'hylla') { lada(sc, [0,1.9,1.5], [2.6,.3,1.6], 'mork'); for (let i = 0; i < 7; i++) lada(sc, [-1.05+i*.35,1.72,1.55], [.08,.08,.3], 'sak'); }
+    else if (s.typ === 'spis') lada(sc, [0,1.9,.45], [2.6,.6,.9], 'mork');
+    else if (s.typ === 'bord') { lada(sc, [s.pos[0],s.pos[1],.73], [.75,.75,.05], 'mobel'); cyl(sc, [s.pos[0],s.pos[1],0], [s.pos[0],s.pos[1],.72], .05, 'mobel'); }
+    else sak(sc, s.typ, [s.pos[0], s.pos[1], s.z ?? 0], s.skala ?? 1);
+  }
+  for (const p of spec.personer) docka(sc, p);
+  const [loc, mal, lins] = KAM[spec.kamera] ?? KAM.sned, z = spec.zoom ?? 1;
+  const T = new THREE.Vector3(...mal), L = T.clone().add(new THREE.Vector3(...loc).sub(T).multiplyScalar(z));
+  const kam = new THREE.PerspectiveCamera(2 * Math.atan(18 / lins) * 180 / Math.PI, W / H, .1, 50);
+  kam.up.set(0,0,1); kam.position.copy(L); kam.lookAt(T); ren.render(sc, kam);
+  canvas.width = W; canvas.height = H; canvas.getContext('2d').drawImage(ren.domElement, 0, 0);
+  sc.traverse(o => o.geometry?.dispose());
+}
+
+const $ = id => document.getElementById(id);
+const el = (tag, klass, text) => { const e = document.createElement(tag); if (klass) e.className = klass; if (text !== undefined) e.textContent = text; return e; };
+let vy = null, fore = null;
+const api = (p, d) => fetch(p, d === undefined ? {} : { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(d) }).then(r => r.json());
+
+function strip(mal, v, knappar) {
+  mal.replaceChildren();
+  for (const t of v.takter) {
+    const k = el('div', 'takt' + (t.bar === 'ryggrad' ? ' ryggrad' : ''));
+    const b = el('div', 'bild'), c = el('canvas'); b.append(c);
+    if (t.scen.skylt) b.append(el('div', 'skylt', t.scen.skylt));
+    const x = el('div', 't');
+    x.append(el('div', 'f', `takt ${t.nr} · ${t.funktion} · ${t.bar} · ${t.sek} s · ${t.stalle}`), el('div', 'v', t.vad), el('div', 'm', t.markning.join(' · ')));
+    k.append(b, x); mal.append(k); rita(t.scen, c);
+  }
+}
+function hand(v) {
+  const h = $('hand'); h.replaceChildren();
+  for (const f of v.hand) {
+    const alla = [f.p10, f.p90, f.nu, f.original, f.kunden].filter(x => x != null);
+    let lo = Math.min(...alla), hi = Math.max(...alla); const pad = (hi - lo || 1) * .08; lo -= pad; hi += pad;
+    const x = val => ((val - lo) / (hi - lo) * 100) + '%';
+    const r = el('div', 'finger'), sp = el('div', 'spar');
+    const band = el('div', 'band'); band.style.left = x(f.p10); band.style.width = ((f.p90 - f.p10) / (hi - lo) * 100) + '%';
+    const med = el('div', 'med'); med.style.left = x(f.median);
+    const orig = el('div', 'orig'); orig.style.left = x(f.original); orig.title = 'originalet ' + f.original;
+    const nu = el('div', 'nu'); nu.style.left = x(f.nu); nu.title = 'nu ' + f.nu;
+    sp.append(el('div', 'linje'), band, med, orig);
+    if (f.kunden != null) { const k = el('div', 'kund'); k.style.left = x(f.kunden); k.title = 'kunden brukar ' + f.kunden; sp.append(k); }
+    sp.append(nu);
+    const ned = el('button', '', '◂'), upp = el('button', '', '▸');
+    ned.disabled = !f.ned; upp.disabled = !f.upp; ned.title = f.ned_text; upp.title = f.upp_text;
+    ned.onclick = () => skicka('/api/val', { drag:f.ned, text:f.ned_text }, f.ned_text);
+    upp.onclick = () => skicka('/api/val', { drag:f.upp, text:f.upp_text }, f.upp_text);
+    r.append(el('span', '', f.etikett), ned, sp, upp, el('span', 'varde', String(f.nu)));
+    h.append(r);
+  }
+}
+function mall(v) {
+  const M = $('mall'), P = $('platser'); M.replaceChildren(); P.replaceChildren();
+  const norm = s => s.replace(/[\[\]]/g, '').trim().toLowerCase();
+  const kvar = new Set(v.platser.map(p => p.plats));
+  const falt = p => { const i = el('input'); i.value = p.har ?? ''; i.size = Math.max(8, Math.min(34, (p.har ?? '').length + 1));
+    i.className = p.inaktuell ? 'inaktuell' : (p.var !== undefined ? 'bytt' : ''); i.title = `${p.plats} (${p.typ})` + (p.var !== undefined ? `, var: ${p.var}` : '');
+    i.onchange = () => skicka('/api/plats', { plats:p.plats, har:i.value }, `${norm(p.plats)}: ${i.value}`); return i; };
+  for (const del of (v.mall ?? '').split(/(\[[^\]]+\])/)) {
+    const p = del.startsWith('[') && v.platser.find(x => norm(x.plats) === norm(del));
+    if (p) { M.append(falt(p)); kvar.delete(p.plats); } else M.append(document.createTextNode(del));
+  }
+  for (const p of v.platser) if (kvar.has(p.plats)) { const r = el('div', 'platsrad'); r.append(el('span', '', norm(p.plats)), falt(p)); P.append(r); }
+}
+function visa(nyVy) {
+  if (vy && JSON.stringify(vy.takter) !== JSON.stringify(nyVy.takter)) fore = vy;
+  vy = nyVy;
+  const h = $('huvud'); h.replaceChildren(el('b', '', vy.karna), document.createTextNode(` ${vy.typ}. ${vy.langd} s, ${vy.takter.length} takter` + (vy.kontrast ? `, kontrast ${vy.kontrast}` : '') + '.'));
+  strip($('nu'), vy);
+  $('foreRubrik').hidden = !fore; if (fore) strip($('fore'), fore); else $('fore').replaceChildren();
+  hand(vy); mall(vy);
+  $('angra').disabled = !vy.kan_angra;
+  $('matt').textContent = `Jev: ${vy.jev.anrop} anrop, ${vy.jev.usd} dollar · förståndet: ${vy.forstand.anrop} anrop, ${vy.forstand.s} s`;
+  if (document.activeElement !== $('avsikt')) $('avsikt').value = vy.avsikt ?? '';
+  $('avsikt').classList.toggle('satt', !!vy.avsikt);
+  const L = $('larda'); L.replaceChildren();
+  for (const x of vy.larda) { const r = el('div', 'lard'), t = el('div'); t.append(document.createTextNode(x.fras), el('small', '', `${x.namn} · gäller ${x.galler} · använt ${x.anvant} · ur: "${x.mening}"`));
+    const g = el('button', '', 'Gör'); g.onclick = () => skicka('/api/val', { drag:'lard_' + x.namn, text:x.fras }, x.fras);
+    const k = el('button', '', 'Glöm'); k.onclick = () => skicka('/api/glom', { namn:x.namn });
+    r.append(t, g, k); L.append(r); }
+  if (!vy.larda.length) L.textContent = 'Inga än. När inget drag passar läser förståndet meningen, och receptet sparas här.';
+  const kl = vy.kundens_linje, K = $('kundlinje'); K.replaceChildren();
+  if (kl) { K.append(document.createTextNode(`@${vy.kund.konto}: ${kl.kort} klipp i banken, ${Math.round(kl.andel_typ * 100)} % av den här typen. Filmar i ${Object.keys(kl.rum).slice(0, 2).join(', ') || 'okänt'}.`));
+    for (const r of vy.kunden_har_redan) if (r.tema >= .97) { const d = el('div'); d.append(document.createTextNode('Har redan gjort något liknande: ')); const a = el('a', '', r.karna); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; d.append(a); K.append(d); } }
+  else K.textContent = 'Ingen kund vald.';
+  const P = $('plan'); P.replaceChildren();
+  for (const x of vy.plan) { const r = el('div', 'plan'), t = el('div'); t.append(document.createTextNode(x.text), el('small', '', x.skal));
+    const k = el('button', '', 'Gör'); k.onclick = () => skicka('/api/val', { drag:x.drag, param:x.param, text:x.text }, x.text); r.append(t, k); P.append(r); }
+  if (kl && !vy.plan.length) P.append(el('div', 'not', 'Inga fler drag mot kunden.'));
+  const d = $('drag'); d.replaceChildren();
+  for (const x of vy.drag) { const k = el('button', '', x.text.replace(/\.$/, '')); k.title = x.drag; k.onclick = () => skicka('/api/val', { drag:x.drag, text:x.text }, x.text); d.append(k); }
+}
+function rad(klass, bygg) { const e = el('div', klass); bygg(e); $('logg').append(e); e.scrollIntoView({ block:'nearest' }); return e; }
+function svar(s) {
+  rad('sv ' + (s.utfall ?? ''), e => {
+    if (s.jev) e.append(el('div', 'drag', `${s.jev.val} · marginal ${s.jev.marginal} · ${s.jev.ms} ms · ${s.jev.antal_drag} drag att välja bland`));
+    if (s.forstand) e.append(el('div', 'drag', `förståndet (${s.forstand.modell}) · nivå ${s.forstand.niva} · ${(s.forstand.ms / 1000).toFixed(1)} s · ${s.forstand.steg.length} steg`));
+    for (const r of s.rader ?? []) e.append(el('div', '', r));
+    if (s.lank) { const a = el('a', '', s.lank.karna); a.href = s.lank.url; a.target = '_blank'; a.rel = 'noopener'; e.append(a); }
+    if (s.foljder?.length) { const u = el('ul'); for (const f of s.foljder) u.append(el('li', '', f)); e.append(u); }
+    if (s.val) { const v = el('div', 'val'); for (const o of s.val) { const k = el('button', '', o.text);
+      k.onclick = () => { v.remove(); skicka('/api/val', { drag:o.drag, param:o.param, text:o.text }, o.text); }; v.append(k); } e.append(v); }
+    if (s.kropp) { e.append(el('div', 'drag', `kroppen · ${s.kropp.varv} varv · ${s.kropp.s} s · ${s.kropp.andringar.join(' · ')}`));
+      const b = el('img'); b.src = `/kropp/${s.kropp.namn}/streck_blad.png`; b.style.cssText = 'width:100%;margin-top:8px;border:1px solid var(--linje);border-radius:6px;background:#fff';
+      const f = el('video'); f.src = `/kropp/${s.kropp.namn}/streck.mp4`; f.controls = true; f.loop = true; f.muted = true; f.style.cssText = 'width:100%;margin-top:6px;border-radius:6px;background:#fff'; let n = 0; f.onerror = () => { if (n++ < 40) setTimeout(() => { f.src = `/kropp/${s.kropp.namn}/streck.mp4?f=${n}`; }, 4000); }; e.append(b, f);
+      const sk = el('button', '', 'Visa i scenen (några minuter)'); sk.style.marginTop = '8px'; const sv = el('div');
+      sk.onclick = async () => { sk.disabled = true; const r = await api('/api/scen', { namn:s.kropp.namn }); if (!r.startad) { sk.textContent = 'Gick inte att starta'; return; }
+        const t0 = performance.now(); const tick = setInterval(async () => { sk.textContent = `Renderar i förvärlden… ${Math.round((performance.now() - t0) / 1000)} s`;
+          const st = await api(`/api/scenstatus?namn=${s.kropp.namn}`); if (st.fel) { clearInterval(tick); sk.textContent = 'Renderingen föll: ' + st.fel.slice(-120); }
+          if (st.klar) { clearInterval(tick); sk.remove(); for (const bn of st.bilder) { const im = el('img'); im.src = `/kropp/${s.kropp.namn}/${bn}`; im.style.cssText = 'width:100%;margin-top:6px;border-radius:6px'; sv.append(im); }
+            if (st.film) { const fv = el('video'); fv.src = `/kropp/${s.kropp.namn}/forvarld.mp4`; fv.controls = true; fv.loop = true; fv.muted = true; fv.style.cssText = 'width:100%;margin-top:6px;border-radius:6px'; sv.append(fv); } } }, 5000); };
+      e.append(sk, sv); }
+    if ((s.utfall === 'scenlagret' || s.forstand?.niva === 'scenlagret') && vy?.har_kropp && sistaMening) { const k = el('button', 'prim', 'Kör på kroppen'); k.style.marginTop = '8px'; const t = sistaMening;
+      k.onclick = () => { k.remove(); kroppen(t); }; e.append(k); }
+    if (s.lart) e.append(el('div', 'lart', s.lart.ateranvant ? `Lärt drag: ${s.lart.namn}` : `Sparat som nytt drag (${s.lart.galler}): ${s.lart.fras}`));
+    if (s.langsam === 'knapp' && sistaMening) { const k = el('button', '', 'Fråga förståndet'); k.style.marginTop = '8px'; const t = sistaMening;
+      k.onclick = () => { k.remove(); langsam(t); }; e.append(k); }
+  });
+}
+let sistaMening = '';
+async function langsam(text) {
+  const v = rad('sv vantar', e => e.textContent = 'Inget drag passar. Förståndet läser meningen…');
+  const t0 = performance.now(), tick = setInterval(() => v.textContent = `Förståndet läser meningen… ${Math.round((performance.now() - t0) / 1000)} s`, 1000);
+  const r = await api('/api/forstand', { text });
+  clearInterval(tick); v.remove();
+  if (r.fel) return rad('sv stoppat', e => e.textContent = r.fel);
+  svar(r.svar); visa(r.vy);
+}
+async function kroppen(text, tagning) {
+  const v = rad('sv vantar', e => e.textContent = 'Kroppen räknar…');
+  const t0 = performance.now(), tick = setInterval(() => v.textContent = `Kroppen räknar: förståndet skriver villkor, simuleringen kör, måtten går tillbaka… ${Math.round((performance.now() - t0) / 1000)} s`, 1000);
+  const r = await api('/api/kropp', { text, tagning });
+  clearInterval(tick); v.remove();
+  if (r.fel) return rad('sv stoppat', e => e.textContent = r.fel);
+  svar(r.svar); if (r.vy) visa(r.vy);
+}
+async function skicka(p, d, visad) {
+  if (visad) rad('cm', e => e.textContent = visad);
+  const r = await api(p, d);
+  if (r.fel) return rad('sv stoppat', e => e.textContent = r.fel);
+  if (r.svar) svar(r.svar);
+  visa(r.vy);
+  if (r.svar?.langsam === 'auto' && sistaMening) await langsam(sistaMening);
+}
+$('form').onsubmit = e => { e.preventDefault(); const t = $('text').value.trim(); if (!t || !vy) return; $('text').value = ''; sistaMening = t; skicka('/api/mening', { text:t }, t); };
+$('avsikt').onchange = async () => { if (!vy) return; const r = await api('/api/avsikt', { text:$('avsikt').value }); if (r.vy) visa(r.vy); };
+$('angra').onclick = () => skicka('/api/angra', {}, 'ångra');
+
+async function sok() {
+  const r = await api(`/api/sok?q=${encodeURIComponent($('q').value)}&typ=${encodeURIComponent($('typ').value)}`);
+  $('traff').replaceChildren(...r.map(k => new Option(`@${k.konto}: ${k.karna.slice(0, 80)}`, k.id)));
+  if (!r.length) $('traff').append(new Option('inga träffar', ''));
+}
+async function start(id, kund) {
+  const klipp = id ?? $('traff').value; if (!klipp) return;
+  fore = null; vy = null; $('logg').replaceChildren(); $('start').disabled = true; $('start').textContent = 'Räknar…';
+  const r = await api('/api/start', { klipp, kund:(kund ?? $('kund').value.replace(/^@/, '').trim()) || null, avsikt:$('avsikt').value });
+  $('start').disabled = false; $('start').textContent = 'Ladda in';
+  if (r.fel) return rad('sv stoppat', e => e.textContent = r.fel);
+  if (![...$('traff').options].some(o => o.value === klipp)) $('traff').prepend(new Option(r.vy.karna.slice(0, 90), klipp));
+  $('traff').value = klipp;
+  visa(r.vy); $('text').focus();
+}
+let vanta; $('q').oninput = () => { clearTimeout(vanta); vanta = setTimeout(sok, 180); };
+$('typ').onchange = sok; $('start').onclick = () => start();
+$('tagning').append(...(await api('/api/tagningar')).map(x => new Option(x.namn, x.id)));
+$('kform').onsubmit = e => { e.preventDefault(); const t = $('ktext').value.trim(); if (!t) return; $('ktext').value = ''; rad('cm', x => x.textContent = `${$('tagning').selectedOptions[0].textContent.split(':')[0]}: ${t}`); kroppen(t, $('tagning').value); };
+const bank = await api('/api/bank');
+$('typ').append(...bank.typer.map(t => new Option(t, t)));
+$('konton').append(...bank.konton.map(k => new Option(k)));
+$('q').placeholder = `Sök bland ${bank.kort} kort`;
+const u = new URLSearchParams(location.search);
+if (u.get('klipp')) { $('kund').value = u.get('kund') ?? ''; await sok(); await start(u.get('klipp'), u.get('kund')); }
+else { $('typ').value = 'tilltal, till kameran, med visning av produkt'; await sok(); }
+</script>
+</body>
+</html>
