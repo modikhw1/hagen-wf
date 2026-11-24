@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {chromium} from '../../app/node_modules/playwright-core/index.mjs';
+const OUT=path.resolve('forvarld/varld');
+const browser=await chromium.launchPersistentContext(path.join(OUT,'browser-profile-v5'),{executablePath:path.join(process.env.LOCALAPPDATA,'ms-playwright/chromium-1248/chrome-win64/chrome.exe'),headless:true,viewport:{width:1160,height:950},args:['--disable-background-networking','--disable-component-update','--no-first-run','--disable-extensions','--disable-gpu-sandbox','--autoplay-policy=no-user-gesture-required']});
+const page=browser.pages()[0],errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:5195/')||r.request().url().startsWith('data:')?r.continue():r.abort());
+try{
+ await page.goto('http://127.0.0.1:5195/');await page.waitForFunction(()=>window.__WORLD__?.ready,null,{timeout:30000});await page.evaluate(()=>__WORLD__.reset());
+ const result=await page.evaluate(async()=>{let i=0;const e=(op,fields)=>({id:'check_'+i++,op,ursprung:{typ:'cm'},...fields});const edits=[e('ta_bort_scen',{scen:'s2'}),e('trimma_scen',{scen:'s3',slut_s:5.5,lage:'klipp_slut'}),e('flytta_scen',{scen:'s7',efter:null}),e('duplicera_scen',{scen:'s1',ny_id:'s1_copy',efter:'s1',med_ljud:false}),e('skarmtext',{scen:'s1',skarmtext_id:'st1',atgard:'byt',text:'Hej världen'}),e('skarmtext',{scen:'s2',skarmtext_id:'test_caption',atgard:'lagg_till',text:'Ny text'}),e('skarmtext',{scen:'s1',skarmtext_id:'st1',atgard:'ta_bort'}),e('casta',{person:'A',kundroll:{id:'A',namn:'CM'},utseende:{troja_farg:'#80a8ff'}}),e('renderkamera',{scen:'s7',kamera_id:'test',lage:'stativ',inramning:'nara',mal:{typ:'person',id:'B',punkt:'huvud'}}),e('ta_bort_prop',{scen:'s1',prop:'bord_A'}),e('byt_prop',{scen:'s1',prop:'bord_A',ny_typ:'foreground',tillgang_id:'s3:foreground'})];const measurements=[];for(const edit of edits){__WORLD__.reset();const m=await __WORLD__.applyEdits([edit]);measurements.push({op:edit.op,ms:m.clickToNextRafMs,frames:__WORLD__.getState().scenes.reduce((a,s)=>a+s.b-s.a,0)});await __WORLD__.undo();if(__WORLD__.regi().edits.length)throw Error('undo');}__WORLD__.reset();return {measurements,edits,loadMs:__WORLD__.loadMs,gpu:__WORLD__.gpu};});
+ fs.writeFileSync(path.join(OUT,'edit-check.json'),JSON.stringify({...result,errors},null,2));console.log(JSON.stringify({...result,edits:undefined,errors},null,2));if(errors.length)throw Error(errors.join('\n'));
+ await page.screenshot({path:path.join(OUT,'bilder/v5-smoke.png')});
+}finally{await browser.close();}

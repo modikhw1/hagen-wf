@@ -1,0 +1,10 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Notan – förvärld</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{font:14px system-ui;background:#202020;color:#eee;margin:18px}button,select,input{margin:4px;padding:5px}#views{display:flex;gap:10px;align-items:flex-start}canvas,video{width:288px;height:512px;background:#111;image-rendering:pixelated}#status{white-space:pre-wrap;max-width:800px}#scrub{width:min(600px,80vw)}.label{margin-bottom:5px}#sourceBox[hidden]{display:none}button:disabled{opacity:.5}</style>
+<h3>Notan: samma scen i förvärld och PS2-vy</h3>
+<div><button id="play">Spela / pausa</button><input id="scrub" type="range" min="0" max="382" step="1" value="0"><span id="clock"></span></div>
+<div><label><input id="ps2" type="checkbox" checked> PS2 / vanlig</label><label><input id="plate" type="checkbox" checked> Plåt / möblerad mall</label><label><input id="occlusion" type="checkbox" checked> Uppmätt synlighetsmask (plåtvy)</label><label><input id="side" type="checkbox" checked> Källa bredvid</label></div>
+<div><button id="tint">Byt A:s färg</button><button id="text">Ändra text i s1</button><button id="camera">Stativkamera i aktuell scen</button><button id="pipeline">Regi → kompilator: ta bort s2</button><button id="reset">Återställ</button></div>
+<div id="views"><div><div class="label" id="viewLabel">Laddar paket…</div><div id="viewport"></div></div><div id="sourceBox"><div class="label">Källa, samma källruta</div><video id="source" muted playsinline preload="auto" src="/paket/notan/source.mp4"></video></div></div>
+<p id="status">Laddar…</p><audio id="audio" preload="auto" src="/paket/notan/audio.m4a"></audio>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js"}}</script><script type="module" src="/viewer.js"></script></html>
